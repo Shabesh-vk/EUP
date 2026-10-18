@@ -2107,13 +2107,13 @@ export component MediaPane inherits Rectangle {
                         }
                         CategoryRow {
                             height: 24px;
-                            label: "Worked Example";
+                            label: "Worked Steps";
                             current: root.ai-category == 2;
                             clicked => { root.ai-category = 2; }
                         }
                         CategoryRow {
                             height: 24px;
-                            label: "Prompts & Presets";
+                            label: "Presets";
                             current: root.ai-category == 3;
                             clicked => { root.ai-category = 3; }
                         }
@@ -2840,7 +2840,7 @@ export component MediaPane inherits Rectangle {
                 }
 
                 if root.tab == 9: AIConversationDashboard {
-                    category: root.ai-category;
+                    category <=> root.ai-category;
                 }
             }
         }
