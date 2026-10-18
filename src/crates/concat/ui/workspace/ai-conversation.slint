@@ -1,0 +1,649 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-FileCopyrightText: 2026 Jareer and Concat contributors
+
+import { Theme } from "../theme/theme.slint";
+import { Glyph, Icon } from "../icons.slint";
+
+export component AIConversationDashboard inherits Rectangle {
+    in-out property <int> category: 0;
+    in-out property <string> prompt-input: "";
+    in-out property <string> last-applied-summary: "Ready to edit. Enter a prompt or select a quick action below.";
+    in-out property <int> active-clarification: 2;
+
+    callback send-prompt(string);
+    callback apply-option(string);
+    callback run-quick-action(string);
+
+    background: Theme.panel;
+
+    VerticalLayout {
+        padding: 10px;
+        spacing: 10px;
+
+        // ── 1. Top Header Banner ────────────────────────────────────
+        Rectangle {
+            height: 48px;
+            background: Theme.field;
+            border-radius: Theme.r;
+            border-width: 1px;
+            border-color: Theme.line;
+
+            HorizontalLayout {
+                padding-left: 12px;
+                padding-right: 12px;
+                spacing: 10px;
+                alignment: space-between;
+
+                HorizontalLayout {
+                    spacing: 8px;
+                    alignment: center;
+
+                    Icon {
+                        glyph: Glyph.sparkle;
+                        size: 16px;
+                        tint: Theme.accent;
+                    }
+
+                    VerticalLayout {
+                        alignment: center;
+                        spacing: 1px;
+                        Text {
+                            text: root.category == 1 ? "IncuBrix Audit & Edit History"
+                                : root.category == 2 ? "IncuBrix 5-Turn Worked Example"
+                                : root.category == 3 ? "Video Editing Prompts & Presets"
+                                : "AI Brain Conversation";
+                            color: Theme.fg;
+                            font-size: Theme.fs;
+                            font-weight: 600;
+                        }
+                        Text {
+                            text: "IncuBrix Prompt-Based Video Editing Engine • Deterministic State Machine";
+                            color: Theme.fg-muted;
+                            font-size: Theme.fs-sm;
+                        }
+                    }
+                }
+
+                HorizontalLayout {
+                    spacing: 6px;
+                    alignment: center;
+
+                    Rectangle {
+                        height: 20px;
+                        border-radius: Theme.r-sm;
+                        background: #1a3320;
+                        border-width: 1px;
+                        border-color: #2e663b;
+
+                        HorizontalLayout {
+                            padding-left: 6px;
+                            padding-right: 6px;
+                            alignment: center;
+                            Text {
+                                text: "Word-Anchored";
+                                color: #4ade80;
+                                font-size: 10px;
+                                font-weight: 500;
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        height: 20px;
+                        border-radius: Theme.r-sm;
+                        background: #1e293b;
+                        border-width: 1px;
+                        border-color: #334155;
+
+                        HorizontalLayout {
+                            padding-left: 6px;
+                            padding-right: 6px;
+                            alignment: center;
+                            Text {
+                                text: "Hash Verified";
+                                color: #94a3b8;
+                                font-size: 10px;
+                                font-weight: 500;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // ── CATEGORY 0: INTERACTIVE CONVERSATION ────────────────────
+        if root.category == 0: VerticalLayout {
+            spacing: 10px;
+
+            // Prompt Input Field & Submit Button
+            Rectangle {
+                height: 38px;
+                background: Theme.field;
+                border-radius: Theme.r;
+                border-width: 1px;
+                border-color: prompt-edit.has-focus ? Theme.accent : Theme.line;
+
+                HorizontalLayout {
+                    padding-left: 10px;
+                    padding-right: 6px;
+                    spacing: 8px;
+                    alignment: center;
+
+                    Icon {
+                        glyph: Glyph.sparkle;
+                        size: 14px;
+                        tint: Theme.accent;
+                    }
+
+                    prompt-edit := TextInput {
+                        horizontal-stretch: 1;
+                        text: root.prompt-input;
+                        font-size: Theme.fs-sm;
+                        color: Theme.fg;
+                        vertical-alignment: center;
+                        edited => { root.prompt-input = self.text; }
+                        accepted => {
+                            if (self.text != "") {
+                                root.send-prompt(self.text);
+                                self.text = "";
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        width: 72px;
+                        height: 26px;
+                        border-radius: Theme.r-sm;
+                        background: Theme.accent;
+
+                        HorizontalLayout {
+                            alignment: center;
+                            spacing: 4px;
+                            Text {
+                                text: "Apply";
+                                color: Colors.black;
+                                font-size: Theme.fs-sm;
+                                font-weight: 600;
+                                vertical-alignment: center;
+                            }
+                        }
+
+                        TouchArea {
+                            clicked => {
+                                if (prompt-edit.text != "") {
+                                    root.send-prompt(prompt-edit.text);
+                                    prompt-edit.text = "";
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Quick Suggestion Pills
+            HorizontalLayout {
+                spacing: 6px;
+
+                Rectangle {
+                    height: 24px;
+                    border-radius: Theme.r-sm;
+                    background: Theme.field;
+                    border-width: 1px;
+                    border-color: Theme.line;
+                    HorizontalLayout {
+                        padding-left: 8px; padding-right: 8px; alignment: center;
+                        Text { text: "+ Cut first 30s"; color: Theme.fg-muted; font-size: 11px; }
+                    }
+                    TouchArea { clicked => { root.prompt-input = "Cut the first 30 seconds"; } }
+                }
+
+                Rectangle {
+                    height: 24px;
+                    border-radius: Theme.r-sm;
+                    background: Theme.field;
+                    border-width: 1px;
+                    border-color: Theme.line;
+                    HorizontalLayout {
+                        padding-left: 8px; padding-right: 8px; alignment: center;
+                        Text { text: "+ Remove filler words"; color: Theme.fg-muted; font-size: 11px; }
+                    }
+                    TouchArea { clicked => { root.prompt-input = "Remove filler words"; } }
+                }
+
+                Rectangle {
+                    height: 24px;
+                    border-radius: Theme.r-sm;
+                    background: Theme.field;
+                    border-width: 1px;
+                    border-color: Theme.line;
+                    HorizontalLayout {
+                        padding-left: 8px; padding-right: 8px; alignment: center;
+                        Text { text: "+ Speed up 2x"; color: Theme.fg-muted; font-size: 11px; }
+                    }
+                    TouchArea { clicked => { root.prompt-input = "Speed up from 1:00 to 1:30 by 2x"; } }
+                }
+
+                Rectangle {
+                    height: 24px;
+                    border-radius: Theme.r-sm;
+                    background: Theme.field;
+                    border-width: 1px;
+                    border-color: Theme.line;
+                    HorizontalLayout {
+                        padding-left: 8px; padding-right: 8px; alignment: center;
+                        Text { text: "+ Undo / Restore"; color: Theme.fg-muted; font-size: 11px; }
+                    }
+                    TouchArea { clicked => { root.prompt-input = "Put the intro back"; } }
+                }
+            }
+
+            // Clarification Banner (when active)
+            Rectangle {
+                background: #231c15;
+                border-radius: Theme.r;
+                border-width: 1px;
+                border-color: #6d4218;
+
+                VerticalLayout {
+                    padding: 10px;
+                    spacing: 6px;
+
+                    HorizontalLayout {
+                        spacing: 6px;
+                        alignment: space-between;
+                        Text {
+                            text: "Recent Ambiguous Instruction: 'Remove the part about pricing'";
+                            color: Theme.fg;
+                            font-size: Theme.fs-sm;
+                            font-weight: 500;
+                        }
+                        Rectangle {
+                            height: 18px;
+                            border-radius: 4px;
+                            background: #4a2800;
+                            HorizontalLayout {
+                                padding-left: 6px; padding-right: 6px; alignment: center;
+                                Text { text: "Needs Clarification"; color: #fbbf24; font-size: 9px; font-weight: 600; }
+                            }
+                        }
+                    }
+
+                    Text {
+                        text: "Question: Pricing is mentioned three times (1:05, 2:40 and 3:15) - which one, or all?";
+                        color: #fde68a;
+                        font-size: Theme.fs-sm;
+                    }
+
+                    // Clickable Numbered Options
+                    HorizontalLayout {
+                        spacing: 6px;
+                        Rectangle {
+                            height: 24px;
+                            border-radius: 4px;
+                            background: root.active-clarification == 1 ? #2e663b : Theme.field;
+                            border-width: 1px;
+                            border-color: root.active-clarification == 1 ? #4ade80 : Theme.line;
+                            HorizontalLayout {
+                                padding-left: 8px; padding-right: 8px; alignment: center;
+                                Text {
+                                    text: "1. First (1:05)";
+                                    color: root.active-clarification == 1 ? Colors.white : Theme.fg;
+                                    font-size: 11px;
+                                }
+                            }
+                            TouchArea { clicked => { root.active-clarification = 1; root.apply-option("the first one"); } }
+                        }
+                        Rectangle {
+                            height: 24px;
+                            border-radius: 4px;
+                            background: root.active-clarification == 2 ? #2e663b : Theme.field;
+                            border-width: 1px;
+                            border-color: root.active-clarification == 2 ? #4ade80 : Theme.line;
+                            HorizontalLayout {
+                                padding-left: 8px; padding-right: 8px; alignment: center;
+                                Text {
+                                    text: "2. Second (2:40) [Resolved]";
+                                    color: root.active-clarification == 2 ? Colors.white : Theme.fg;
+                                    font-size: 11px;
+                                    font-weight: 600;
+                                }
+                            }
+                            TouchArea { clicked => { root.active-clarification = 2; root.apply-option("the second one"); } }
+                        }
+                        Rectangle {
+                            height: 24px;
+                            border-radius: 4px;
+                            background: root.active-clarification == 3 ? #2e663b : Theme.field;
+                            border-width: 1px;
+                            border-color: root.active-clarification == 3 ? #4ade80 : Theme.line;
+                            HorizontalLayout {
+                                padding-left: 8px; padding-right: 8px; alignment: center;
+                                Text {
+                                    text: "3. Third (3:15)";
+                                    color: root.active-clarification == 3 ? Colors.white : Theme.fg;
+                                    font-size: 11px;
+                                }
+                            }
+                            TouchArea { clicked => { root.active-clarification = 3; root.apply-option("the third one"); } }
+                        }
+                        Rectangle {
+                            height: 24px;
+                            border-radius: 4px;
+                            background: root.active-clarification == 4 ? #2e663b : Theme.field;
+                            border-width: 1px;
+                            border-color: root.active-clarification == 4 ? #4ade80 : Theme.line;
+                            HorizontalLayout {
+                                padding-left: 8px; padding-right: 8px; alignment: center;
+                                Text {
+                                    text: "4. All occurrences";
+                                    color: root.active-clarification == 4 ? Colors.white : Theme.fg;
+                                    font-size: 11px;
+                                }
+                            }
+                            TouchArea { clicked => { root.active-clarification = 4; root.apply-option("all"); } }
+                        }
+                    }
+                }
+            }
+
+            // Recent Conversation Turns Feed
+            Text {
+                text: "CONVERSATION HISTORY";
+                color: Theme.fg-muted;
+                font-size: 10px;
+                font-weight: 600;
+            }
+
+            // Turn 5
+            Rectangle {
+                background: Theme.field;
+                border-radius: Theme.r;
+                border-width: 1px;
+                border-color: Theme.line;
+
+                VerticalLayout {
+                    padding: 8px;
+                    spacing: 4px;
+
+                    HorizontalLayout {
+                        spacing: 6px;
+                        alignment: space-between;
+                        Text {
+                            text: "Creator: Actually, put the intro back";
+                            color: Theme.fg;
+                            font-size: Theme.fs-sm;
+                            font-weight: 500;
+                        }
+                        Rectangle {
+                            height: 18px;
+                            border-radius: 4px;
+                            background: #1a3320;
+                            HorizontalLayout {
+                                padding-left: 6px; padding-right: 6px; alignment: center;
+                                Text { text: "Applied (Non-Destructive)"; color: #4ade80; font-size: 9px; font-weight: 600; }
+                            }
+                        }
+                    }
+                    Text {
+                        text: "Engine: The first 30s return; caption restored to 0:42; the pricing cut and speed change stay intact.";
+                        color: Theme.fg-muted;
+                        font-size: Theme.fs-sm;
+                    }
+                }
+            }
+
+            // Turn 4
+            Rectangle {
+                background: Theme.field;
+                border-radius: Theme.r;
+                border-width: 1px;
+                border-color: Theme.line;
+
+                VerticalLayout {
+                    padding: 8px;
+                    spacing: 4px;
+
+                    HorizontalLayout {
+                        spacing: 6px;
+                        alignment: space-between;
+                        Text {
+                            text: "Creator: Speed up from 1:00 to 1:30 by 2x";
+                            color: Theme.fg;
+                            font-size: Theme.fs-sm;
+                            font-weight: 500;
+                        }
+                        Rectangle {
+                            height: 18px;
+                            border-radius: 4px;
+                            background: #1a3320;
+                            HorizontalLayout {
+                                padding-left: 6px; padding-right: 6px; alignment: center;
+                                Text { text: "Applied"; color: #4ade80; font-size: 9px; font-weight: 600; }
+                            }
+                        }
+                    }
+                    Text {
+                        text: "Engine: Applied using original_time policy (1:00-1:30) anchored to Words #92-#145.";
+                        color: Theme.fg-muted;
+                        font-size: Theme.fs-sm;
+                    }
+                }
+            }
+
+            // Turn 1
+            Rectangle {
+                background: Theme.field;
+                border-radius: Theme.r;
+                border-width: 1px;
+                border-color: Theme.line;
+
+                VerticalLayout {
+                    padding: 8px;
+                    spacing: 4px;
+
+                    HorizontalLayout {
+                        spacing: 6px;
+                        alignment: space-between;
+                        Text {
+                            text: "Creator: Add a caption 'Welcome!' when I say welcome to the channel";
+                            color: Theme.fg;
+                            font-size: Theme.fs-sm;
+                            font-weight: 500;
+                        }
+                        Rectangle {
+                            height: 18px;
+                            border-radius: 4px;
+                            background: #1a3320;
+                            HorizontalLayout {
+                                padding-left: 6px; padding-right: 6px; alignment: center;
+                                Text { text: "Applied"; color: #4ade80; font-size: 9px; font-weight: 600; }
+                            }
+                        }
+                    }
+                    Text {
+                        text: "Engine: Anchored to Words #2-#5 ('welcome to the channel'). Timestamp shifts dynamically with preceding cuts.";
+                        color: Theme.fg-muted;
+                        font-size: Theme.fs-sm;
+                    }
+                }
+            }
+        }
+
+        // ── CATEGORY 1: AUDIT & EDIT HISTORY TABLE ──────────────────
+        if root.category == 1: VerticalLayout {
+            spacing: 8px;
+
+            Rectangle {
+                background: Theme.field;
+                border-radius: Theme.r;
+                border-width: 1px;
+                border-color: Theme.line;
+
+                VerticalLayout {
+                    padding: 10px;
+                    spacing: 8px;
+
+                    Text {
+                        text: "TIMELINE REVISION LEDGER (DETERMINISTIC HASH CHAIN)";
+                        color: Theme.accent;
+                        font-size: 10px;
+                        font-weight: 600;
+                    }
+
+                    // Table rows
+                    HorizontalLayout {
+                        spacing: 6px;
+                        Text { width: 50px; text: "Turn"; color: Theme.fg-muted; font-size: 10px; font-weight: 600; }
+                        Text { width: 110px; text: "Operation"; color: Theme.fg-muted; font-size: 10px; font-weight: 600; }
+                        Text { horizontal-stretch: 1; text: "Word Range & Target"; color: Theme.fg-muted; font-size: 10px; font-weight: 600; }
+                        Text { width: 100px; text: "Timeline Hash"; color: Theme.fg-muted; font-size: 10px; font-weight: 600; }
+                    }
+
+                    Rectangle { height: 1px; background: Theme.line; }
+
+                    HorizontalLayout {
+                        spacing: 6px;
+                        Text { width: 50px; text: "#1"; color: Theme.fg; font-size: 11px; }
+                        Text { width: 110px; text: "add_caption"; color: #60a5fa; font-size: 11px; }
+                        Text { horizontal-stretch: 1; text: "words [2, 5] text='Welcome!'"; color: Theme.fg; font-size: 11px; }
+                        Text { width: 100px; text: "e4a2c10b..."; color: #a3e635; font-size: 10px; font-family: Theme.font-technical; }
+                    }
+
+                    HorizontalLayout {
+                        spacing: 6px;
+                        Text { width: 50px; text: "#2"; color: Theme.fg; font-size: 11px; }
+                        Text { width: 110px; text: "cut_range"; color: #f87171; font-size: 11px; }
+                        Text { horizontal-stretch: 1; text: "words [0, 48] (intro 30s)"; color: Theme.fg; font-size: 11px; }
+                        Text { width: 100px; text: "87c4f92d..."; color: #a3e635; font-size: 10px; font-family: Theme.font-technical; }
+                    }
+
+                    HorizontalLayout {
+                        spacing: 6px;
+                        Text { width: 50px; text: "#3"; color: Theme.fg; font-size: 11px; }
+                        Text { width: 110px; text: "cut_range"; color: #f87171; font-size: 11px; }
+                        Text { horizontal-stretch: 1; text: "words [210, 245] (occurrence 2)"; color: Theme.fg; font-size: 11px; }
+                        Text { width: 100px; text: "b139de66..."; color: #a3e635; font-size: 10px; font-family: Theme.font-technical; }
+                    }
+
+                    HorizontalLayout {
+                        spacing: 6px;
+                        Text { width: 50px; text: "#4"; color: Theme.fg; font-size: 11px; }
+                        Text { width: 110px; text: "speed_change"; color: #fbbf24; font-size: 11px; }
+                        Text { horizontal-stretch: 1; text: "words [92, 145] speed=2.0x"; color: Theme.fg; font-size: 11px; }
+                        Text { width: 100px; text: "fa68102a..."; color: #a3e635; font-size: 10px; font-family: Theme.font-technical; }
+                    }
+
+                    HorizontalLayout {
+                        spacing: 6px;
+                        Text { width: 50px; text: "#5"; color: Theme.fg; font-size: 11px; }
+                        Text { width: 110px; text: "restore_edit"; color: #34d399; font-size: 11px; }
+                        Text { horizontal-stretch: 1; text: "restored edit_id='edit_002'"; color: Theme.fg; font-size: 11px; }
+                        Text { width: 100px; text: "7a82b9e1..."; color: #a3e635; font-size: 10px; font-family: Theme.font-technical; }
+                    }
+                }
+            }
+        }
+
+        // ── CATEGORY 2: WORKED EXAMPLE WALKTHROUGH ──────────────────
+        if root.category == 2: VerticalLayout {
+            spacing: 8px;
+
+            Rectangle {
+                background: Theme.field;
+                border-radius: Theme.r;
+                border-width: 1px;
+                border-color: Theme.line;
+
+                VerticalLayout {
+                    padding: 10px;
+                    spacing: 8px;
+
+                    Text {
+                        text: "INCUBRIX ASSESSMENT 5-STEP WORKED EXAMPLE";
+                        color: Theme.accent;
+                        font-size: 10px;
+                        font-weight: 600;
+                    }
+
+                    Text {
+                        text: "1. Add a caption 'Welcome!' when I say welcome to the channel\n   → Anchors to word IDs [2, 5]. Original: 0:42-0:44.\n\n2. Cut the first 30 seconds\n   → Video shrinks 30s. Caption now automatically plays at 0:12-0:14 on exact same spoken words.\n\n3. Remove the part about pricing\n   → Pricing occurs 3 times. Engine prompts 3-way clarification with numbered choices.\n\n4. Speed up from 1:00 to 1:30 by 2x\n   → Applied with source time policy. Speeds up words [92, 145].\n\n5. Actually, put the intro back\n   → Identifies Turn 2 cut, non-destructively restores words [0, 48]. Caption shifts back to 0:42.";
+                        color: Theme.fg;
+                        font-size: Theme.fs-sm;
+                    }
+                }
+            }
+        }
+
+        // ── CATEGORY 3: PROMPTS & PRESETS ───────────────────────────
+        if root.category == 3: VerticalLayout {
+            spacing: 8px;
+
+            Rectangle {
+                background: Theme.field;
+                border-radius: Theme.r;
+                border-width: 1px;
+                border-color: Theme.line;
+
+                VerticalLayout {
+                    padding: 10px;
+                    spacing: 6px;
+
+                    Text {
+                        text: "CREATOR PRESETS LIBRARY";
+                        color: Theme.accent;
+                        font-size: 10px;
+                        font-weight: 600;
+                    }
+
+                    HorizontalLayout {
+                        spacing: 6px;
+                        Rectangle {
+                            height: 28px;
+                            border-radius: Theme.r-sm;
+                            background: Theme.panel;
+                            HorizontalLayout {
+                                padding-left: 8px; padding-right: 8px; alignment: center;
+                                Text { text: "Remove filler words ('um', 'uh')"; color: Theme.fg; font-size: 11px; }
+                            }
+                            TouchArea { clicked => { root.prompt-input = "Remove all filler words"; root.category = 0; } }
+                        }
+                        Rectangle {
+                            height: 28px;
+                            border-radius: Theme.r-sm;
+                            background: Theme.panel;
+                            HorizontalLayout {
+                                padding-left: 8px; padding-right: 8px; alignment: center;
+                                Text { text: "Cut silences > 0.7s"; color: Theme.fg; font-size: 11px; }
+                            }
+                            TouchArea { clicked => { root.prompt-input = "Remove all silences longer than 0.7 seconds"; root.category = 0; } }
+                        }
+                    }
+
+                    HorizontalLayout {
+                        spacing: 6px;
+                        Rectangle {
+                            height: 28px;
+                            border-radius: Theme.r-sm;
+                            background: Theme.panel;
+                            HorizontalLayout {
+                                padding-left: 8px; padding-right: 8px; alignment: center;
+                                Text { text: "Add kinetic auto-captions"; color: Theme.fg; font-size: 11px; }
+                            }
+                            TouchArea { clicked => { root.prompt-input = "Generate auto captions with bold styling"; root.category = 0; } }
+                        }
+                        Rectangle {
+                            height: 28px;
+                            border-radius: Theme.r-sm;
+                            background: Theme.panel;
+                            HorizontalLayout {
+                                padding-left: 8px; padding-right: 8px; alignment: center;
+                                Text { text: "Bleep profanity"; color: Theme.fg; font-size: 11px; }
+                            }
+                            TouchArea { clicked => { root.prompt-input = "Bleep all profanity words"; root.category = 0; } }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

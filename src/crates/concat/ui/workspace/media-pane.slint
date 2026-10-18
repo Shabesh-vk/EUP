@@ -14,6 +14,7 @@ import { Wave } from "../primitives/wave.slint";
 import { ContextMenu, MenuItemData } from "../primitives/context-menu.slint";
 import { SourcePreview } from "source-preview.slint";
 import { Sounds, SoundList, VoiceList } from "audio-page.slint";
+import { AIConversationDashboard } from "ai-conversation.slint";
 
 export { SourcePreview }
 
@@ -1795,6 +1796,7 @@ export component MediaPane inherits Rectangle {
     callback pane-removed();
 
     property <int> tab;
+    property <int> ai-category: 0;
     /// The Audio page is up, or not: a drop of sound files on the window
     /// goes into the library while it is.
     changed tab => { Sounds.shown(root.tab == 8); }
@@ -1927,6 +1929,12 @@ export component MediaPane inherits Rectangle {
                             label: I18n.t("common.media");
                             current: root.tab == 0;
                             clicked => { root.tab = 0; }
+                        }
+                        LibraryTab {
+                            glyph: Glyph.sparkle;
+                            label: "AI Conversation";
+                            current: root.tab == 9;
+                            clicked => { root.tab = 9; }
                         }
                         // Beside Media, where CapCut keeps it: the page
                         // number is the last one handed out, not the place.
@@ -2077,6 +2085,39 @@ export component MediaPane inherits Rectangle {
                     width: parent.width;
                     alignment: start;
                     padding: 4px;
+
+                    if root.tab == 9: VerticalLayout {
+                        spacing: 1px;
+                        CategoryHeading {
+                            height: 26px;
+                            title: "AI ENGINE";
+                            open: true;
+                        }
+                        CategoryRow {
+                            height: 24px;
+                            label: "Conversation";
+                            current: root.ai-category == 0;
+                            clicked => { root.ai-category = 0; }
+                        }
+                        CategoryRow {
+                            height: 24px;
+                            label: "Edit History";
+                            current: root.ai-category == 1;
+                            clicked => { root.ai-category = 1; }
+                        }
+                        CategoryRow {
+                            height: 24px;
+                            label: "Worked Example";
+                            current: root.ai-category == 2;
+                            clicked => { root.ai-category = 2; }
+                        }
+                        CategoryRow {
+                            height: 24px;
+                            label: "Prompts & Presets";
+                            current: root.ai-category == 3;
+                            clicked => { root.ai-category = 3; }
+                        }
+                    }
 
                     if root.tab == 0: VerticalLayout {
                         spacing: 1px;
@@ -2796,6 +2837,10 @@ export component MediaPane inherits Rectangle {
                 if root.tab == 6: Empty {
                     glyph: Glyph.slot;
                     text: I18n.t("mediaPane.noTemplatesYetMark");
+                }
+
+                if root.tab == 9: AIConversationDashboard {
+                    category: root.ai-category;
                 }
             }
         }
