@@ -146,12 +146,17 @@ def run_batch(input_path: str, output_dir: str, api_url: Optional[str] = None):
 
 def main():
     parser = argparse.ArgumentParser(description="IncuBrix Batch Runner CLI")
-    parser.add_argument("--input", "-i", required=True, help="Path to folder or single session file")
+    parser.add_argument("positional_input", nargs="?", default=None, help="Path to folder or single session file")
+    parser.add_argument("--input", "-i", dest="flag_input", default=None, help="Path to folder or single session file")
     parser.add_argument("--output-dir", "-o", default="./batch_results", help="Directory to write all outputs")
     parser.add_argument("--api-url", default=None, help="Optional HTTP API base URL to run against")
     args = parser.parse_args()
 
-    run_batch(args.input, args.output_dir, args.api_url)
+    input_path = args.flag_input or args.positional_input
+    if not input_path:
+        parser.error("Must provide session folder/file as positional argument or via --input/-i")
+
+    run_batch(input_path, args.output_dir, args.api_url)
 
 
 if __name__ == "__main__":

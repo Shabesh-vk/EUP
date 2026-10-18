@@ -53,13 +53,13 @@ docker compose up -d
 curl http://localhost:8000/health
 
 # 5. Run Complete Test Suite (Zero API keys required)
-docker compose run --rm tests
+docker compose run --rm test-runner
 
 # 6. Run Session Runner on Worked Example
-python -m incubrix_engine.runner.session_runner sessions/worked_example.yaml --output-dir output/worked_example
+python session_runner.py test_pack/worked_example.yaml --output-dir test_pack/worked_example_output
 
 # 7. Run Batch Runner on all test sessions
-python -m incubrix_engine.runner.batch_runner sessions/ --output-dir output/batch_results
+python batch_runner.py test_pack/scenarios --output-dir test_pack/batch_results
 ```
 
 ---
@@ -69,16 +69,16 @@ python -m incubrix_engine.runner.batch_runner sessions/ --output-dir output/batc
 ```bash
 # Create virtual environment
 python -m venv venv
-source venv/bin/activate  # Or venv\Scripts\activate on Windows
+venv\Scripts\activate  # Windows or source venv/bin/activate on Linux
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Run all 57 automated tests
-pytest -v incubrix_engine/tests/
+# Run all 79 automated tests
+pytest -v tests/
 
 # Start API server
-uvicorn incubrix_engine.api.app:app --host 0.0.0.0 --port 8000
+uvicorn engine.api.app:app --host 0.0.0.0 --port 8000
 ```
 
 ---
@@ -124,19 +124,20 @@ All settings are configured via environment variables or `.env`:
 | `LLM_MODEL` | `gpt-4o-mini` | Model name when using live LLM provider. |
 | `LLM_API_KEY` | `""` | API key for LLM provider. |
 | `S3_ENDPOINT_URL` | `http://localhost:9000` | MinIO or AWS S3 endpoint URL. |
-| `S3_BUCKET` | `incubrix-outputs` | Target bucket for rendered outputs. |
+| `S3_BUCKET` | `incubrix-videos` | Target bucket for rendered outputs. |
 | `WEBHOOK_SECRET` | `incubrix_secret_key_123` | HMAC-SHA256 signature secret for webhooks. |
-| `TIME_POLICY` | `original_time` | Default clock policy (`original_time` or `current_timeline_time`). |
+| `DEFAULT_TIME_POLICY` | `original` | Default clock policy (`original` or `current`). |
 
 ---
 
 ## Deliverables & Documentation Index
 
 - **OpenAPI 3.1 Contract**: [`openapi.yaml`](openapi.yaml)
-- **Timeline JSON Schema**: [`schema/timeline.schema.json`](schema/timeline.schema.json)
+- **Timeline JSON Schema**: [`timeline_schema.json`](timeline_schema.json) & [`schema/timeline.schema.json`](schema/timeline.schema.json)
 - **Schema Explanation**: [`schema/TIMELINE_SCHEMA_EXPLANATION.md`](schema/TIMELINE_SCHEMA_EXPLANATION.md)
 - **Technical Report**: [`REPORT.md`](REPORT.md)
 - **License & Sources**: [`SOURCES.md`](SOURCES.md)
 - **AI Tooling Disclosure**: [`AI_USE.md`](AI_USE.md)
-- **Test Pack**: [`incubrix_engine/tests/`](incubrix_engine/tests/) (57 automated tests)
-- **Sample Session**: [`sessions/worked_example.yaml`](sessions/worked_example.yaml)
+- **Test Pack**: [`tests/`](tests/) (79 automated tests)
+- **Sample Session**: [`test_pack/worked_example.yaml`](test_pack/worked_example.yaml)
+- **Batch Test Scenarios**: [`test_pack/scenarios/`](test_pack/scenarios/) (16 scenario suites)

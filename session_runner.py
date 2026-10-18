@@ -149,12 +149,17 @@ def run_session(session_file_path: str, output_dir: str) -> Dict[str, Any]:
 
 def main():
     parser = argparse.ArgumentParser(description="IncuBrix Session Runner CLI")
-    parser.add_argument("--input", "-i", required=True, help="Path to session YAML/JSON file")
+    parser.add_argument("positional_input", nargs="?", default=None, help="Path to session YAML/JSON file")
+    parser.add_argument("--input", "-i", dest="flag_input", default=None, help="Path to session YAML/JSON file")
     parser.add_argument("--output-dir", "-o", default="./session_output", help="Directory to save results")
     args = parser.parse_args()
 
+    input_file = args.flag_input or args.positional_input
+    if not input_file:
+        parser.error("Must provide session file as positional argument or via --input/-i")
+
     try:
-        results = run_session(args.input, args.output_dir)
+        results = run_session(input_file, args.output_dir)
         print(f"\nSession Complete! Hash: {results['final_timeline_hash']} (Duration: {results['final_duration_s']}s)")
         print(f"Results saved to: {Path(args.output_dir).resolve() / 'results.json'}")
         sys.exit(0)

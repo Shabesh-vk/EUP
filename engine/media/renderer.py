@@ -47,6 +47,19 @@ class RenderManifest:
     def to_dict(self) -> Dict[str, Any]:
         return self.data
 
+def _get_fontfile_param() -> str:
+    """Finds an available system font or font name for FFmpeg drawtext."""
+    if os.name == "nt" or Path("C:/Windows/Fonts").exists():
+        return "font='Arial':"
+    for p in [
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+    ]:
+        if Path(p).exists():
+            return f"fontfile='{p}':"
+    return ""
+
 
 def build_ffmpeg_filtergraph(
     timeline: Timeline,
@@ -88,13 +101,13 @@ def build_ffmpeg_filtergraph(
             filters.append(a_filter)
             a_segments.append(f"[{a_label}]")
 
-    # 2. Concat all clips
+    # 2. Concat all clips (FFmpeg requires streams interleaved: [v0][a0][v1][a1]...)
     n = len(timeline.clips)
-    concat_v_in = "".join(v_segments)
     if has_audio:
-        concat_a_in = "".join(a_segments)
-        filters.append(f"{concat_v_in}{concat_a_in}concat=n={n}:v=1:a=1[basev][basea]")
+        interleaved_inputs = "".join(f"{v_seg}{a_seg}" for v_seg, a_seg in zip(v_segments, a_segments))
+        filters.append(f"{interleaved_inputs}concat=n={n}:v=1:a=1[basev][basea]")
     else:
+        concat_v_in = "".join(v_segments)
         filters.append(f"{concat_v_in}concat=n={n}:v=1:a=0[basev]")
 
     curr_v = "[basev]"
@@ -115,9 +128,9 @@ def build_ffmpeg_filtergraph(
                     f"{curr_a}volume=enable='between(t,{eff.playback_start:.3f},{eff.playback_end:.3f})':volume=0{next_a}"
                 )
             curr_a = next_a
-
     # 4. Captions (Burned with drawtext filter)
     resolved_caps, _ = timeline.get_resolved_captions()
+    font_param = _get_fontfile_param()
     for idx, cap in enumerate(resolved_caps):
         next_v = f"[v_cap_{idx}]"
         # Escape single quotes and colons for ffmpeg drawtext
@@ -127,7 +140,7 @@ def build_ffmpeg_filtergraph(
         y_pos = "h-th-40" if cap.style.position == "bottom" else "40"
 
         drawtext = (
-            f"{curr_v}drawtext=text='{clean_text}':fontsize={fontsize}:fontcolor={color}:"
+            f"{curr_v}drawtext={font_param}text='{clean_text}':fontsize={fontsize}:fontcolor={color}:"
             f"x=(w-text_w)/2:y={y_pos}:box=1:boxcolor=black@0.6:boxborderw=5:"
             f"enable='between(t,{cap.playback_start:.3f},{cap.playback_end:.3f})'{next_v}"
         )

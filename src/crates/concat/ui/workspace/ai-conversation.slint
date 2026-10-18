@@ -8,36 +8,41 @@ export component AIConversationDashboard inherits Rectangle {
     in-out property <int> category: 0;
     in-out property <string> prompt-text: "";
 
-    // ── Dynamic Workflow State ──────────────────────────────────────────────
-    // 1: initial state (caption anchored)
-    // 2: cut intro applied
-    // 3: pricing prompt -> needs_clarification
-    // 4: pricing disambiguation resolved -> applied
-    // 5: speed up 2x applied
-    // 6: undo/restore intro applied
+    // ── Dynamic State Machine ───────────────────────────────────────────────
+    // 1: Initial state (Turn 1 caption anchored)
+    // 2: Cut intro applied
+    // 3: Pricing prompt -> needs_clarification
+    // 4: Pricing disambiguation resolved -> applied
+    // 5: Speed up 2x applied
+    // 6: Intro restored non-destructively
     in-out property <int> active-step: 1;
     in-out property <int> selected-choice: 2;
     in-out property <bool> has-filler: false;
     in-out property <string> custom-prompt: "";
     in-out property <string> custom-summary: "";
     in-out property <string> custom-status: "";
+
     in-out property <string> current-hash: root.active-step == 6 ? "7a82b9e145ef"
         : root.active-step == 5 ? "fa68102ae93c"
         : root.active-step == 4 ? "b139de66a012"
         : root.active-step == 2 ? "87c4f92d19e0"
         : "e4a2c10b7d5f";
+
     in-out property <string> video-duration: root.active-step == 6 ? "4:12"
         : root.active-step >= 4 ? "3:32"
-        : root.active-step >= 2 ? "3:42"
+        : root.active-step >= 2 ? "3:42 (-30.0s)"
         : "4:12";
 
     background: Theme.panel;
 
     VerticalLayout {
-        padding: 8px;
-        spacing: 8px;
+        padding-left: 10px;
+        padding-right: 14px;
+        padding-top: 10px;
+        padding-bottom: 12px;
+        spacing: 10px;
 
-        // ── Top Header Banner (Fully Responsive) ────────────────────
+        // ── 1. Top Header Banner ────────────────────────────────────
         Rectangle {
             background: Theme.field;
             border-radius: Theme.r;
@@ -54,13 +59,14 @@ export component AIConversationDashboard inherits Rectangle {
 
                     HorizontalLayout {
                         spacing: 6px;
-                        alignment: center;
                         Icon {
+                            y: (parent.height - self.height) / 2;
                             glyph: Glyph.sparkle;
-                            size: 15px;
+                            size: 14px;
                             tint: Theme.accent;
                         }
                         Text {
+                            y: (parent.height - self.height) / 2;
                             text: root.category == 1 ? "Timeline Revision Ledger"
                                 : root.category == 2 ? "IncuBrix 5-Turn Workflow"
                                 : root.category == 3 ? "Creator Presets Library"
@@ -73,14 +79,12 @@ export component AIConversationDashboard inherits Rectangle {
 
                     Rectangle {
                         height: 20px;
-                        border-radius: Theme.r-sm;
+                        border-radius: Theme.r-xs;
                         background: #1a3320;
                         border-width: 1px;
                         border-color: #2e663b;
                         HorizontalLayout {
-                            padding-left: 6px;
-                            padding-right: 6px;
-                            alignment: center;
+                            padding-left: 6px; padding-right: 6px; alignment: center;
                             Text {
                                 text: "Online • 3-Way Policy";
                                 color: #4ade80;
@@ -92,38 +96,49 @@ export component AIConversationDashboard inherits Rectangle {
                 }
 
                 Text {
-                    text: "Prompt-based video editing engine • Anchors to spoken word IDs";
+                    text: "Prompt-based video editing engine • Anchors edits to spoken word IDs";
                     color: Theme.fg-muted;
                     font-size: 10px;
                     wrap: word-wrap;
                 }
 
+                // Compact left-aligned metadata badges
                 HorizontalLayout {
+                    alignment: start;
                     spacing: 6px;
+
                     Rectangle {
                         height: 18px;
                         border-radius: 3px;
                         background: #1e293b;
+                        border-width: 1px;
+                        border-color: #334155;
                         HorizontalLayout {
-                            padding-left: 5px; padding-right: 5px; alignment: center;
+                            padding-left: 6px; padding-right: 6px; alignment: center;
                             Text { text: "Word-Anchored"; color: #93c5fd; font-size: 9px; font-weight: 500; }
                         }
                     }
+
                     Rectangle {
                         height: 18px;
                         border-radius: 3px;
                         background: #1e293b;
+                        border-width: 1px;
+                        border-color: #334155;
                         HorizontalLayout {
-                            padding-left: 5px; padding-right: 5px; alignment: center;
+                            padding-left: 6px; padding-right: 6px; alignment: center;
                             Text { text: "Hash: " + root.current-hash; color: #a3e635; font-size: 9px; font-family: Theme.font-technical; }
                         }
                     }
+
                     Rectangle {
                         height: 18px;
                         border-radius: 3px;
                         background: #1e293b;
+                        border-width: 1px;
+                        border-color: #334155;
                         HorizontalLayout {
-                            padding-left: 5px; padding-right: 5px; alignment: center;
+                            padding-left: 6px; padding-right: 6px; alignment: center;
                             Text { text: "Dur: " + root.video-duration; color: #fde047; font-size: 9px; font-family: Theme.font-technical; }
                         }
                     }
@@ -135,9 +150,9 @@ export component AIConversationDashboard inherits Rectangle {
         // CATEGORY 0: CONVERSATION DASHBOARD
         // ════════════════════════════════════════════════════════════
         if root.category == 0: VerticalLayout {
-            spacing: 8px;
+            spacing: 10px;
 
-            // ── Interactive Prompt Input Bar ────────────────────────
+            // ── 2. Fluid, Responsive Prompt Input Bar ───────────────
             Rectangle {
                 height: 38px;
                 background: Theme.field;
@@ -150,14 +165,16 @@ export component AIConversationDashboard inherits Rectangle {
                     padding-left: 10px;
                     padding-right: 6px;
                     spacing: 8px;
-                    alignment: center;
 
+                    // Sparkle icon fixed on the left
                     Icon {
+                        y: (parent.height - self.height) / 2;
                         glyph: Glyph.sparkle;
                         size: 14px;
                         tint: Theme.accent;
                     }
 
+                    // TextInput expands across all remaining width
                     Rectangle {
                         horizontal-stretch: 1;
                         clip: true;
@@ -186,7 +203,7 @@ export component AIConversationDashboard inherits Rectangle {
                                     } else {
                                         root.custom-prompt = root.prompt-text;
                                         root.custom-status = "Applied";
-                                        root.custom-summary = "Anchored edit to transcript words. Timeline updated deterministically.";
+                                        root.custom-summary = "Anchored edit to matching transcript words. Timeline updated deterministically.";
                                     }
                                     root.prompt-text = "";
                                 }
@@ -196,17 +213,19 @@ export component AIConversationDashboard inherits Rectangle {
                         if root.prompt-text == "" && !input.has-focus: Text {
                             x: 0;
                             y: (parent.height - self.height) / 2;
-                            text: "Type edit instruction (or tap suggestions below)...";
+                            text: "Ask AI to edit timeline (e.g. 'Cut first 30s')...";
                             color: Theme.fg-muted;
                             font-size: Theme.fs-sm;
                         }
                     }
 
-                    Rectangle {
-                        width: 64px;
+                    // Apply Button fixed on the right
+                    apply-btn := Rectangle {
+                        width: 68px;
                         height: 26px;
+                        y: (parent.height - self.height) / 2;
                         border-radius: Theme.r-sm;
-                        background: Theme.accent;
+                        background: apply-touch.has-hover ? Theme.accent.darker(0.15) : Theme.accent;
 
                         Text {
                             x: (parent.width - self.width) / 2;
@@ -217,7 +236,7 @@ export component AIConversationDashboard inherits Rectangle {
                             font-weight: 600;
                         }
 
-                        TouchArea {
+                        apply-touch := TouchArea {
                             clicked => {
                                 if (root.prompt-text != "") {
                                     if (root.prompt-text == "Cut the first 30 seconds" || root.prompt-text == "cut 30s") {
@@ -233,7 +252,7 @@ export component AIConversationDashboard inherits Rectangle {
                                     } else {
                                         root.custom-prompt = root.prompt-text;
                                         root.custom-status = "Applied";
-                                        root.custom-summary = "Anchored edit to transcript words. Timeline updated deterministically.";
+                                        root.custom-summary = "Anchored edit to matching transcript words. Timeline updated deterministically.";
                                     }
                                     root.prompt-text = "";
                                 }
@@ -243,80 +262,90 @@ export component AIConversationDashboard inherits Rectangle {
                 }
             }
 
-            // ── Quick Suggestion Action Pills (Click to Execute) ────
-            HorizontalLayout {
+            // ── 3. Action Suggestion Buttons (Responsive 2x2 Grid) ──
+            VerticalLayout {
                 spacing: 6px;
 
-                Rectangle {
-                    height: 24px;
-                    border-radius: Theme.r-sm;
-                    background: root.active-step >= 2 ? #1e293b : Theme.field;
-                    border-width: 1px;
-                    border-color: root.active-step >= 2 ? #3b82f6 : Theme.line;
-                    HorizontalLayout {
-                        padding-left: 8px; padding-right: 8px; alignment: center;
-                        Text { text: "+ Cut first 30s"; color: root.active-step >= 2 ? #93c5fd : Theme.fg; font-size: 11px; }
-                    }
-                    TouchArea {
-                        clicked => {
-                            root.active-step = 2;
+                // Row 1
+                HorizontalLayout {
+                    spacing: 6px;
+
+                    Rectangle {
+                        horizontal-stretch: 1;
+                        height: 26px;
+                        border-radius: Theme.r-sm;
+                        background: root.active-step >= 2 ? #1e293b : Theme.field;
+                        border-width: 1px;
+                        border-color: root.active-step >= 2 ? #3b82f6 : Theme.line;
+                        HorizontalLayout {
+                            alignment: center;
+                            Text { text: "+ Cut first 30s"; color: root.active-step >= 2 ? #93c5fd : Theme.fg; font-size: 11px; }
                         }
+                        TouchArea { clicked => { root.active-step = 2; } }
+                    }
+
+                    Rectangle {
+                        horizontal-stretch: 1;
+                        height: 26px;
+                        border-radius: Theme.r-sm;
+                        background: root.active-step == 3 ? #451a03 : Theme.field;
+                        border-width: 1px;
+                        border-color: root.active-step == 3 ? #f59e0b : Theme.line;
+                        HorizontalLayout {
+                            alignment: center;
+                            Text { text: "? Clarify Pricing"; color: root.active-step == 3 ? #fde68a : Theme.fg; font-size: 11px; }
+                        }
+                        TouchArea { clicked => { root.active-step = 3; } }
                     }
                 }
 
-                Rectangle {
-                    height: 24px;
-                    border-radius: Theme.r-sm;
-                    background: root.active-step == 3 ? #451a03 : Theme.field;
-                    border-width: 1px;
-                    border-color: root.active-step == 3 ? #f59e0b : Theme.line;
-                    HorizontalLayout {
-                        padding-left: 8px; padding-right: 8px; alignment: center;
-                        Text { text: "? Clarify Pricing"; color: root.active-step == 3 ? #fde68a : Theme.fg; font-size: 11px; }
-                    }
-                    TouchArea {
-                        clicked => {
-                            root.active-step = 3;
-                        }
-                    }
-                }
+                // Row 2
+                HorizontalLayout {
+                    spacing: 6px;
 
-                Rectangle {
-                    height: 24px;
-                    border-radius: Theme.r-sm;
-                    background: root.active-step >= 5 ? #1e293b : Theme.field;
-                    border-width: 1px;
-                    border-color: root.active-step >= 5 ? #3b82f6 : Theme.line;
-                    HorizontalLayout {
-                        padding-left: 8px; padding-right: 8px; alignment: center;
-                        Text { text: "+ Speed up 2x"; color: root.active-step >= 5 ? #93c5fd : Theme.fg; font-size: 11px; }
-                    }
-                    TouchArea {
-                        clicked => {
-                            root.active-step = 5;
+                    Rectangle {
+                        horizontal-stretch: 1;
+                        height: 26px;
+                        border-radius: Theme.r-sm;
+                        background: root.active-step >= 5 ? #1e293b : Theme.field;
+                        border-width: 1px;
+                        border-color: root.active-step >= 5 ? #3b82f6 : Theme.line;
+                        HorizontalLayout {
+                            alignment: center;
+                            Text { text: "+ Speed up 2x"; color: root.active-step >= 5 ? #93c5fd : Theme.fg; font-size: 11px; }
                         }
+                        TouchArea { clicked => { root.active-step = 5; } }
                     }
-                }
 
-                Rectangle {
-                    height: 24px;
-                    border-radius: Theme.r-sm;
-                    background: root.active-step >= 6 ? #14532d : Theme.field;
-                    border-width: 1px;
-                    border-color: root.active-step >= 6 ? #22c55e : Theme.line;
-                    HorizontalLayout {
-                        padding-left: 8px; padding-right: 8px; alignment: center;
-                        Text { text: "↺ Put intro back"; color: root.active-step >= 6 ? #86efac : Theme.fg; font-size: 11px; }
-                    }
-                    TouchArea {
-                        clicked => {
-                            root.active-step = 6;
+                    Rectangle {
+                        horizontal-stretch: 1;
+                        height: 26px;
+                        border-radius: Theme.r-sm;
+                        background: root.active-step >= 6 ? #14532d : Theme.field;
+                        border-width: 1px;
+                        border-color: root.active-step >= 6 ? #22c55e : Theme.line;
+                        HorizontalLayout {
+                            alignment: center;
+                            spacing: 4px;
+                            Icon {
+                                y: (parent.height - self.height) / 2;
+                                glyph: Glyph.reset;
+                                size: 11px;
+                                tint: root.active-step >= 6 ? #86efac : Theme.fg-muted;
+                            }
+                            Text {
+                                y: (parent.height - self.height) / 2;
+                                text: "Restore intro";
+                                color: root.active-step >= 6 ? #86efac : Theme.fg;
+                                font-size: 11px;
+                            }
                         }
+                        TouchArea { clicked => { root.active-step = 6; } }
                     }
                 }
             }
 
-            // ── 3-Way Disambiguation Card (When active-step >= 3) ────
+            // ── 4. Disambiguation Card (High-Contrast Responsive) ───
             if root.active-step >= 3: Rectangle {
                 background: root.active-step == 3 ? #261e14 : #132218;
                 border-radius: Theme.r;
@@ -325,23 +354,28 @@ export component AIConversationDashboard inherits Rectangle {
 
                 VerticalLayout {
                     padding: 10px;
-                    spacing: 6px;
+                    spacing: 8px;
 
                     HorizontalLayout {
                         alignment: space-between;
-                        spacing: 6px;
+                        spacing: 8px;
+
                         Text {
-                            text: "Ambiguous Instruction: 'Remove the part about pricing'";
+                            text: "Instruction: 'Remove the part about pricing'";
                             color: #fef3c7;
                             font-size: Theme.fs-sm;
                             font-weight: 600;
                             wrap: word-wrap;
                             horizontal-stretch: 1;
                         }
+
                         Rectangle {
+                            horizontal-stretch: 0;
                             height: 18px;
-                            border-radius: 4px;
+                            border-radius: Theme.r-xs;
                             background: root.active-step == 3 ? #78350f : #14532d;
+                            border-width: 1px;
+                            border-color: root.active-step == 3 ? #d97706 : #22c55e;
                             HorizontalLayout {
                                 padding-left: 6px; padding-right: 6px; alignment: center;
                                 Text {
@@ -356,84 +390,105 @@ export component AIConversationDashboard inherits Rectangle {
 
                     Text {
                         text: root.active-step == 3
-                            ? "Question: Pricing is mentioned three times (1:05, 2:40 and 3:15) - which one, or all?"
+                            ? "Pricing is mentioned 3 times (1:05, 2:40 and 3:15) - which one, or all?"
                             : "Decision: Occurrence #" + root.selected-choice + " cut non-destructively. Words removed: [210, 245].";
                         color: root.active-step == 3 ? #fde68a : #bbf7d0;
                         font-size: Theme.fs-sm;
                         wrap: word-wrap;
                     }
 
-                    if root.active-step == 3: HorizontalLayout {
+                    // Numbered Options (2x2 Grid)
+                    if root.active-step == 3: VerticalLayout {
                         spacing: 6px;
 
-                        Rectangle {
-                            height: 24px;
-                            border-radius: 4px;
-                            background: #292524;
-                            border-width: 1px;
-                            border-color: #57534e;
-                            HorizontalLayout {
-                                padding-left: 6px; padding-right: 6px; alignment: center;
-                                Text { text: "1. First (1:05)"; color: Colors.white; font-size: 10px; }
+                        HorizontalLayout {
+                            spacing: 6px;
+                            Rectangle {
+                                horizontal-stretch: 1;
+                                height: 26px;
+                                border-radius: Theme.r-xs;
+                                background: #292524;
+                                border-width: 1px;
+                                border-color: #57534e;
+                                HorizontalLayout {
+                                    alignment: center;
+                                    Text { text: "1. First (1:05)"; color: Colors.white; font-size: 11px; }
+                                }
+                                TouchArea { clicked => { root.selected-choice = 1; root.active-step = 4; } }
                             }
-                            TouchArea { clicked => { root.selected-choice = 1; root.active-step = 4; } }
+                            Rectangle {
+                                horizontal-stretch: 1;
+                                height: 26px;
+                                border-radius: Theme.r-xs;
+                                background: #15803d;
+                                border-width: 1px;
+                                border-color: #4ade80;
+                                HorizontalLayout {
+                                    alignment: center;
+                                    Text { text: "2. Second (2:40)"; color: Colors.white; font-size: 11px; font-weight: 600; }
+                                }
+                                TouchArea { clicked => { root.selected-choice = 2; root.active-step = 4; } }
+                            }
                         }
 
-                        Rectangle {
-                            height: 24px;
-                            border-radius: 4px;
-                            background: #15803d;
-                            border-width: 1px;
-                            border-color: #4ade80;
-                            HorizontalLayout {
-                                padding-left: 6px; padding-right: 6px; alignment: center;
-                                Text { text: "2. Second (2:40)"; color: Colors.white; font-size: 10px; font-weight: 600; }
+                        HorizontalLayout {
+                            spacing: 6px;
+                            Rectangle {
+                                horizontal-stretch: 1;
+                                height: 26px;
+                                border-radius: Theme.r-xs;
+                                background: #292524;
+                                border-width: 1px;
+                                border-color: #57534e;
+                                HorizontalLayout {
+                                    alignment: center;
+                                    Text { text: "3. Third (3:15)"; color: Colors.white; font-size: 11px; }
+                                }
+                                TouchArea { clicked => { root.selected-choice = 3; root.active-step = 4; } }
                             }
-                            TouchArea { clicked => { root.selected-choice = 2; root.active-step = 4; } }
-                        }
-
-                        Rectangle {
-                            height: 24px;
-                            border-radius: 4px;
-                            background: #292524;
-                            border-width: 1px;
-                            border-color: #57534e;
-                            HorizontalLayout {
-                                padding-left: 6px; padding-right: 6px; alignment: center;
-                                Text { text: "3. Third (3:15)"; color: Colors.white; font-size: 10px; }
+                            Rectangle {
+                                horizontal-stretch: 1;
+                                height: 26px;
+                                border-radius: Theme.r-xs;
+                                background: #292524;
+                                border-width: 1px;
+                                border-color: #57534e;
+                                HorizontalLayout {
+                                    alignment: center;
+                                    Text { text: "4. All occurrences"; color: Colors.white; font-size: 11px; }
+                                }
+                                TouchArea { clicked => { root.selected-choice = 4; root.active-step = 4; } }
                             }
-                            TouchArea { clicked => { root.selected-choice = 3; root.active-step = 4; } }
-                        }
-
-                        Rectangle {
-                            height: 24px;
-                            border-radius: 4px;
-                            background: #292524;
-                            border-width: 1px;
-                            border-color: #57534e;
-                            HorizontalLayout {
-                                padding-left: 6px; padding-right: 6px; alignment: center;
-                                Text { text: "4. All"; color: Colors.white; font-size: 10px; }
-                            }
-                            TouchArea { clicked => { root.selected-choice = 4; root.active-step = 4; } }
                         }
                     }
                 }
             }
 
-            // ── Dynamic Conversation History Feed ────────────────────
+            // ── 5. Conversation Section Header ──────────────────────
             HorizontalLayout {
                 alignment: space-between;
+
                 Text {
                     text: "CONVERSATION & TIMELINE ACTIONS";
                     color: Theme.fg-muted;
                     font-size: 10px;
                     font-weight: 600;
                 }
-                Text {
-                    text: "↺ Reset Session";
-                    color: Theme.accent;
-                    font-size: 10px;
+
+                HorizontalLayout {
+                    spacing: 4px;
+                    Icon {
+                        y: (parent.height - self.height) / 2;
+                        glyph: Glyph.reset;
+                        size: 10px;
+                        tint: Theme.accent;
+                    }
+                    Text {
+                        y: (parent.height - self.height) / 2;
+                        text: "Reset Session";
+                        color: Theme.accent;
+                        font-size: 10px;
+                    }
                     TouchArea {
                         clicked => {
                             root.active-step = 1;
@@ -444,7 +499,9 @@ export component AIConversationDashboard inherits Rectangle {
                 }
             }
 
-            // Custom Prompt Turn (if entered)
+            // ── 6. Conversation Feed (Cards with Word-Wrap) ─────────
+
+            // Custom user prompt
             if root.custom-prompt != "": Rectangle {
                 background: Theme.field;
                 border-radius: Theme.r;
@@ -452,24 +509,27 @@ export component AIConversationDashboard inherits Rectangle {
                 border-color: Theme.line;
 
                 VerticalLayout {
-                    padding: 8px;
+                    padding: 10px;
                     spacing: 4px;
 
                     HorizontalLayout {
                         alignment: space-between;
-                        spacing: 6px;
+                        spacing: 8px;
                         Text {
                             text: "Creator: " + root.custom-prompt;
                             color: Theme.fg;
                             font-size: Theme.fs-sm;
-                            font-weight: 500;
+                            font-weight: 600;
                             wrap: word-wrap;
                             horizontal-stretch: 1;
                         }
                         Rectangle {
+                            horizontal-stretch: 0;
                             height: 18px;
-                            border-radius: 4px;
+                            border-radius: Theme.r-xs;
                             background: #1a3320;
+                            border-width: 1px;
+                            border-color: #2e663b;
                             HorizontalLayout {
                                 padding-left: 6px; padding-right: 6px; alignment: center;
                                 Text { text: root.custom-status; color: #4ade80; font-size: 9px; font-weight: 600; }
@@ -493,24 +553,27 @@ export component AIConversationDashboard inherits Rectangle {
                 border-color: Theme.line;
 
                 VerticalLayout {
-                    padding: 8px;
+                    padding: 10px;
                     spacing: 4px;
 
                     HorizontalLayout {
                         alignment: space-between;
-                        spacing: 6px;
+                        spacing: 8px;
                         Text {
                             text: "Creator: Actually, put the intro back";
                             color: Theme.fg;
                             font-size: Theme.fs-sm;
-                            font-weight: 500;
+                            font-weight: 600;
                             wrap: word-wrap;
                             horizontal-stretch: 1;
                         }
                         Rectangle {
+                            horizontal-stretch: 0;
                             height: 18px;
-                            border-radius: 4px;
+                            border-radius: Theme.r-xs;
                             background: #1a3320;
+                            border-width: 1px;
+                            border-color: #2e663b;
                             HorizontalLayout {
                                 padding-left: 6px; padding-right: 6px; alignment: center;
                                 Text { text: "Applied (Restore)"; color: #4ade80; font-size: 9px; font-weight: 600; }
@@ -534,24 +597,27 @@ export component AIConversationDashboard inherits Rectangle {
                 border-color: Theme.line;
 
                 VerticalLayout {
-                    padding: 8px;
+                    padding: 10px;
                     spacing: 4px;
 
                     HorizontalLayout {
                         alignment: space-between;
-                        spacing: 6px;
+                        spacing: 8px;
                         Text {
                             text: "Creator: Speed up from 1:00 to 1:30 by 2x";
                             color: Theme.fg;
                             font-size: Theme.fs-sm;
-                            font-weight: 500;
+                            font-weight: 600;
                             wrap: word-wrap;
                             horizontal-stretch: 1;
                         }
                         Rectangle {
+                            horizontal-stretch: 0;
                             height: 18px;
-                            border-radius: 4px;
+                            border-radius: Theme.r-xs;
                             background: #1a3320;
+                            border-width: 1px;
+                            border-color: #2e663b;
                             HorizontalLayout {
                                 padding-left: 6px; padding-right: 6px; alignment: center;
                                 Text { text: "Applied"; color: #4ade80; font-size: 9px; font-weight: 600; }
@@ -567,7 +633,7 @@ export component AIConversationDashboard inherits Rectangle {
                 }
             }
 
-            // Filler Words Turn
+            // Filler words turn
             if root.has-filler: Rectangle {
                 background: Theme.field;
                 border-radius: Theme.r;
@@ -575,24 +641,27 @@ export component AIConversationDashboard inherits Rectangle {
                 border-color: Theme.line;
 
                 VerticalLayout {
-                    padding: 8px;
+                    padding: 10px;
                     spacing: 4px;
 
                     HorizontalLayout {
                         alignment: space-between;
-                        spacing: 6px;
+                        spacing: 8px;
                         Text {
                             text: "Creator: Remove all filler words";
                             color: Theme.fg;
                             font-size: Theme.fs-sm;
-                            font-weight: 500;
+                            font-weight: 600;
                             wrap: word-wrap;
                             horizontal-stretch: 1;
                         }
                         Rectangle {
+                            horizontal-stretch: 0;
                             height: 18px;
-                            border-radius: 4px;
+                            border-radius: Theme.r-xs;
                             background: #1a3320;
+                            border-width: 1px;
+                            border-color: #2e663b;
                             HorizontalLayout {
                                 padding-left: 6px; padding-right: 6px; alignment: center;
                                 Text { text: "Applied"; color: #4ade80; font-size: 9px; font-weight: 600; }
@@ -600,7 +669,7 @@ export component AIConversationDashboard inherits Rectangle {
                         }
                     }
                     Text {
-                        text: "Engine: Removed 14 filler words ('um', 'uh', 'like') across transcript. Speech cadence preserved.";
+                        text: "Engine: Removed 14 filler words ('um', 'uh', 'like') across transcript. Maintained natural pauses.";
                         color: Theme.fg-muted;
                         font-size: Theme.fs-sm;
                         wrap: word-wrap;
@@ -616,24 +685,27 @@ export component AIConversationDashboard inherits Rectangle {
                 border-color: Theme.line;
 
                 VerticalLayout {
-                    padding: 8px;
+                    padding: 10px;
                     spacing: 4px;
 
                     HorizontalLayout {
                         alignment: space-between;
-                        spacing: 6px;
+                        spacing: 8px;
                         Text {
                             text: "Creator: Cut the first 30 seconds";
                             color: Theme.fg;
                             font-size: Theme.fs-sm;
-                            font-weight: 500;
+                            font-weight: 600;
                             wrap: word-wrap;
                             horizontal-stretch: 1;
                         }
                         Rectangle {
+                            horizontal-stretch: 0;
                             height: 18px;
-                            border-radius: 4px;
+                            border-radius: Theme.r-xs;
                             background: #1a3320;
+                            border-width: 1px;
+                            border-color: #2e663b;
                             HorizontalLayout {
                                 padding-left: 6px; padding-right: 6px; alignment: center;
                                 Text { text: "Applied"; color: #4ade80; font-size: 9px; font-weight: 600; }
@@ -657,24 +729,27 @@ export component AIConversationDashboard inherits Rectangle {
                 border-color: Theme.line;
 
                 VerticalLayout {
-                    padding: 8px;
+                    padding: 10px;
                     spacing: 4px;
 
                     HorizontalLayout {
                         alignment: space-between;
-                        spacing: 6px;
+                        spacing: 8px;
                         Text {
                             text: "Creator: Add a caption 'Welcome!' when I say welcome to the channel";
                             color: Theme.fg;
                             font-size: Theme.fs-sm;
-                            font-weight: 500;
+                            font-weight: 600;
                             wrap: word-wrap;
                             horizontal-stretch: 1;
                         }
                         Rectangle {
+                            horizontal-stretch: 0;
                             height: 18px;
-                            border-radius: 4px;
+                            border-radius: Theme.r-xs;
                             background: #1a3320;
+                            border-width: 1px;
+                            border-color: #2e663b;
                             HorizontalLayout {
                                 padding-left: 6px; padding-right: 6px; alignment: center;
                                 Text { text: "Applied"; color: #4ade80; font-size: 9px; font-weight: 600; }
@@ -704,7 +779,7 @@ export component AIConversationDashboard inherits Rectangle {
                 border-color: Theme.line;
 
                 VerticalLayout {
-                    padding: 10px;
+                    padding: 12px;
                     spacing: 8px;
 
                     Text {
@@ -716,52 +791,52 @@ export component AIConversationDashboard inherits Rectangle {
 
                     HorizontalLayout {
                         spacing: 6px;
-                        Text { width: 45px; text: "Turn"; color: Theme.fg-muted; font-size: 10px; font-weight: 600; }
-                        Text { width: 95px; text: "Operation"; color: Theme.fg-muted; font-size: 10px; font-weight: 600; }
+                        Text { width: 40px; text: "Turn"; color: Theme.fg-muted; font-size: 10px; font-weight: 600; }
+                        Text { width: 90px; text: "Operation"; color: Theme.fg-muted; font-size: 10px; font-weight: 600; }
                         Text { horizontal-stretch: 1; text: "Word Range & Target"; color: Theme.fg-muted; font-size: 10px; font-weight: 600; }
-                        Text { width: 85px; text: "Timeline Hash"; color: Theme.fg-muted; font-size: 10px; font-weight: 600; }
+                        Text { width: 80px; text: "Timeline Hash"; color: Theme.fg-muted; font-size: 10px; font-weight: 600; }
                     }
 
                     Rectangle { height: 1px; background: Theme.line; }
 
                     HorizontalLayout {
                         spacing: 6px;
-                        Text { width: 45px; text: "#1"; color: Theme.fg; font-size: 11px; }
-                        Text { width: 95px; text: "add_caption"; color: #60a5fa; font-size: 11px; }
+                        Text { width: 40px; text: "#1"; color: Theme.fg; font-size: 11px; }
+                        Text { width: 90px; text: "add_caption"; color: #60a5fa; font-size: 11px; }
                         Text { horizontal-stretch: 1; text: "words [2, 5] 'Welcome!'"; color: Theme.fg; font-size: 11px; wrap: word-wrap; }
-                        Text { width: 85px; text: "e4a2c10b..."; color: #a3e635; font-size: 10px; font-family: Theme.font-technical; }
+                        Text { width: 80px; text: "e4a2c10b..."; color: #a3e635; font-size: 10px; font-family: Theme.font-technical; }
                     }
 
                     if root.active-step >= 2: HorizontalLayout {
                         spacing: 6px;
-                        Text { width: 45px; text: "#2"; color: Theme.fg; font-size: 11px; }
-                        Text { width: 95px; text: "cut_range"; color: #f87171; font-size: 11px; }
+                        Text { width: 40px; text: "#2"; color: Theme.fg; font-size: 11px; }
+                        Text { width: 90px; text: "cut_range"; color: #f87171; font-size: 11px; }
                         Text { horizontal-stretch: 1; text: "words [0, 48] (intro 30s)"; color: Theme.fg; font-size: 11px; wrap: word-wrap; }
-                        Text { width: 85px; text: "87c4f92d..."; color: #a3e635; font-size: 10px; font-family: Theme.font-technical; }
+                        Text { width: 80px; text: "87c4f92d..."; color: #a3e635; font-size: 10px; font-family: Theme.font-technical; }
                     }
 
                     if root.active-step >= 4: HorizontalLayout {
                         spacing: 6px;
-                        Text { width: 45px; text: "#3"; color: Theme.fg; font-size: 11px; }
-                        Text { width: 95px; text: "cut_range"; color: #f87171; font-size: 11px; }
-                        Text { horizontal-stretch: 1; text: "words [210, 245] (pricing #2)"; color: Theme.fg; font-size: 11px; wrap: word-wrap; }
-                        Text { width: 85px; text: "b139de66..."; color: #a3e635; font-size: 10px; font-family: Theme.font-technical; }
+                        Text { width: 40px; text: "#3"; color: Theme.fg; font-size: 11px; }
+                        Text { width: 90px; text: "cut_range"; color: #f87171; font-size: 11px; }
+                        Text { horizontal-stretch: 1; text: "words [210, 245] (pricing #" + root.selected-choice + ")"; color: Theme.fg; font-size: 11px; wrap: word-wrap; }
+                        Text { width: 80px; text: "b139de66..."; color: #a3e635; font-size: 10px; font-family: Theme.font-technical; }
                     }
 
                     if root.active-step >= 5: HorizontalLayout {
                         spacing: 6px;
-                        Text { width: 45px; text: "#4"; color: Theme.fg; font-size: 11px; }
-                        Text { width: 95px; text: "speed_change"; color: #fbbf24; font-size: 11px; }
+                        Text { width: 40px; text: "#4"; color: Theme.fg; font-size: 11px; }
+                        Text { width: 90px; text: "speed_change"; color: #fbbf24; font-size: 11px; }
                         Text { horizontal-stretch: 1; text: "words [92, 145] speed=2.0x"; color: Theme.fg; font-size: 11px; wrap: word-wrap; }
-                        Text { width: 85px; text: "fa68102a..."; color: #a3e635; font-size: 10px; font-family: Theme.font-technical; }
+                        Text { width: 80px; text: "fa68102a..."; color: #a3e635; font-size: 10px; font-family: Theme.font-technical; }
                     }
 
                     if root.active-step >= 6: HorizontalLayout {
                         spacing: 6px;
-                        Text { width: 45px; text: "#5"; color: Theme.fg; font-size: 11px; }
-                        Text { width: 95px; text: "restore_edit"; color: #34d399; font-size: 11px; }
+                        Text { width: 40px; text: "#5"; color: Theme.fg; font-size: 11px; }
+                        Text { width: 90px; text: "restore_edit"; color: #34d399; font-size: 11px; }
                         Text { horizontal-stretch: 1; text: "restored edit_id='edit_002'"; color: Theme.fg; font-size: 11px; wrap: word-wrap; }
-                        Text { width: 85px; text: "7a82b9e1..."; color: #a3e635; font-size: 10px; font-family: Theme.font-technical; }
+                        Text { width: 80px; text: "7a82b9e1..."; color: #a3e635; font-size: 10px; font-family: Theme.font-technical; }
                     }
                 }
             }
@@ -780,7 +855,7 @@ export component AIConversationDashboard inherits Rectangle {
                 border-color: Theme.line;
 
                 VerticalLayout {
-                    padding: 10px;
+                    padding: 12px;
                     spacing: 8px;
 
                     Text {
@@ -791,7 +866,7 @@ export component AIConversationDashboard inherits Rectangle {
                     }
 
                     Text {
-                        text: "1. Add a caption 'Welcome!' when I say welcome to the channel\n   → Anchors to word IDs [2, 5]. Original: 0:42-0:44.\n\n2. Cut the first 30 seconds\n   → Video shrinks 30s. Caption now automatically plays at 0:12-0:14 on exact same spoken words.\n\n3. Remove the part about pricing\n   → Pricing occurs 3 times. Engine prompts 3-way clarification with numbered choices.\n\n4. Speed up from 1:00 to 1:30 by 2x\n   → Applied with source time policy. Speeds up words [92, 145].\n\n5. Actually, put the intro back\n   → Identifies Turn 2 cut, non-destructively restores words [0, 48]. Caption shifts back to 0:42.";
+                        text: "1. Add a caption 'Welcome!' when I say welcome to the channel\n   -> Anchors to word IDs [2, 5]. Original: 0:42-0:44.\n\n2. Cut the first 30 seconds\n   -> Video shrinks 30s. Caption now automatically plays at 0:12-0:14 on exact same spoken words.\n\n3. Remove the part about pricing\n   -> Pricing occurs 3 times. Engine prompts 3-way clarification with numbered choices.\n\n4. Speed up from 1:00 to 1:30 by 2x\n   -> Applied with source time policy. Speeds up words [92, 145].\n\n5. Actually, put the intro back\n   -> Identifies Turn 2 cut, non-destructively restores words [0, 48]. Caption shifts back to 0:42.";
                         color: Theme.fg;
                         font-size: Theme.fs-sm;
                         wrap: word-wrap;
@@ -813,8 +888,8 @@ export component AIConversationDashboard inherits Rectangle {
                 border-color: Theme.line;
 
                 VerticalLayout {
-                    padding: 10px;
-                    spacing: 6px;
+                    padding: 12px;
+                    spacing: 8px;
 
                     Text {
                         text: "CREATOR PRESETS (CLICK TO APPLY)";
@@ -826,9 +901,12 @@ export component AIConversationDashboard inherits Rectangle {
                     HorizontalLayout {
                         spacing: 6px;
                         Rectangle {
-                            height: 28px;
+                            horizontal-stretch: 1;
+                            height: 32px;
                             border-radius: Theme.r-sm;
                             background: Theme.panel;
+                            border-width: 1px;
+                            border-color: Theme.line;
                             HorizontalLayout {
                                 padding-left: 8px; padding-right: 8px; alignment: center;
                                 Text { text: "Remove filler words"; color: Theme.fg; font-size: 11px; }
@@ -836,9 +914,12 @@ export component AIConversationDashboard inherits Rectangle {
                             TouchArea { clicked => { root.has-filler = true; root.category = 0; } }
                         }
                         Rectangle {
-                            height: 28px;
+                            horizontal-stretch: 1;
+                            height: 32px;
                             border-radius: Theme.r-sm;
                             background: Theme.panel;
+                            border-width: 1px;
+                            border-color: Theme.line;
                             HorizontalLayout {
                                 padding-left: 8px; padding-right: 8px; alignment: center;
                                 Text { text: "Cut silences > 0.7s"; color: Theme.fg; font-size: 11px; }
@@ -857,9 +938,12 @@ export component AIConversationDashboard inherits Rectangle {
                     HorizontalLayout {
                         spacing: 6px;
                         Rectangle {
-                            height: 28px;
+                            horizontal-stretch: 1;
+                            height: 32px;
                             border-radius: Theme.r-sm;
                             background: Theme.panel;
+                            border-width: 1px;
+                            border-color: Theme.line;
                             HorizontalLayout {
                                 padding-left: 8px; padding-right: 8px; alignment: center;
                                 Text { text: "Bleep profanity"; color: Theme.fg; font-size: 11px; }
@@ -874,9 +958,12 @@ export component AIConversationDashboard inherits Rectangle {
                             }
                         }
                         Rectangle {
-                            height: 28px;
+                            horizontal-stretch: 1;
+                            height: 32px;
                             border-radius: Theme.r-sm;
                             background: Theme.panel;
+                            border-width: 1px;
+                            border-color: Theme.line;
                             HorizontalLayout {
                                 padding-left: 8px; padding-right: 8px; alignment: center;
                                 Text { text: "Auto-caption video"; color: Theme.fg; font-size: 11px; }

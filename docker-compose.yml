@@ -1,58 +1,83 @@
-version: "3.8"
+version: '3.8'
 
 services:
-  # MinIO S3-Compatible Local Storage (Integration Standard 7)
-  minio:
-    image: minio/minio:RELEASE.2024-03-05T04-48-44Z
-    container_name: incubrix-minio
-    restart: unless-stopped
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
-    command: server /data --console-address ":9001"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-
-  # IncuBrix Editing Engine API Service (Integration Standards 1, 2, 3)
-  api:
+  # Primary IncuBrix Editing Engine Service
+  engine:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: incubrix-api
-    restart: unless-stopped
+    container_name: incubrix-engine
     ports:
       - "8000:8000"
     environment:
-      - LLM_PROVIDER=mock
+      - HOST=0.0.0.0
+      - PORT=8000
+      - STORAGE_BACKEND=s3
       - S3_ENDPOINT_URL=http://minio:9000
       - S3_ACCESS_KEY=minioadmin
       - S3_SECRET_KEY=minioadmin
-      - S3_BUCKET=incubrix-outputs
-      - MAX_VIDEO_DURATION_S=7200.0
-      - WEBHOOK_SECRET=incubrix_secret_key_123
+      - S3_BUCKET_NAME=incubrix-videos
+      - STT_PROVIDER=mock
+      - LLM_PROVIDER=mock
+      - DEFAULT_TIME_POLICY=original
+    volumes:
+      - ./storage_data:/app/storage_data
+      - ./test_pack/batch_results:/app/test_pack/batch_results
     depends_on:
       minio:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
 
-  # One-Command Test Runner Service (Integration Standard 1)
-  tests:
+  # S3-Compatible Object Storage (MinIO)
+  minio:
+    image: minio/minio:RELEASE.2024-03-15T01-07-19Z
+    container_name: incubrix-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Auto-bucket provisioner for MinIO
+  minio-init:
+    image: minio/mc:RELEASE.2024-03-15T00-14-53Z
+    container_name: incubrix-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set local http://minio:9000 minioadmin minioadmin;
+      /usr/bin/mc mb --ignore-existing local/incubrix-videos;
+      /usr/bin/mc anonymous set public local/incubrix-videos;
+      exit 0;
+      "
+
+  # Automated Test Runner Container
+  test-runner:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: incubrix-tests
-    environment:
-      - LLM_PROVIDER=mock
-    command: ["pytest", "-v", "incubrix_engine/tests/"]
+    command: ["pytest", "-v"]
     depends_on:
-      - api
+      - engine
+    profiles:
+      - test
+
+volumes:
+  minio_data:

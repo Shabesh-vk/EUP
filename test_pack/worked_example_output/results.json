@@ -1,8 +1,8 @@
 {
   "video": "sample.mp4",
   "initial_duration_s": 120.0,
-  "final_duration_s": 64.5,
-  "final_timeline_hash": "07cb58302036490c8c5c84bfe1fbad23f52577e2dad504b1bffaf15e5dbcf010",
+  "final_duration_s": 100.95,
+  "final_timeline_hash": "03b24411ecac487385a15ca3266b37bca750587ff1d1ec39a5de01a32b7e3f0b",
   "steps": [
     {
       "step": 1,
@@ -14,18 +14,18 @@
           "caption_id": "cap_1",
           "text": "Welcome!",
           "word_ids": [
-            "w_0",
-            "w_1",
-            "w_2",
-            "w_3"
+            "w_13",
+            "w_14",
+            "w_15",
+            "w_16"
           ]
         }
       ],
-      "summary": "Caption attached to those 4 words (original time 0:00-0:02).",
+      "summary": "Caption attached to those 4 words (original time 0:42-0:44).",
       "question": null,
       "options": null,
       "reason": null,
-      "timeline_hash": "a39481d203bfb25e6b5ae865d07655677c7481c3b16212896cb6011e60474467",
+      "timeline_hash": "7d563b4028c0d2bfda5ff0fa2e93977d2df110c3f2b14d7f8c311cf75b518e41",
       "duration_s": 120.0,
       "warnings": []
     },
@@ -41,11 +41,11 @@
           "policy": "original"
         }
       ],
-      "summary": "Video is 30 s shorter.",
+      "summary": "Video is 30 s shorter. Caption now plays at 0:12-0:14, still on the same words.",
       "question": null,
       "options": null,
       "reason": null,
-      "timeline_hash": "d688c7116b68dc0c7f2bd331a3c301cf482a440d75a94289d400dcc3dd785dfe",
+      "timeline_hash": "7b477481e89f7b3dbc9eccfbd7f79f173c5b4a7ffebb1a4ea3a5e12d2430eb2f",
       "duration_s": 90.0,
       "warnings": []
     },
@@ -56,34 +56,45 @@
       "operations": [
         {
           "op": "cut_range",
-          "source_start": 62.05,
-          "source_end": 117.55,
+          "source_start": 64.95,
+          "source_end": 73.05,
           "policy": "original"
         }
       ],
-      "summary": "Applied: removed the selected 1 occurrence(s). New duration: 34.50s.",
-      "question": "Pricing is mentioned 2 times (at 0:42, 1:02) - which one, or all?",
+      "summary": "Applied: removed the selected 1 occurrence(s). New duration: 81.90s.",
+      "question": "pricing is mentioned three times, which one or all?",
       "options": [
         "the first one",
         "the second one",
+        "the third one",
         "all of them"
       ],
       "reason": null,
-      "timeline_hash": "f088f181b90475dd375aeed326f8578bffcd7344640ebc438ff8cd6d0326c3a7",
-      "duration_s": 34.5,
+      "timeline_hash": "5d14f8efec8de3e50b2da0c8857681bf7d71d01163f7fe6339619eb57942ae57",
+      "duration_s": 81.9,
       "warnings": []
     },
     {
       "step": 4,
       "say": "Speed up from 1:00 to 1:30 by 2x",
-      "status": "rejected",
-      "operations": null,
-      "summary": null,
+      "status": "applied",
+      "operations": [
+        {
+          "op": "speed_up",
+          "start_s": 60.0,
+          "end_s": 90.0,
+          "speed": 2.0,
+          "policy": "original",
+          "orig_start": 60.0,
+          "orig_end": 90.0
+        }
+      ],
+      "summary": "Applied, stating original media time policy was used (sped up 2.0x from 60.00s to 90.00s).",
       "question": null,
       "options": null,
-      "reason": "Playback range [60.0, 90.0] does not exist in current timeline.",
-      "timeline_hash": "f088f181b90475dd375aeed326f8578bffcd7344640ebc438ff8cd6d0326c3a7",
-      "duration_s": 34.5,
+      "reason": null,
+      "timeline_hash": "7c81a7abf856d5e8a2901cebace7af172fd317fca0bb42bf06a291a823a131cd",
+      "duration_s": 70.95,
       "warnings": []
     },
     {
@@ -100,8 +111,8 @@
       "question": null,
       "options": null,
       "reason": null,
-      "timeline_hash": "f54b24aed6c90cd67dcfaabd83cc31b6c08473324f5f30f52c3c20de7f4f8f3b",
-      "duration_s": 64.5,
+      "timeline_hash": "304d2d9d9fe700f050c53192b6fadaafc962ac1fff58f0adda35a20438f8fd1c",
+      "duration_s": 100.95,
       "warnings": []
     },
     {
@@ -111,7 +122,7 @@
       "operations": [
         {
           "op": "undo",
-          "reversed_step": 4,
+          "reversed_step": 5,
           "reversed_instruction": "Actually, put the intro back"
         }
       ],
@@ -119,8 +130,8 @@
       "question": null,
       "options": null,
       "reason": null,
-      "timeline_hash": "f54b24aed6c90cd67dcfaabd83cc31b6c08473324f5f30f52c3c20de7f4f8f3b",
-      "duration_s": 64.5,
+      "timeline_hash": "304d2d9d9fe700f050c53192b6fadaafc962ac1fff58f0adda35a20438f8fd1c",
+      "duration_s": 100.95,
       "warnings": []
     },
     {
@@ -144,8 +155,8 @@
       "question": null,
       "options": null,
       "reason": null,
-      "timeline_hash": "07cb58302036490c8c5c84bfe1fbad23f52577e2dad504b1bffaf15e5dbcf010",
-      "duration_s": 64.5,
+      "timeline_hash": "03b24411ecac487385a15ca3266b37bca750587ff1d1ec39a5de01a32b7e3f0b",
+      "duration_s": 100.95,
       "warnings": []
     },
     {
@@ -161,8 +172,8 @@
       "question": null,
       "options": null,
       "reason": null,
-      "timeline_hash": "07cb58302036490c8c5c84bfe1fbad23f52577e2dad504b1bffaf15e5dbcf010",
-      "duration_s": 64.5,
+      "timeline_hash": "03b24411ecac487385a15ca3266b37bca750587ff1d1ec39a5de01a32b7e3f0b",
+      "duration_s": 100.95,
       "warnings": []
     }
   ]

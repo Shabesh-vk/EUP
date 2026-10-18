@@ -46,8 +46,11 @@ desktop.ini
 /*.aac
 /scratch_*
 
-# Local environment
+# Local environment and storage
 .env
+storage_data/
+test_pack/batch_results/
+test_pack/worked_example_output/*.mp4
 
 # Third-party prebuilt binaries & dynamic libraries
 ffmpeg-dev/
