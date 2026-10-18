@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IncuBrixGoldenTimelineSchema",
+  "description": "JSON Schema defining the IncuBrix Golden Timeline data structure where edits belong to content and track Word IDs across cuts, reorders, and speed changes.",
+  "type": "object",
+  "required": [
+    "timeline_hash",
+    "total_duration_s",
+    "time_policy",
+    "clips",
+    "captions",
+    "effects",
+    "history"
+  ],
+  "properties": {
+    "timeline_hash": {
+      "type": "string",
+      "description": "Deterministic SHA-256 hash of the canonical timeline state."
+    },
+    "total_duration_s": {
+      "type": "number",
+      "minimum": 0.0,
+      "description": "Total playback duration of the edited timeline in seconds."
+    },
+    "time_policy": {
+      "type": "string",
+      "enum": ["current", "original"],
+      "description": "The active time policy used when interpreting clock timestamps."
+    },
+    "source_media": {
+      "type": "object",
+      "properties": {
+        "media_id": { "type": "string" },
+        "file_path": { "type": "string" },
+        "sha256": { "type": "string" },
+        "duration_s": { "type": "number" },
+        "fps": { "type": "number" }
+      }
+    },
+    "clips": {
+      "type": "array",
+      "description": "Ordered sequence of media clips derived from the immutable event log.",
+      "items": {
+        "type": "object",
+        "required": ["clip_id", "source_start", "source_end", "speed", "word_ids"],
+        "properties": {
+          "clip_id": { "type": "string" },
+          "source_start": {
+            "type": "number",
+            "description": "Start timestamp in the original untouched media file."
+          },
+          "source_end": {
+            "type": "number",
+            "description": "End timestamp in the original untouched media file."
+          },
+          "speed": {
+            "type": "number",
+            "minimum": 0.1,
+            "maximum": 10.0,
+            "description": "Playback speed multiplier."
+          },
+          "word_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Word IDs present within this clip's time range."
+          }
+        }
+      }
+    },
+    "captions": {
+      "type": "array",
+      "description": "Captions anchored to transcript Word IDs, resolved to current playback timestamps.",
+      "items": {
+        "type": "object",
+        "required": ["caption_id", "text", "playback_start", "playback_end", "style"],
+        "properties": {
+          "caption_id": { "type": "string" },
+          "text": { "type": "string" },
+          "playback_start": { "type": "number" },
+          "playback_end": { "type": "number" },
+          "style": {
+            "type": "object",
+            "properties": {
+              "color": { "type": "string" },
+              "font_size": { "type": "integer" },
+              "position": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "effects": {
+      "type": "array",
+      "description": "Word-anchored audio mutes and bleeps resolved to current playback timestamps.",
+      "items": {
+        "type": "object",
+        "required": ["effect_id", "effect_type", "playback_start", "playback_end"],
+        "properties": {
+          "effect_id": { "type": "string" },
+          "effect_type": { "type": "string", "enum": ["mute", "bleep"] },
+          "playback_start": { "type": "number" },
+          "playback_end": { "type": "number" }
+        }
+      }
+    },
+    "history": {
+      "type": "array",
+      "description": "Append-only immutable log of every applied editing step.",
+      "items": {
+        "type": "object",
+        "required": ["step_index", "instruction", "operations", "undone"],
+        "properties": {
+          "step_index": { "type": "integer" },
+          "instruction": { "type": "string" },
+          "summary": { "type": "string" },
+          "undone": { "type": "boolean" },
+          "operations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["op_type", "params"],
+              "properties": {
+                "op_type": { "type": "string" },
+                "params": { "type": "object" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

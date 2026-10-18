@@ -1,0 +1,303 @@
+{
+  "$defs": {
+    "AudioEffect": {
+      "description": "Content-anchored audio effect (mute or bleep).",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "effect_type": {
+          "enum": [
+            "mute",
+            "bleep"
+          ],
+          "title": "Effect Type",
+          "type": "string"
+        },
+        "start_word_id": {
+          "title": "Start Word Id",
+          "type": "integer"
+        },
+        "end_word_id": {
+          "title": "End Word Id",
+          "type": "integer"
+        },
+        "timeline_start": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Timeline Start"
+        },
+        "timeline_end": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Timeline End"
+        },
+        "is_active": {
+          "default": true,
+          "title": "Is Active",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "effect_type",
+        "start_word_id",
+        "end_word_id"
+      ],
+      "title": "AudioEffect",
+      "type": "object"
+    },
+    "BackgroundMusic": {
+      "description": "Background audio track with automatic ducking under speech.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "source_url_or_path": {
+          "title": "Source Url Or Path",
+          "type": "string"
+        },
+        "volume": {
+          "default": 0.3,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Volume",
+          "type": "number"
+        },
+        "ducking": {
+          "default": true,
+          "title": "Ducking",
+          "type": "boolean"
+        },
+        "duck_volume": {
+          "default": 0.1,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Duck Volume",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "source_url_or_path"
+      ],
+      "title": "BackgroundMusic",
+      "type": "object"
+    },
+    "Caption": {
+      "description": "Content-anchored caption.\nPinned to word IDs so it follows content regardless of cuts/speeds.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "start_word_id": {
+          "title": "Start Word Id",
+          "type": "integer"
+        },
+        "end_word_id": {
+          "title": "End Word Id",
+          "type": "integer"
+        },
+        "style": {
+          "$ref": "#/$defs/CaptionStyle"
+        },
+        "timeline_start": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Timeline Start"
+        },
+        "timeline_end": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Timeline End"
+        },
+        "is_active": {
+          "default": true,
+          "title": "Is Active",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "start_word_id",
+        "end_word_id"
+      ],
+      "title": "Caption",
+      "type": "object"
+    },
+    "CaptionStyle": {
+      "properties": {
+        "color": {
+          "default": "white",
+          "title": "Color",
+          "type": "string"
+        },
+        "font_size": {
+          "default": 24,
+          "title": "Font Size",
+          "type": "integer"
+        },
+        "font_name": {
+          "default": "Arial",
+          "title": "Font Name",
+          "type": "string"
+        },
+        "alignment": {
+          "default": "bottom",
+          "enum": [
+            "bottom",
+            "top",
+            "center"
+          ],
+          "title": "Alignment",
+          "type": "string"
+        },
+        "outline_color": {
+          "default": "black",
+          "title": "Outline Color",
+          "type": "string"
+        },
+        "outline_width": {
+          "default": 2,
+          "title": "Outline Width",
+          "type": "integer"
+        }
+      },
+      "title": "CaptionStyle",
+      "type": "object"
+    },
+    "Segment": {
+      "description": "Active slice of original media.\nAll edits compose segments deterministically.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "source_start": {
+          "description": "Start time in original media seconds",
+          "title": "Source Start",
+          "type": "number"
+        },
+        "source_end": {
+          "description": "End time in original media seconds",
+          "title": "Source End",
+          "type": "number"
+        },
+        "speed": {
+          "default": 1.0,
+          "description": "Playback speed multiplier",
+          "exclusiveMinimum": 0.0,
+          "title": "Speed",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "source_start",
+        "source_end"
+      ],
+      "title": "Segment",
+      "type": "object"
+    }
+  },
+  "description": "JSON Schema for the IncuBrix Content-Anchored Video Editing Timeline",
+  "properties": {
+    "source_video_url": {
+      "title": "Source Video Url",
+      "type": "string"
+    },
+    "original_duration": {
+      "title": "Original Duration",
+      "type": "number"
+    },
+    "fps": {
+      "default": 30.0,
+      "title": "Fps",
+      "type": "number"
+    },
+    "width": {
+      "default": 1920,
+      "title": "Width",
+      "type": "integer"
+    },
+    "height": {
+      "default": 1080,
+      "title": "Height",
+      "type": "integer"
+    },
+    "segments": {
+      "items": {
+        "$ref": "#/$defs/Segment"
+      },
+      "title": "Segments",
+      "type": "array"
+    },
+    "captions": {
+      "items": {
+        "$ref": "#/$defs/Caption"
+      },
+      "title": "Captions",
+      "type": "array"
+    },
+    "audio_effects": {
+      "items": {
+        "$ref": "#/$defs/AudioEffect"
+      },
+      "title": "Audio Effects",
+      "type": "array"
+    },
+    "background_music": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/BackgroundMusic"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "source_video_url",
+    "original_duration"
+  ],
+  "title": "IncuBrixContentAnchoredTimeline",
+  "type": "object"
+}

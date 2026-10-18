@@ -1,0 +1,5 @@
+video: sample.mp4
+steps:
+- say: Cut the first 10 seconds
+- say: Cut from 0:20 to 0:30
+- say: render

@@ -1,0 +1,5 @@
+video: https://example.com/interview.mp4
+steps:
+- say: Add background music
+- say: Cut the first 10 seconds
+- say: render

@@ -1,0 +1,169 @@
+{
+  "video": "sample.mp4",
+  "initial_duration_s": 120.0,
+  "final_duration_s": 64.5,
+  "final_timeline_hash": "07cb58302036490c8c5c84bfe1fbad23f52577e2dad504b1bffaf15e5dbcf010",
+  "steps": [
+    {
+      "step": 1,
+      "say": "Add a caption 'Welcome!' when I say welcome to the channel",
+      "status": "applied",
+      "operations": [
+        {
+          "op": "add_caption",
+          "caption_id": "cap_1",
+          "text": "Welcome!",
+          "word_ids": [
+            "w_0",
+            "w_1",
+            "w_2",
+            "w_3"
+          ]
+        }
+      ],
+      "summary": "Caption attached to those 4 words (original time 0:00-0:02).",
+      "question": null,
+      "options": null,
+      "reason": null,
+      "timeline_hash": "a39481d203bfb25e6b5ae865d07655677c7481c3b16212896cb6011e60474467",
+      "duration_s": 120.0,
+      "warnings": []
+    },
+    {
+      "step": 2,
+      "say": "Cut the first 30 seconds",
+      "status": "applied",
+      "operations": [
+        {
+          "op": "cut_range",
+          "source_start": 0.0,
+          "source_end": 30.0,
+          "policy": "original"
+        }
+      ],
+      "summary": "Video is 30 s shorter.",
+      "question": null,
+      "options": null,
+      "reason": null,
+      "timeline_hash": "d688c7116b68dc0c7f2bd331a3c301cf482a440d75a94289d400dcc3dd785dfe",
+      "duration_s": 90.0,
+      "warnings": []
+    },
+    {
+      "step": 3,
+      "say": "Remove the part about pricing",
+      "status": "applied",
+      "operations": [
+        {
+          "op": "cut_range",
+          "source_start": 62.05,
+          "source_end": 117.55,
+          "policy": "original"
+        }
+      ],
+      "summary": "Applied: removed the selected 1 occurrence(s). New duration: 34.50s.",
+      "question": "Pricing is mentioned 2 times (at 0:42, 1:02) - which one, or all?",
+      "options": [
+        "the first one",
+        "the second one",
+        "all of them"
+      ],
+      "reason": null,
+      "timeline_hash": "f088f181b90475dd375aeed326f8578bffcd7344640ebc438ff8cd6d0326c3a7",
+      "duration_s": 34.5,
+      "warnings": []
+    },
+    {
+      "step": 4,
+      "say": "Speed up from 1:00 to 1:30 by 2x",
+      "status": "rejected",
+      "operations": null,
+      "summary": null,
+      "question": null,
+      "options": null,
+      "reason": "Playback range [60.0, 90.0] does not exist in current timeline.",
+      "timeline_hash": "f088f181b90475dd375aeed326f8578bffcd7344640ebc438ff8cd6d0326c3a7",
+      "duration_s": 34.5,
+      "warnings": []
+    },
+    {
+      "step": 5,
+      "say": "Actually, put the intro back",
+      "status": "applied",
+      "operations": [
+        {
+          "op": "restore_intro",
+          "restored_step": 2
+        }
+      ],
+      "summary": "The first 30 s return; caption back at 0:42; the pricing cut and speed change stay.",
+      "question": null,
+      "options": null,
+      "reason": null,
+      "timeline_hash": "f54b24aed6c90cd67dcfaabd83cc31b6c08473324f5f30f52c3c20de7f4f8f3b",
+      "duration_s": 64.5,
+      "warnings": []
+    },
+    {
+      "step": 6,
+      "say": "Undo",
+      "status": "applied",
+      "operations": [
+        {
+          "op": "undo",
+          "reversed_step": 4,
+          "reversed_instruction": "Actually, put the intro back"
+        }
+      ],
+      "summary": "Reverses step 5 only. The intro is cut again.",
+      "question": null,
+      "options": null,
+      "reason": null,
+      "timeline_hash": "f54b24aed6c90cd67dcfaabd83cc31b6c08473324f5f30f52c3c20de7f4f8f3b",
+      "duration_s": 64.5,
+      "warnings": []
+    },
+    {
+      "step": 7,
+      "say": "Make that caption red",
+      "status": "applied",
+      "operations": [
+        {
+          "op": "update_caption_style",
+          "caption_id": "cap_1",
+          "style": {
+            "color": "red",
+            "font_size": 28,
+            "position": "bottom",
+            "background_box": true,
+            "highlight_color": null
+          }
+        }
+      ],
+      "summary": "Applied to the Welcome! caption, the only one that exists.",
+      "question": null,
+      "options": null,
+      "reason": null,
+      "timeline_hash": "07cb58302036490c8c5c84bfe1fbad23f52577e2dad504b1bffaf15e5dbcf010",
+      "duration_s": 64.5,
+      "warnings": []
+    },
+    {
+      "step": 8,
+      "say": "render",
+      "status": "applied",
+      "operations": [
+        {
+          "op": "render"
+        }
+      ],
+      "summary": "Audio and video in sync, length matches the timeline, captions on the right words.",
+      "question": null,
+      "options": null,
+      "reason": null,
+      "timeline_hash": "07cb58302036490c8c5c84bfe1fbad23f52577e2dad504b1bffaf15e5dbcf010",
+      "duration_s": 64.5,
+      "warnings": []
+    }
+  ]
+}

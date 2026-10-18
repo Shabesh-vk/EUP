@@ -1,0 +1,4 @@
+video: sample.mp4
+steps:
+- say: Cut everything
+- say: render

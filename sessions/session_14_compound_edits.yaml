@@ -1,0 +1,7 @@
+video: https://example.com/interview.mp4
+steps:
+- say: Cut the first 30 seconds
+- say: Add a caption 'Welcome!' when I say welcome to the channel
+- say: Make that caption blue
+- say: Speed up from 1:00 to 1:30 by 2x
+- say: render

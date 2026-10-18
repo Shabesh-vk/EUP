@@ -1,0 +1,109 @@
+{
+  "timeline_hash": "b027fb03a1aa00678d8ed925e74c33dd6cfd4cdfb68bf692ee67d471825d3a2f",
+  "total_duration_s": 100.05,
+  "time_policy": "original",
+  "clips": [
+    {
+      "clip_id": "clip_abe28f",
+      "source_start": 9.95,
+      "source_end": 20.0,
+      "speed": 1.0,
+      "word_ids": [
+        "w_6",
+        "w_7",
+        "w_8"
+      ]
+    },
+    {
+      "clip_id": "clip_cb027b",
+      "source_start": 30.0,
+      "source_end": 120.0,
+      "speed": 1.0,
+      "word_ids": [
+        "w_13",
+        "w_14",
+        "w_15",
+        "w_16",
+        "w_17",
+        "w_18",
+        "w_19",
+        "w_20",
+        "w_21",
+        "w_22",
+        "w_23",
+        "w_24",
+        "w_25",
+        "w_26",
+        "w_27",
+        "w_28",
+        "w_29",
+        "w_30",
+        "w_31",
+        "w_32",
+        "w_33",
+        "w_34",
+        "w_35",
+        "w_36",
+        "w_37",
+        "w_38",
+        "w_39",
+        "w_40",
+        "w_41",
+        "w_42",
+        "w_43",
+        "w_44",
+        "w_45",
+        "w_46",
+        "w_47",
+        "w_48",
+        "w_49",
+        "w_50",
+        "w_51",
+        "w_52",
+        "w_53",
+        "w_54",
+        "w_55"
+      ]
+    }
+  ],
+  "captions": [],
+  "effects": [],
+  "history": [
+    {
+      "step_index": 1,
+      "instruction": "Cut the first 10 seconds",
+      "operations": [
+        {
+          "op_type": "cut_range",
+          "params": {
+            "op": "cut_range",
+            "source_start": 0.0,
+            "source_end": 9.95,
+            "policy": "original"
+          }
+        }
+      ],
+      "summary": "Video is 10 s shorter.",
+      "timestamp": "",
+      "undone": false
+    },
+    {
+      "step_index": 2,
+      "instruction": "Cut from 0:20 to 0:30",
+      "operations": [
+        {
+          "op_type": "cut_range",
+          "params": {
+            "op": "cut_range",
+            "source_start": 20.0,
+            "source_end": 30.0,
+            "policy": "original"
+          }
+        }
+      ],
+      "summary": "Video is 10 s shorter.",
+      "timestamp": "",
+      "undone": false
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+video: sample.mp4
+steps:
+- say: Cut the first 20 seconds
+- say: Undo
+- say: Redo
+- say: render

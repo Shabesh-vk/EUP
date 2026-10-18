@@ -1,0 +1,5 @@
+video: https://example.com/interview.mp4
+steps:
+- say: Speed up from 1:00 to 1:30 by 2x
+- say: Speed up by 0.5x
+- say: render

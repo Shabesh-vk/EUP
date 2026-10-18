@@ -1,0 +1,4 @@
+video: sample.mp4
+steps:
+- say: Remove silences longer than 1 second
+- say: render

@@ -1,0 +1,7 @@
+video: https://example.com/interview.mp4
+steps:
+- say: Cut the first 10 seconds
+- say: Cut from 20.0 to 30.0
+- say: Undo
+- say: Undo
+- say: render

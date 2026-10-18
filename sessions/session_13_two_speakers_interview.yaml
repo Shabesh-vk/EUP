@@ -1,0 +1,4 @@
+video: https://example.com/interview.mp4
+steps:
+- say: Remove everything the guest says about their old job
+- say: render

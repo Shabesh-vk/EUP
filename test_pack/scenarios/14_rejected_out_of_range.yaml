@@ -1,0 +1,4 @@
+video: sample.mp4
+steps:
+- say: Add a caption at 5:00
+- say: render

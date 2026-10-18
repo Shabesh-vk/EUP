@@ -1,0 +1,28 @@
+# Where the FFmpeg development build lives is machine configuration, not
+# repository configuration: concat-media links FFmpeg through
+# ffmpeg-the-third, which finds it by pkg-config or by FFMPEG_DIR pointing
+# at an unpacked shared build. Set those in your own environment, never
+# here - a machine path committed to this file breaks every other checkout.
+
+# No incremental caches for the dev and test profiles: they are a speed-up
+# for the second build of one crate and a tax on the disk for everything
+# else, and a session of edits across the workspace leaves tens of
+# gigabytes of them behind. That is set per profile in Cargo.toml rather
+# than as `build.incremental` here, because the config key overrides every
+# profile - it was silently switching off the `quick` profile's
+# incremental, which is the one build that wants it.
+
+# `cargo dev`: the window, built to try a change in. See `[profile.quick]`
+# in Cargo.toml for what it is and why it is quick.
+[alias]
+dev = "run --bin concat --profile quick"
+
+[env]
+CMAKE = "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe"
+FFMPEG_DIR = "N:/Concat/ffmpeg-dev"
+LIBCLANG_PATH = "N:/llvm/bin"
+ORT_DIR = "N:/Concat/onnxruntime-win-x64-1.28.0"
+ORT_LIB_LOCATION = "N:/Concat/onnxruntime-win-x64-1.28.0/lib"
+ORT_PREFER_DYNAMIC_LINK = "1"
+SHERPA_ONNX_LIB_DIR = "N:/Concat/sherpa-libs"
+

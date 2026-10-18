@@ -1,0 +1,4 @@
+video: sample.mp4
+steps:
+- say: Speed up from 1:00 to 1:30 by 2x
+- say: render

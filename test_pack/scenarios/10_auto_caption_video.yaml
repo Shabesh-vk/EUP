@@ -1,0 +1,4 @@
+video: sample.mp4
+steps:
+- say: Auto-caption the whole video
+- say: render

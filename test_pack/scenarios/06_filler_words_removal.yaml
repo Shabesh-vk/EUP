@@ -1,0 +1,4 @@
+video: sample.mp4
+steps:
+- say: Cut out the ums
+- say: render

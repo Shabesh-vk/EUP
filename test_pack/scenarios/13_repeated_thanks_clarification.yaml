@@ -1,0 +1,5 @@
+video: sample.mp4
+steps:
+- say: Remove everything after I say thanks
+  answer: the second one
+- say: render

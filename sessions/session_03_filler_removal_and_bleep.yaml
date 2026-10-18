@@ -1,0 +1,5 @@
+video: https://example.com/interview.mp4
+steps:
+- say: Bleep words
+- say: Remove filler words
+- say: render

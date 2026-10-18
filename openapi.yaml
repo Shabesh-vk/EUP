@@ -1,0 +1,685 @@
+openapi: 3.1.0
+info:
+  title: IncuBrix Video Editing Engine
+  description: IncuBrix Prompt-Based Video Editing Engine API. Translates human instructions
+    to content-anchored edits.
+  version: 1.0.0
+paths:
+  /api/v1/health:
+    get:
+      tags:
+      - Health
+      summary: Health
+      operationId: health_api_v1_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /api/v1/ready:
+    get:
+      tags:
+      - Health
+      summary: Ready
+      operationId: ready_api_v1_ready_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /api/v1/sessions:
+    post:
+      tags:
+      - Sessions
+      summary: Create Session
+      operationId: create_session_api_v1_sessions_post
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSessionRequest'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateSessionResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sessions/{session_id}/timeline:
+    get:
+      tags:
+      - Sessions
+      summary: Get Session Timeline
+      operationId: get_session_timeline_api_v1_sessions__session_id__timeline_get
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Session Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sessions/{session_id}/steps:
+    post:
+      tags:
+      - Sessions
+      summary: Execute Step
+      operationId: execute_step_api_v1_sessions__session_id__steps_post
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Session Id
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StepRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StepResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sessions/{session_id}/render:
+    post:
+      tags:
+      - Jobs
+      summary: Render Session
+      operationId: render_session_api_v1_sessions__session_id__render_post
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Session Id
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RenderRequest'
+      responses:
+        '202':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/jobs/{job_id}:
+    get:
+      tags:
+      - Jobs
+      summary: Get Job Status
+      operationId: get_job_status_api_v1_jobs__job_id__get
+      parameters:
+      - name: job_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Job Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatus'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /health:
+    get:
+      tags:
+      - Health
+      summary: Health
+      operationId: health_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /ready:
+    get:
+      tags:
+      - Health
+      summary: Ready
+      operationId: ready_ready_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /sessions:
+    post:
+      tags:
+      - Sessions
+      summary: Create Session
+      operationId: create_session_sessions_post
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSessionRequest'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateSessionResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /sessions/{session_id}/timeline:
+    get:
+      tags:
+      - Sessions
+      summary: Get Session Timeline
+      operationId: get_session_timeline_sessions__session_id__timeline_get
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Session Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /sessions/{session_id}/steps:
+    post:
+      tags:
+      - Sessions
+      summary: Execute Step
+      operationId: execute_step_sessions__session_id__steps_post
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Session Id
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StepRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StepResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /sessions/{session_id}/render:
+    post:
+      tags:
+      - Jobs
+      summary: Render Session
+      operationId: render_session_sessions__session_id__render_post
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Session Id
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RenderRequest'
+      responses:
+        '202':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /jobs/{job_id}:
+    get:
+      tags:
+      - Jobs
+      summary: Get Job Status
+      operationId: get_job_status_jobs__job_id__get
+      parameters:
+      - name: job_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Job Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatus'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    Clarification:
+      properties:
+        question:
+          type: string
+          title: Question
+        options:
+          items:
+            type: string
+          type: array
+          title: Options
+      type: object
+      required:
+      - question
+      - options
+      title: Clarification
+    CreateSessionRequest:
+      properties:
+        video_url:
+          type: string
+          title: Video Url
+          description: URL or local path to video file
+        transcript:
+          anyOf:
+          - $ref: '#/components/schemas/Transcript'
+          - type: 'null'
+          description: Optional custom word transcript
+      type: object
+      required:
+      - video_url
+      title: CreateSessionRequest
+    CreateSessionResponse:
+      properties:
+        session_id:
+          type: string
+          title: Session Id
+        video_url:
+          type: string
+          title: Video Url
+        duration_s:
+          type: number
+          title: Duration S
+        timeline_hash:
+          type: string
+          title: Timeline Hash
+      type: object
+      required:
+      - session_id
+      - video_url
+      - duration_s
+      - timeline_hash
+      title: CreateSessionResponse
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    JobStatus:
+      properties:
+        job_id:
+          type: string
+          title: Job Id
+        status:
+          type: string
+          enum:
+          - queued
+          - running
+          - succeeded
+          - failed
+          title: Status
+        progress:
+          type: integer
+          maximum: 100.0
+          minimum: 0.0
+          title: Progress
+          default: 0
+        result_links:
+          additionalProperties:
+            type: string
+          type: object
+          title: Result Links
+        error:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Error
+        created_at:
+          type: number
+          title: Created At
+        updated_at:
+          type: number
+          title: Updated At
+        manifest:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Manifest
+      type: object
+      required:
+      - job_id
+      - status
+      title: JobStatus
+    Operation:
+      properties:
+        op:
+          type: string
+          enum:
+          - cut_range
+          - keep_only
+          - speed_change
+          - mute_words
+          - bleep_words
+          - add_caption
+          - auto_caption
+          - remove_filler
+          - remove_silence
+          - add_bg_music
+          - undo
+          - redo
+          - restore_edit
+          - style_caption
+          title: Op
+        params:
+          additionalProperties: true
+          type: object
+          title: Params
+      type: object
+      required:
+      - op
+      title: Operation
+      description: Structured operation emitted by AI brain or user action.
+    RenderRequest:
+      properties:
+        callback_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Callback Url
+      type: object
+      title: RenderRequest
+    StepRequest:
+      properties:
+        say:
+          type: string
+          title: Say
+          description: Creator plain-language instruction
+        answer:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Answer
+          description: Optional reply if resolving a clarification
+        pending_clarification:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Pending Clarification
+      type: object
+      required:
+      - say
+      title: StepRequest
+    StepResponse:
+      properties:
+        status:
+          type: string
+          enum:
+          - applied
+          - needs_clarification
+          - rejected
+          title: Status
+        summary:
+          type: string
+          title: Summary
+        operations:
+          items:
+            $ref: '#/components/schemas/Operation'
+          type: array
+          title: Operations
+        clarification:
+          anyOf:
+          - $ref: '#/components/schemas/Clarification'
+          - type: 'null'
+        rejection_reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Rejection Reason
+        timeline_hash:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Timeline Hash
+        duration_s:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Duration S
+      type: object
+      required:
+      - status
+      - summary
+      title: StepResponse
+      description: 'Standard output format for every instruction.
+
+        Strictly follows IncuBrix rules: applied | needs_clarification | rejected.'
+    Transcript:
+      properties:
+        words:
+          items:
+            $ref: '#/components/schemas/Word'
+          type: array
+          title: Words
+        duration:
+          type: number
+          title: Duration
+          description: Total duration of original source video in seconds
+        language:
+          type: string
+          title: Language
+          default: en
+      type: object
+      required:
+      - duration
+      title: Transcript
+      description: Immutable source transcript of the video.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    Word:
+      properties:
+        id:
+          type: integer
+          title: Id
+          description: Unique 0-indexed word identifier
+        text:
+          type: string
+          title: Text
+          description: The spoken word text
+        start:
+          type: number
+          title: Start
+          description: Start timestamp in original video seconds
+        end:
+          type: number
+          title: End
+          description: End timestamp in original video seconds
+        speaker:
+          type: string
+          title: Speaker
+          description: Speaker identifier
+          default: speaker_0
+        confidence:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Confidence
+          description: Transcription confidence score
+          default: 1.0
+        is_filler:
+          type: boolean
+          title: Is Filler
+          description: True if marked as filler word (um, uh, like)
+          default: false
+      type: object
+      required:
+      - id
+      - text
+      - start
+      - end
+      title: Word
+      description: Word-level transcript entry.

@@ -1,0 +1,6 @@
+video: sample.mp4
+steps:
+- say: Add a caption 'Welcome!' when I say welcome to the channel
+- say: Cut the first 30 seconds
+- say: Make that caption yellow
+- say: render

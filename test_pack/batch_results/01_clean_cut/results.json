@@ -1,0 +1,65 @@
+{
+  "video": "sample.mp4",
+  "initial_duration_s": 120.0,
+  "final_duration_s": 100.05,
+  "final_timeline_hash": "b027fb03a1aa00678d8ed925e74c33dd6cfd4cdfb68bf692ee67d471825d3a2f",
+  "steps": [
+    {
+      "step": 1,
+      "say": "Cut the first 10 seconds",
+      "status": "applied",
+      "operations": [
+        {
+          "op": "cut_range",
+          "source_start": 0.0,
+          "source_end": 9.95,
+          "policy": "original"
+        }
+      ],
+      "summary": "Video is 10 s shorter.",
+      "question": null,
+      "options": null,
+      "reason": null,
+      "timeline_hash": "a6e72e0f6d357ba124752a639b487fc942e3f156a58f107fab1c3e785915f05f",
+      "duration_s": 110.05,
+      "warnings": []
+    },
+    {
+      "step": 2,
+      "say": "Cut from 0:20 to 0:30",
+      "status": "applied",
+      "operations": [
+        {
+          "op": "cut_range",
+          "source_start": 20.0,
+          "source_end": 30.0,
+          "policy": "original"
+        }
+      ],
+      "summary": "Video is 10 s shorter.",
+      "question": null,
+      "options": null,
+      "reason": null,
+      "timeline_hash": "b027fb03a1aa00678d8ed925e74c33dd6cfd4cdfb68bf692ee67d471825d3a2f",
+      "duration_s": 100.05,
+      "warnings": []
+    },
+    {
+      "step": 3,
+      "say": "render",
+      "status": "applied",
+      "operations": [
+        {
+          "op": "render"
+        }
+      ],
+      "summary": "Audio and video in sync, length matches the timeline, captions on the right words.",
+      "question": null,
+      "options": null,
+      "reason": null,
+      "timeline_hash": "b027fb03a1aa00678d8ed925e74c33dd6cfd4cdfb68bf692ee67d471825d3a2f",
+      "duration_s": 100.05,
+      "warnings": []
+    }
+  ]
+}
