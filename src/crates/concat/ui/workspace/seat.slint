@@ -151,11 +151,14 @@ export component Seat inherits Rectangle {
             add-adjustment(label) => { Editor.library-add-adjustment(label); }
             apply-lut(id, label) => { Editor.library-apply-lut(id, label); }
             reload-packages => { Editor.library-reload-packages(); }
-            ai-cut-range(s, e) => { Editor.ai-cut-range(s, e); }
-            ai-speed-range(s, e, sp) => { Editor.ai-speed-range(s, e, sp); }
-            ai-restore-intro => { Editor.ai-restore-intro(); }
+            ai: Editor.ai;
+            ai-say(p) => { Editor.ai-say(p); }
+            ai-answer(i) => { Editor.ai-answer(i); }
             ai-undo => { Editor.ai-undo(); }
-            ai-apply-prompt(p) => { Editor.ai-apply-prompt(p); }
+            ai-redo => { Editor.ai-redo(); }
+            ai-reset => { Editor.ai-reset(); }
+            ai-transcribe => { Editor.ai-transcribe(); }
+            ai-restore(id) => { Editor.ai-restore(id); }
         }
 
     if root.kind == PaneKind.preview: PreviewPane {

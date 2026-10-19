@@ -994,6 +994,8 @@ pub struct Studio {
     pub drop: Option<DropPlan>,
     pub project_sheet: crate::panes::project::ProjectPane,
     pub captions: crate::panes::captions::CaptionsPane,
+    /// The AI tab: the IncuBrix engine and its conversation.
+    pub ai: crate::panes::ai::AiPane,
     pub speech: crate::panes::speech::SpeechPane,
     /// The library's Audio page: the user's own sounds.
     pub sounds: crate::panes::sounds::SoundsPane,
@@ -2327,6 +2329,7 @@ impl Studio {
             drop: None,
             project_sheet: crate::panes::project::ProjectPane::default(),
             captions: crate::panes::captions::CaptionsPane::default(),
+            ai: crate::panes::ai::AiPane::default(),
             speech: crate::panes::speech::SpeechPane::with_saved(&host.dirs),
             sounds: crate::panes::sounds::SoundsPane::open(&host.dirs),
             source: None,
@@ -2709,7 +2712,7 @@ impl Studio {
     /// [`Studio::apply`] as one move of an inspector gesture: the same
     /// bookkeeping, but the editor folds it into the gesture's undo step
     /// and the coalescing window stays open for the next move.
-    fn apply_within(&mut self, gesture: &str, command: Command) -> Option<String> {
+    pub(crate) fn apply_within(&mut self, gesture: &str, command: Command) -> Option<String> {
         // A knob's gesture, folded into one step; said at Debug, since a
         // dial turned is many of these.
         log::debug!("edit: {} ({gesture})", command_name(&command));
@@ -7738,266 +7741,6 @@ impl Studio {
         self.selection.clear();
     }
 
-    /// Cuts a time range on the active timeline (e.g. from an AI instruction).
-    /// If start is at the head (start <= 0.05), trims the head with ripple.
-    /// If start is in the middle, splits at start and end, and deletes the segment with ripple.
-    pub fn ai_cut_range(&mut self, start: f64, end: f64) {
-        if start >= end || self.timeline().clips.is_empty() {
-            return;
-        }
-        self.flush_commit();
-
-        let delta = end - start;
-        if start <= 0.05 {
-            // Cut from the beginning: trim clips starting at 0.0
-            let target_clips: Vec<(String, f64)> = self
-                .timeline()
-                .clips
-                .iter()
-                .filter(|c| c.start <= 0.05 && !self.locked(&c.track_id))
-                .map(|c| (c.id.clone(), c.duration))
-                .collect();
-
-            if target_clips.is_empty() {
-                if let Some(min_start) = self
-                    .timeline()
-                    .clips
-                    .iter()
-                    .map(|c| c.start)
-                    .min_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
-                {
-                    let clips: Vec<(String, f64)> = self
-                        .timeline()
-                        .clips
-                        .iter()
-                        .filter(|c| (c.start - min_start).abs() < 0.05 && !self.locked(&c.track_id))
-                        .map(|c| (c.id.clone(), c.duration))
-                        .collect();
-                    for (id, dur) in clips {
-                        let trim_amt = delta.min(dur - 0.05).max(0.0);
-                        if trim_amt > 0.0 {
-                            self.apply(Command::TrimClip {
-                                clip_id: id,
-                                edge: TrimEdge::Start,
-                                delta: trim_amt,
-                                ripple: true,
-                            });
-                        }
-                    }
-                }
-            } else {
-                for (id, dur) in target_clips {
-                    let trim_amt = delta.min(dur - 0.05).max(0.0);
-                    if trim_amt > 0.0 {
-                        self.apply(Command::TrimClip {
-                            clip_id: id,
-                            edge: TrimEdge::Start,
-                            delta: trim_amt,
-                            ripple: true,
-                        });
-                    }
-                }
-            }
-            self.notify(&format!("AI: Cut first {:.1}s from timeline", delta), false);
-            return;
-        }
-
-        // Cut middle section:
-        // 1. Split clips containing `start`
-        let clips_at_start: Vec<String> = self
-            .timeline()
-            .clips
-            .iter()
-            .filter(|c| {
-                c.start + 0.02 < start
-                    && c.start + c.duration > start + 0.02
-                    && !self.locked(&c.track_id)
-            })
-            .map(|c| c.id.clone())
-            .collect();
-        if !clips_at_start.is_empty() {
-            self.apply(Command::SplitClips {
-                clip_ids: clips_at_start,
-                time: start,
-            });
-        }
-
-        // 2. Split clips containing `end`
-        let clips_at_end: Vec<String> = self
-            .timeline()
-            .clips
-            .iter()
-            .filter(|c| {
-                c.start + 0.02 < end
-                    && c.start + c.duration > end + 0.02
-                    && !self.locked(&c.track_id)
-            })
-            .map(|c| c.id.clone())
-            .collect();
-        if !clips_at_end.is_empty() {
-            self.apply(Command::SplitClips {
-                clip_ids: clips_at_end,
-                time: end,
-            });
-        }
-
-        // 3. Remove all clips entirely within [start, end]
-        let doomed: Vec<String> = self
-            .timeline()
-            .clips
-            .iter()
-            .filter(|c| {
-                c.start >= start - 0.05
-                    && c.start + c.duration <= end + 0.05
-                    && !self.locked(&c.track_id)
-            })
-            .map(|c| c.id.clone())
-            .collect();
-
-        if !doomed.is_empty() {
-            self.apply(Command::RemoveClips {
-                clip_ids: doomed,
-                ripple: true,
-            });
-        }
-        self.notify(
-            &format!("AI: Cut {:.1}s - {:.1}s from timeline", start, end),
-            false,
-        );
-    }
-
-    /// Restores the trimmed head intro or undos the last action.
-    pub fn ai_restore_intro(&mut self) {
-        self.flush_commit();
-        let trimmed: Vec<(String, f64)> = self
-            .timeline()
-            .clips
-            .iter()
-            .filter(|c| c.start <= 0.05 && c.source_start > 0.05 && !self.locked(&c.track_id))
-            .map(|c| (c.id.clone(), c.source_start))
-            .collect();
-
-        if !trimmed.is_empty() {
-            for (id, src_start) in trimmed {
-                self.apply(Command::TrimClip {
-                    clip_id: id,
-                    edge: TrimEdge::Start,
-                    delta: -src_start,
-                    ripple: true,
-                });
-            }
-            self.notify("AI: Intro restored to timeline", false);
-        } else {
-            self.undo();
-            self.notify("AI: Restored previous timeline state", false);
-        }
-    }
-
-    /// Changes speed on a segment between start and end.
-    pub fn ai_speed_range(&mut self, start: f64, end: f64, speed: f64) {
-        if start >= end || self.timeline().clips.is_empty() {
-            return;
-        }
-        self.flush_commit();
-
-        let clips_at_start: Vec<String> = self
-            .timeline()
-            .clips
-            .iter()
-            .filter(|c| {
-                c.start + 0.02 < start
-                    && c.start + c.duration > start + 0.02
-                    && !self.locked(&c.track_id)
-            })
-            .map(|c| c.id.clone())
-            .collect();
-        if !clips_at_start.is_empty() {
-            self.apply(Command::SplitClips {
-                clip_ids: clips_at_start,
-                time: start,
-            });
-        }
-
-        let clips_at_end: Vec<String> = self
-            .timeline()
-            .clips
-            .iter()
-            .filter(|c| {
-                c.start + 0.02 < end
-                    && c.start + c.duration > end + 0.02
-                    && !self.locked(&c.track_id)
-            })
-            .map(|c| c.id.clone())
-            .collect();
-        if !clips_at_end.is_empty() {
-            self.apply(Command::SplitClips {
-                clip_ids: clips_at_end,
-                time: end,
-            });
-        }
-
-        let sped_clips: Vec<String> = self
-            .timeline()
-            .clips
-            .iter()
-            .filter(|c| {
-                c.start >= start - 0.05
-                    && c.start + c.duration <= end + 0.05
-                    && !self.locked(&c.track_id)
-            })
-            .map(|c| c.id.clone())
-            .collect();
-
-        for id in sped_clips {
-            self.apply(Command::SetClipSpeed {
-                clip_id: id,
-                speed,
-            });
-        }
-        self.notify(
-            &format!("AI: Sped up {:.1}s - {:.1}s by {:.1}x", start, end, speed),
-            false,
-        );
-    }
-
-    /// Dispatches natural language prompt to editing commands.
-    pub fn ai_apply_prompt(&mut self, prompt: &str) {
-        let text = prompt.trim().to_lowercase();
-        if text.contains("undo") || text.contains("restore") || text.contains("intro back") {
-            self.ai_restore_intro();
-            return;
-        }
-        if text.contains("speed") || text.contains("2x") {
-            self.ai_speed_range(60.0, 90.0, 2.0);
-            return;
-        }
-        if text.contains("pricing") {
-            self.ai_cut_range(30.0, 50.0);
-            return;
-        }
-
-        let mut seconds = 30.0;
-        let mut found_num = false;
-        for token in text.split_whitespace() {
-            let clean: String = token
-                .chars()
-                .filter(|c| c.is_ascii_digit() || *c == '.')
-                .collect();
-            if let Ok(val) = clean.parse::<f64>() {
-                if val > 0.0 {
-                    seconds = val;
-                    found_num = true;
-                    break;
-                }
-            }
-        }
-        if text.contains("cut") || text.contains("trim") || text.contains("remove") || found_num {
-            self.ai_cut_range(0.0, seconds);
-        } else {
-            self.notify("AI: Prompt applied to timeline", false);
-        }
-    }
-
     /// A freeze frame at the playhead on a picture clip.
     ///
     /// Video extracts a JPEG still into the project cache; images reuse their
@@ -11125,6 +10868,7 @@ impl Studio {
                 .collect(),
         );
         app.set_captions(self.captions.data(self));
+        app.global::<Editor>().set_ai(self.ai.data(self));
         let voices = installed(&self.settings.voices);
         sync(
             &models.speech_models,

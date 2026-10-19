@@ -1,0 +1,22 @@
+[package]
+name = "incubrix-media"
+description = "IncuBrix intake: ffprobe, source hash, word-level transcript, speaker diarization, transcript cache."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+incubrix-core = { path = "../incubrix-core" }
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+thiserror.workspace = true
+
+# Real speech recognition and diarization. Off by default: CI and the
+# tests use the fixture adapters and need no models, no native builds.
+whisper-rs = { version = "0.16", optional = true }
+sherpa-onnx = { version = "1.13", optional = true, default-features = false, features = ["shared"] }
+
+[features]
+whisper = ["dep:whisper-rs"]
+sherpa = ["dep:sherpa-onnx"]

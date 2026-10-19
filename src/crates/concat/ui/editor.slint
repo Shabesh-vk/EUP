@@ -9,6 +9,7 @@ import {
     CurveData, CurveGroupData, WheelData, WheelGroupData,
 } from "inspector/grading.slint";
 import { MediaFilter, MediaItemData, TextPresetData } from "workspace/media-pane.slint";
+import { AiPanelData } from "workspace/ai-conversation.slint";
 import { DockDivider, DockSide, SeatBox } from "dock.slint";
 import { PaneKind } from "workspace/pane-switcher.slint";
 import { MenuItemData } from "primitives/context-menu.slint";
@@ -505,10 +506,13 @@ export global Editor {
     in-out property <string> keys-pan;
     in-out property <string> keys-preview-axis;
 
-    // ── AI Conversation ──
-    callback ai-cut-range(start: float, end: float);
-    callback ai-speed-range(start: float, end: float, speed: float);
-    callback ai-restore-intro();
+    // ── AI Conversation: the IncuBrix engine, run in-process (ai.rs) ──
+    in-out property <AiPanelData> ai;
+    callback ai-say(prompt: string);
+    callback ai-answer(option: int);
     callback ai-undo();
-    callback ai-apply-prompt(prompt: string);
+    callback ai-redo();
+    callback ai-reset();
+    callback ai-transcribe();
+    callback ai-restore(edit: int);
 }

@@ -1,0 +1,16 @@
+[package]
+name = "incubrix-nlu"
+description = "IncuBrix instruction understanding: words to structured intents (rules, LLM, mock), and the resolver that turns intents into timeline operations."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+incubrix-core = { path = "../incubrix-core" }
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+schemars.workspace = true
+regex = "1"
+# The LLM adapter's HTTP client. Blocking: one request per instruction.
+ureq = "2"

@@ -1,0 +1,572 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Op",
+  "description": "One edit.",
+  "oneOf": [
+    {
+      "description": "Removes spans of the source from the edit.",
+      "type": "object",
+      "required": [
+        "op",
+        "ranges",
+        "reason"
+      ],
+      "properties": {
+        "op": {
+          "type": "string",
+          "enum": [
+            "cut"
+          ]
+        },
+        "ranges": {
+          "description": "The spans, in source time.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SrcRange"
+          }
+        },
+        "reason": {
+          "description": "Why.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/CutReason"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "description": "Removes everything outside one span.",
+      "type": "object",
+      "required": [
+        "op",
+        "range"
+      ],
+      "properties": {
+        "op": {
+          "type": "string",
+          "enum": [
+            "keep_only"
+          ]
+        },
+        "range": {
+          "description": "The span to keep.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/SrcRange"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "description": "Moves a span so it plays just before another point of the source.",
+      "type": "object",
+      "required": [
+        "op",
+        "range"
+      ],
+      "properties": {
+        "before": {
+          "description": "Source time it is placed in front of; `None` puts it last.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int64"
+        },
+        "op": {
+          "type": "string",
+          "enum": [
+            "reorder"
+          ]
+        },
+        "range": {
+          "description": "The span to move.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/SrcRange"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "description": "Plays a span faster or slower. Where speed changes overlap, the later one wins on the overlap.",
+      "type": "object",
+      "required": [
+        "op",
+        "range",
+        "speed"
+      ],
+      "properties": {
+        "op": {
+          "type": "string",
+          "enum": [
+            "speed"
+          ]
+        },
+        "range": {
+          "description": "The span, in source time.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/SrcRange"
+            }
+          ]
+        },
+        "speed": {
+          "description": "Thousandths: 2000 = 2x.",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      }
+    },
+    {
+      "description": "Adds a caption attached to content.",
+      "type": "object",
+      "required": [
+        "anchor",
+        "id",
+        "op",
+        "style",
+        "text"
+      ],
+      "properties": {
+        "anchor": {
+          "description": "What it sits on.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Anchor"
+            }
+          ]
+        },
+        "id": {
+          "description": "Caption id, e.g. `cap_1`.",
+          "type": "string"
+        },
+        "op": {
+          "type": "string",
+          "enum": [
+            "add_caption"
+          ]
+        },
+        "style": {
+          "description": "How it looks.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/CaptionStyle"
+            }
+          ]
+        },
+        "text": {
+          "description": "The words shown.",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "description": "Changes how a caption looks.",
+      "type": "object",
+      "required": [
+        "id",
+        "op",
+        "patch"
+      ],
+      "properties": {
+        "id": {
+          "description": "Caption id.",
+          "type": "string"
+        },
+        "op": {
+          "type": "string",
+          "enum": [
+            "style_caption"
+          ]
+        },
+        "patch": {
+          "description": "What changes.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/StylePatch"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "description": "Changes a caption's text.",
+      "type": "object",
+      "required": [
+        "id",
+        "op",
+        "text"
+      ],
+      "properties": {
+        "id": {
+          "description": "Caption id.",
+          "type": "string"
+        },
+        "op": {
+          "type": "string",
+          "enum": [
+            "retext_caption"
+          ]
+        },
+        "text": {
+          "description": "New text.",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "description": "Takes a caption away.",
+      "type": "object",
+      "required": [
+        "id",
+        "op"
+      ],
+      "properties": {
+        "id": {
+          "description": "Caption id.",
+          "type": "string"
+        },
+        "op": {
+          "type": "string",
+          "enum": [
+            "remove_caption"
+          ]
+        }
+      }
+    },
+    {
+      "description": "Silences content.",
+      "type": "object",
+      "required": [
+        "anchor",
+        "id",
+        "op"
+      ],
+      "properties": {
+        "anchor": {
+          "description": "What is silenced.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Anchor"
+            }
+          ]
+        },
+        "id": {
+          "description": "Mark id, e.g. `mute_1`.",
+          "type": "string"
+        },
+        "op": {
+          "type": "string",
+          "enum": [
+            "mute"
+          ]
+        }
+      }
+    },
+    {
+      "description": "Replaces content with a tone.",
+      "type": "object",
+      "required": [
+        "anchor",
+        "id",
+        "op"
+      ],
+      "properties": {
+        "anchor": {
+          "description": "What is bleeped.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Anchor"
+            }
+          ]
+        },
+        "id": {
+          "description": "Mark id, e.g. `bleep_1`.",
+          "type": "string"
+        },
+        "op": {
+          "type": "string",
+          "enum": [
+            "bleep"
+          ]
+        }
+      }
+    },
+    {
+      "description": "Marks a pause the user wants kept; silence removal skips it.",
+      "type": "object",
+      "required": [
+        "op",
+        "range"
+      ],
+      "properties": {
+        "op": {
+          "type": "string",
+          "enum": [
+            "protect_pause"
+          ]
+        },
+        "range": {
+          "description": "The pause.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/SrcRange"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "description": "Background music that ducks under speech.",
+      "type": "object",
+      "required": [
+        "duck_db",
+        "id",
+        "op",
+        "path",
+        "volume_db"
+      ],
+      "properties": {
+        "duck_db": {
+          "description": "How far it drops under speech, dB (positive number).",
+          "type": "integer",
+          "format": "int32"
+        },
+        "id": {
+          "description": "Music id.",
+          "type": "string"
+        },
+        "op": {
+          "type": "string",
+          "enum": [
+            "add_music"
+          ]
+        },
+        "path": {
+          "description": "File path or URL.",
+          "type": "string"
+        },
+        "volume_db": {
+          "description": "Level when nobody speaks, dB.",
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    {
+      "description": "Takes music away.",
+      "type": "object",
+      "required": [
+        "id",
+        "op"
+      ],
+      "properties": {
+        "id": {
+          "description": "Music id.",
+          "type": "string"
+        },
+        "op": {
+          "type": "string",
+          "enum": [
+            "remove_music"
+          ]
+        }
+      }
+    },
+    {
+      "description": "Switches an earlier transaction off, keeping everything after it.",
+      "type": "object",
+      "required": [
+        "op",
+        "tx"
+      ],
+      "properties": {
+        "op": {
+          "type": "string",
+          "enum": [
+            "restore"
+          ]
+        },
+        "tx": {
+          "description": "The transaction to switch off.",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "Anchor": {
+      "description": "What an overlay is attached to. Content, never a clock position.",
+      "oneOf": [
+        {
+          "description": "A run of transcript words, first to last inclusive.",
+          "type": "object",
+          "required": [
+            "first",
+            "kind",
+            "last"
+          ],
+          "properties": {
+            "first": {
+              "description": "First word id.",
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "words"
+              ]
+            },
+            "last": {
+              "description": "Last word id.",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "description": "A span of the source with no words in it (e.g. a caption over music).",
+          "type": "object",
+          "required": [
+            "kind",
+            "range"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "source"
+              ]
+            },
+            "range": {
+              "description": "The span.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/SrcRange"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "CaptionStyle": {
+      "description": "How a caption looks.",
+      "type": "object",
+      "required": [
+        "bold",
+        "color",
+        "position",
+        "size"
+      ],
+      "properties": {
+        "bold": {
+          "description": "Bold or not.",
+          "type": "boolean"
+        },
+        "color": {
+          "description": "`#RRGGBB`.",
+          "type": "string"
+        },
+        "position": {
+          "description": "`bottom`, `top` or `center`.",
+          "type": "string"
+        },
+        "size": {
+          "description": "Font size in pixels at 1080p.",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      }
+    },
+    "CutReason": {
+      "description": "Why a cut was made: shown in summaries, and used by later rules (silence removal never re-cuts a protected pause, and so on).",
+      "oneOf": [
+        {
+          "description": "The user asked for this span to go.",
+          "type": "string",
+          "enum": [
+            "user"
+          ]
+        },
+        {
+          "description": "A filler word (um, uh, filler \"like\").",
+          "type": "string",
+          "enum": [
+            "filler"
+          ]
+        },
+        {
+          "description": "A silence longer than the asked threshold.",
+          "type": "string",
+          "enum": [
+            "silence"
+          ]
+        }
+      ]
+    },
+    "SrcRange": {
+      "description": "A half-open span `[start, end)` of the **original source** file.",
+      "type": "object",
+      "required": [
+        "end",
+        "start"
+      ],
+      "properties": {
+        "end": {
+          "description": "End (exclusive), microseconds into the source.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "start": {
+          "description": "Start, microseconds into the source.",
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "StylePatch": {
+      "description": "A change to some of a caption's style; absent fields stay as they are.",
+      "type": "object",
+      "properties": {
+        "bold": {
+          "description": "New weight.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "color": {
+          "description": "New colour.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "position": {
+          "description": "New position.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "size": {
+          "description": "New size.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      }
+    }
+  }
+}

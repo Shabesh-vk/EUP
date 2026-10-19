@@ -1,0 +1,2014 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Intent",
+  "description": "One instruction's meaning.",
+  "oneOf": [
+    {
+      "description": "Remove something.",
+      "type": "object",
+      "required": [
+        "intent",
+        "target"
+      ],
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": [
+            "cut"
+          ]
+        },
+        "target": {
+          "description": "What.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Target"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "description": "Remove everything except something.",
+      "type": "object",
+      "required": [
+        "intent",
+        "target"
+      ],
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": [
+            "keep_only"
+          ]
+        },
+        "target": {
+          "description": "What stays.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Target"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "description": "Move a section.",
+      "type": "object",
+      "required": [
+        "intent",
+        "target",
+        "to"
+      ],
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": [
+            "move"
+          ]
+        },
+        "target": {
+          "description": "What moves.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Target"
+            }
+          ]
+        },
+        "to": {
+          "description": "Where to.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Place"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "description": "Play something faster or slower.",
+      "type": "object",
+      "required": [
+        "intent",
+        "speed",
+        "target"
+      ],
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": [
+            "speed"
+          ]
+        },
+        "speed": {
+          "description": "Thousandths: 2000 = 2x, 500 = half speed.",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "target": {
+          "description": "What (everything when not said).",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Target"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "description": "Silence words.",
+      "type": "object",
+      "required": [
+        "intent",
+        "target"
+      ],
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": [
+            "mute"
+          ]
+        },
+        "target": {
+          "description": "What.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Target"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "description": "Bleep words.",
+      "type": "object",
+      "required": [
+        "intent",
+        "target"
+      ],
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": [
+            "bleep"
+          ]
+        },
+        "target": {
+          "description": "What.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Target"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "description": "Add a caption on content.",
+      "type": "object",
+      "required": [
+        "intent",
+        "target",
+        "text"
+      ],
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": [
+            "add_caption"
+          ]
+        },
+        "target": {
+          "description": "Where: words said, or a time.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Target"
+            }
+          ]
+        },
+        "text": {
+          "description": "The text shown.",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "description": "Change how a caption looks.",
+      "type": "object",
+      "required": [
+        "caption",
+        "change",
+        "intent"
+      ],
+      "properties": {
+        "caption": {
+          "description": "Which caption.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/CaptionRef"
+            }
+          ]
+        },
+        "change": {
+          "description": "What changes.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/StyleChange"
+            }
+          ]
+        },
+        "intent": {
+          "type": "string",
+          "enum": [
+            "style_caption"
+          ]
+        }
+      }
+    },
+    {
+      "description": "Change a caption's words.",
+      "type": "object",
+      "required": [
+        "caption",
+        "intent",
+        "text"
+      ],
+      "properties": {
+        "caption": {
+          "description": "Which caption.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/CaptionRef"
+            }
+          ]
+        },
+        "intent": {
+          "type": "string",
+          "enum": [
+            "retext_caption"
+          ]
+        },
+        "text": {
+          "description": "New text.",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "description": "Take a caption away.",
+      "type": "object",
+      "required": [
+        "caption",
+        "intent"
+      ],
+      "properties": {
+        "caption": {
+          "description": "Which caption.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/CaptionRef"
+            }
+          ]
+        },
+        "intent": {
+          "type": "string",
+          "enum": [
+            "remove_caption"
+          ]
+        }
+      }
+    },
+    {
+      "description": "Caption the whole video from the transcript.",
+      "type": "object",
+      "required": [
+        "intent"
+      ],
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": [
+            "auto_caption"
+          ]
+        }
+      }
+    },
+    {
+      "description": "Remove um, uh and filler \"like\".",
+      "type": "object",
+      "required": [
+        "intent"
+      ],
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": [
+            "remove_fillers"
+          ]
+        }
+      }
+    },
+    {
+      "description": "Remove silences longer than a threshold.",
+      "type": "object",
+      "required": [
+        "intent",
+        "min_ms"
+      ],
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": [
+            "remove_silences"
+          ]
+        },
+        "min_ms": {
+          "description": "Threshold, milliseconds.",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      }
+    },
+    {
+      "description": "Keep a pause through later silence removal.",
+      "type": "object",
+      "required": [
+        "intent",
+        "target"
+      ],
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": [
+            "keep_pause"
+          ]
+        },
+        "target": {
+          "description": "The pause (after a phrase, or a time span).",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Target"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "description": "Add background music that ducks under speech.",
+      "type": "object",
+      "required": [
+        "intent",
+        "path"
+      ],
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": [
+            "add_music"
+          ]
+        },
+        "path": {
+          "description": "File path or URL.",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "description": "Take the music away.",
+      "type": "object",
+      "required": [
+        "intent"
+      ],
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": [
+            "remove_music"
+          ]
+        }
+      }
+    },
+    {
+      "description": "Step back.",
+      "type": "object",
+      "required": [
+        "intent",
+        "steps"
+      ],
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": [
+            "undo"
+          ]
+        },
+        "steps": {
+          "description": "How many instructions.",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      }
+    },
+    {
+      "description": "Step forward.",
+      "type": "object",
+      "required": [
+        "intent",
+        "steps"
+      ],
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": [
+            "redo"
+          ]
+        },
+        "steps": {
+          "description": "How many instructions.",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      }
+    },
+    {
+      "description": "Switch one earlier edit off, keeping everything after it.",
+      "type": "object",
+      "required": [
+        "edit",
+        "intent"
+      ],
+      "properties": {
+        "edit": {
+          "description": "Which edit.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/EditRef"
+            }
+          ]
+        },
+        "intent": {
+          "type": "string",
+          "enum": [
+            "restore"
+          ]
+        },
+        "keep": {
+          "description": "Anything the user asked to keep while restoring (\"but keep the music\").",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    {
+      "description": "Produce the video (a separate step).",
+      "type": "object",
+      "required": [
+        "intent"
+      ],
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": [
+            "render"
+          ]
+        }
+      }
+    },
+    {
+      "description": "A goal too vague to act on without asking.",
+      "type": "object",
+      "required": [
+        "goal",
+        "intent"
+      ],
+      "properties": {
+        "goal": {
+          "description": "What kind.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/VagueGoal"
+            }
+          ]
+        },
+        "intent": {
+          "type": "string",
+          "enum": [
+            "vague"
+          ]
+        }
+      }
+    },
+    {
+      "description": "Several instructions in one message, applied together or not at all.",
+      "type": "object",
+      "required": [
+        "intent",
+        "parts"
+      ],
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": [
+            "multi"
+          ]
+        },
+        "parts": {
+          "description": "The parts, in order.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Part"
+          }
+        }
+      }
+    },
+    {
+      "description": "Not understood.",
+      "type": "object",
+      "required": [
+        "intent",
+        "reason"
+      ],
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": [
+            "unknown"
+          ]
+        },
+        "reason": {
+          "description": "Why, for the user.",
+          "type": "string"
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "CaptionRef": {
+      "description": "Which caption.",
+      "oneOf": [
+        {
+          "description": "\"that caption\", \"it\": the one last talked about.",
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "that"
+              ]
+            }
+          }
+        },
+        {
+          "description": "By id, `cap_2`.",
+          "type": "object",
+          "required": [
+            "kind",
+            "value"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "id"
+              ]
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "description": "The caption whose text contains this.",
+          "type": "object",
+          "required": [
+            "kind",
+            "value"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "text"
+              ]
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "description": "The nth caption, 1-based, in the order added.",
+          "type": "object",
+          "required": [
+            "kind",
+            "value"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "nth"
+              ]
+            },
+            "value": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          }
+        },
+        {
+          "description": "Every caption.",
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "all"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "EditKind": {
+      "description": "Kinds of edits, for \"the last cut\", \"the speed change\".",
+      "oneOf": [
+        {
+          "description": "Anything that removed content.",
+          "type": "string",
+          "enum": [
+            "cut"
+          ]
+        },
+        {
+          "description": "Speed changes.",
+          "type": "string",
+          "enum": [
+            "speed"
+          ]
+        },
+        {
+          "description": "Captions.",
+          "type": "string",
+          "enum": [
+            "caption"
+          ]
+        },
+        {
+          "description": "Mutes and bleeps.",
+          "type": "string",
+          "enum": [
+            "audio"
+          ]
+        },
+        {
+          "description": "Music.",
+          "type": "string",
+          "enum": [
+            "music"
+          ]
+        },
+        {
+          "description": "Moves.",
+          "type": "string",
+          "enum": [
+            "move"
+          ]
+        },
+        {
+          "description": "Any edit.",
+          "type": "string",
+          "enum": [
+            "any"
+          ]
+        }
+      ]
+    },
+    "EditRef": {
+      "description": "Which earlier edit.",
+      "oneOf": [
+        {
+          "description": "By number, `#3`.",
+          "type": "object",
+          "required": [
+            "id",
+            "kind"
+          ],
+          "properties": {
+            "id": {
+              "description": "The edit number.",
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "id"
+              ]
+            }
+          }
+        },
+        {
+          "description": "The latest of a kind; `back` 0 is the last, 1 the second-to-last.",
+          "type": "object",
+          "required": [
+            "back",
+            "edit",
+            "kind"
+          ],
+          "properties": {
+            "back": {
+              "description": "How far back.",
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "edit": {
+              "description": "What kind.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/EditKind"
+                }
+              ]
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "recent"
+              ]
+            }
+          }
+        },
+        {
+          "description": "The edit that removed the opening.",
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "intro"
+              ]
+            }
+          }
+        },
+        {
+          "description": "The edit that removed this subject.",
+          "type": "object",
+          "required": [
+            "kind",
+            "text"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "topic"
+              ]
+            },
+            "text": {
+              "description": "The subject.",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "description": "\"what I removed\": ask which.",
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "removed"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Intent": {
+      "description": "One instruction's meaning.",
+      "oneOf": [
+        {
+          "description": "Remove something.",
+          "type": "object",
+          "required": [
+            "intent",
+            "target"
+          ],
+          "properties": {
+            "intent": {
+              "type": "string",
+              "enum": [
+                "cut"
+              ]
+            },
+            "target": {
+              "description": "What.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Target"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "description": "Remove everything except something.",
+          "type": "object",
+          "required": [
+            "intent",
+            "target"
+          ],
+          "properties": {
+            "intent": {
+              "type": "string",
+              "enum": [
+                "keep_only"
+              ]
+            },
+            "target": {
+              "description": "What stays.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Target"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "description": "Move a section.",
+          "type": "object",
+          "required": [
+            "intent",
+            "target",
+            "to"
+          ],
+          "properties": {
+            "intent": {
+              "type": "string",
+              "enum": [
+                "move"
+              ]
+            },
+            "target": {
+              "description": "What moves.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Target"
+                }
+              ]
+            },
+            "to": {
+              "description": "Where to.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Place"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "description": "Play something faster or slower.",
+          "type": "object",
+          "required": [
+            "intent",
+            "speed",
+            "target"
+          ],
+          "properties": {
+            "intent": {
+              "type": "string",
+              "enum": [
+                "speed"
+              ]
+            },
+            "speed": {
+              "description": "Thousandths: 2000 = 2x, 500 = half speed.",
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "target": {
+              "description": "What (everything when not said).",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Target"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "description": "Silence words.",
+          "type": "object",
+          "required": [
+            "intent",
+            "target"
+          ],
+          "properties": {
+            "intent": {
+              "type": "string",
+              "enum": [
+                "mute"
+              ]
+            },
+            "target": {
+              "description": "What.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Target"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "description": "Bleep words.",
+          "type": "object",
+          "required": [
+            "intent",
+            "target"
+          ],
+          "properties": {
+            "intent": {
+              "type": "string",
+              "enum": [
+                "bleep"
+              ]
+            },
+            "target": {
+              "description": "What.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Target"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "description": "Add a caption on content.",
+          "type": "object",
+          "required": [
+            "intent",
+            "target",
+            "text"
+          ],
+          "properties": {
+            "intent": {
+              "type": "string",
+              "enum": [
+                "add_caption"
+              ]
+            },
+            "target": {
+              "description": "Where: words said, or a time.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Target"
+                }
+              ]
+            },
+            "text": {
+              "description": "The text shown.",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "description": "Change how a caption looks.",
+          "type": "object",
+          "required": [
+            "caption",
+            "change",
+            "intent"
+          ],
+          "properties": {
+            "caption": {
+              "description": "Which caption.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/CaptionRef"
+                }
+              ]
+            },
+            "change": {
+              "description": "What changes.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/StyleChange"
+                }
+              ]
+            },
+            "intent": {
+              "type": "string",
+              "enum": [
+                "style_caption"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Change a caption's words.",
+          "type": "object",
+          "required": [
+            "caption",
+            "intent",
+            "text"
+          ],
+          "properties": {
+            "caption": {
+              "description": "Which caption.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/CaptionRef"
+                }
+              ]
+            },
+            "intent": {
+              "type": "string",
+              "enum": [
+                "retext_caption"
+              ]
+            },
+            "text": {
+              "description": "New text.",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "description": "Take a caption away.",
+          "type": "object",
+          "required": [
+            "caption",
+            "intent"
+          ],
+          "properties": {
+            "caption": {
+              "description": "Which caption.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/CaptionRef"
+                }
+              ]
+            },
+            "intent": {
+              "type": "string",
+              "enum": [
+                "remove_caption"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Caption the whole video from the transcript.",
+          "type": "object",
+          "required": [
+            "intent"
+          ],
+          "properties": {
+            "intent": {
+              "type": "string",
+              "enum": [
+                "auto_caption"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Remove um, uh and filler \"like\".",
+          "type": "object",
+          "required": [
+            "intent"
+          ],
+          "properties": {
+            "intent": {
+              "type": "string",
+              "enum": [
+                "remove_fillers"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Remove silences longer than a threshold.",
+          "type": "object",
+          "required": [
+            "intent",
+            "min_ms"
+          ],
+          "properties": {
+            "intent": {
+              "type": "string",
+              "enum": [
+                "remove_silences"
+              ]
+            },
+            "min_ms": {
+              "description": "Threshold, milliseconds.",
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          }
+        },
+        {
+          "description": "Keep a pause through later silence removal.",
+          "type": "object",
+          "required": [
+            "intent",
+            "target"
+          ],
+          "properties": {
+            "intent": {
+              "type": "string",
+              "enum": [
+                "keep_pause"
+              ]
+            },
+            "target": {
+              "description": "The pause (after a phrase, or a time span).",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Target"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "description": "Add background music that ducks under speech.",
+          "type": "object",
+          "required": [
+            "intent",
+            "path"
+          ],
+          "properties": {
+            "intent": {
+              "type": "string",
+              "enum": [
+                "add_music"
+              ]
+            },
+            "path": {
+              "description": "File path or URL.",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "description": "Take the music away.",
+          "type": "object",
+          "required": [
+            "intent"
+          ],
+          "properties": {
+            "intent": {
+              "type": "string",
+              "enum": [
+                "remove_music"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Step back.",
+          "type": "object",
+          "required": [
+            "intent",
+            "steps"
+          ],
+          "properties": {
+            "intent": {
+              "type": "string",
+              "enum": [
+                "undo"
+              ]
+            },
+            "steps": {
+              "description": "How many instructions.",
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          }
+        },
+        {
+          "description": "Step forward.",
+          "type": "object",
+          "required": [
+            "intent",
+            "steps"
+          ],
+          "properties": {
+            "intent": {
+              "type": "string",
+              "enum": [
+                "redo"
+              ]
+            },
+            "steps": {
+              "description": "How many instructions.",
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          }
+        },
+        {
+          "description": "Switch one earlier edit off, keeping everything after it.",
+          "type": "object",
+          "required": [
+            "edit",
+            "intent"
+          ],
+          "properties": {
+            "edit": {
+              "description": "Which edit.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/EditRef"
+                }
+              ]
+            },
+            "intent": {
+              "type": "string",
+              "enum": [
+                "restore"
+              ]
+            },
+            "keep": {
+              "description": "Anything the user asked to keep while restoring (\"but keep the music\").",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Produce the video (a separate step).",
+          "type": "object",
+          "required": [
+            "intent"
+          ],
+          "properties": {
+            "intent": {
+              "type": "string",
+              "enum": [
+                "render"
+              ]
+            }
+          }
+        },
+        {
+          "description": "A goal too vague to act on without asking.",
+          "type": "object",
+          "required": [
+            "goal",
+            "intent"
+          ],
+          "properties": {
+            "goal": {
+              "description": "What kind.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/VagueGoal"
+                }
+              ]
+            },
+            "intent": {
+              "type": "string",
+              "enum": [
+                "vague"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Several instructions in one message, applied together or not at all.",
+          "type": "object",
+          "required": [
+            "intent",
+            "parts"
+          ],
+          "properties": {
+            "intent": {
+              "type": "string",
+              "enum": [
+                "multi"
+              ]
+            },
+            "parts": {
+              "description": "The parts, in order.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Part"
+              }
+            }
+          }
+        },
+        {
+          "description": "Not understood.",
+          "type": "object",
+          "required": [
+            "intent",
+            "reason"
+          ],
+          "properties": {
+            "intent": {
+              "type": "string",
+              "enum": [
+                "unknown"
+              ]
+            },
+            "reason": {
+              "description": "Why, for the user.",
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "Occurrence": {
+      "description": "Which mention.",
+      "oneOf": [
+        {
+          "description": "1-based.",
+          "type": "object",
+          "required": [
+            "kind",
+            "n"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "nth"
+              ]
+            },
+            "n": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          }
+        },
+        {
+          "description": "The last one.",
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "last"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Every one.",
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "all"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Part": {
+      "description": "One part of a multi-part instruction.",
+      "type": "object",
+      "required": [
+        "intent",
+        "text"
+      ],
+      "properties": {
+        "intent": {
+          "description": "What they mean.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Intent"
+            }
+          ]
+        },
+        "text": {
+          "description": "The words of this part.",
+          "type": "string"
+        }
+      }
+    },
+    "Place": {
+      "description": "Where a moved section goes.",
+      "oneOf": [
+        {
+          "description": "The very beginning.",
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "start"
+              ]
+            }
+          }
+        },
+        {
+          "description": "The very end.",
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "end"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Just before a phrase is said.",
+          "type": "object",
+          "required": [
+            "kind",
+            "text"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "before_phrase"
+              ]
+            },
+            "text": {
+              "description": "The words.",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "description": "Just before a playback time.",
+          "type": "object",
+          "required": [
+            "kind",
+            "ms"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "at"
+              ]
+            },
+            "ms": {
+              "description": "The time, ms.",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        }
+      ]
+    },
+    "SizeChange": {
+      "description": "A size change.",
+      "oneOf": [
+        {
+          "description": "A quarter bigger.",
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "bigger"
+              ]
+            }
+          }
+        },
+        {
+          "description": "A fifth smaller.",
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "smaller"
+              ]
+            }
+          }
+        },
+        {
+          "description": "An exact size.",
+          "type": "object",
+          "required": [
+            "kind",
+            "px"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "px"
+              ]
+            },
+            "px": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          }
+        }
+      ]
+    },
+    "StyleChange": {
+      "description": "A style change.",
+      "type": "object",
+      "properties": {
+        "bold": {
+          "description": "Bold or not.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "color": {
+          "description": "`#RRGGBB`.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "position": {
+          "description": "`top`, `center`, `bottom`.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "size": {
+          "description": "Bigger, smaller or a size.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/SizeChange"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "Target": {
+      "description": "What an edit applies to.",
+      "oneOf": [
+        {
+          "description": "A typed span of current playback time.",
+          "type": "object",
+          "required": [
+            "end_ms",
+            "kind",
+            "start_ms"
+          ],
+          "properties": {
+            "end_ms": {
+              "description": "End, ms.",
+              "type": "integer",
+              "format": "int64"
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "range"
+              ]
+            },
+            "start_ms": {
+              "description": "Start, ms.",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        },
+        {
+          "description": "The first N ms.",
+          "type": "object",
+          "required": [
+            "kind",
+            "ms"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "first"
+              ]
+            },
+            "ms": {
+              "description": "Length, ms.",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        },
+        {
+          "description": "The last N ms.",
+          "type": "object",
+          "required": [
+            "kind",
+            "ms"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "last"
+              ]
+            },
+            "ms": {
+              "description": "Length, ms.",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        },
+        {
+          "description": "From a time to the end.",
+          "type": "object",
+          "required": [
+            "kind",
+            "start_ms"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "from"
+              ]
+            },
+            "start_ms": {
+              "description": "Start, ms.",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        },
+        {
+          "description": "From the start to a time.",
+          "type": "object",
+          "required": [
+            "end_ms",
+            "kind"
+          ],
+          "properties": {
+            "end_ms": {
+              "description": "End, ms.",
+              "type": "integer",
+              "format": "int64"
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "until"
+              ]
+            }
+          }
+        },
+        {
+          "description": "One moment (for a caption: the words said then).",
+          "type": "object",
+          "required": [
+            "kind",
+            "ms"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "at"
+              ]
+            },
+            "ms": {
+              "description": "The time, ms.",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        },
+        {
+          "description": "Exact words said.",
+          "type": "object",
+          "required": [
+            "kind",
+            "text"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "phrase"
+              ]
+            },
+            "occurrence": {
+              "description": "Which time they are said.",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Occurrence"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "text": {
+              "description": "The words.",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "description": "The sentences about a subject (meaning-based: \"pricing\" finds \"cost\").",
+          "type": "object",
+          "required": [
+            "kind",
+            "text"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "topic"
+              ]
+            },
+            "occurrence": {
+              "description": "Which mention.",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Occurrence"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "text": {
+              "description": "The subject.",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "description": "Everything after a phrase is said.",
+          "type": "object",
+          "required": [
+            "kind",
+            "text"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "after_phrase"
+              ]
+            },
+            "occurrence": {
+              "description": "Which time they are said.",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Occurrence"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "text": {
+              "description": "The words.",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "description": "Everything before a phrase is said.",
+          "type": "object",
+          "required": [
+            "kind",
+            "text"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "before_phrase"
+              ]
+            },
+            "occurrence": {
+              "description": "Which time they are said.",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Occurrence"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "text": {
+              "description": "The words.",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "description": "What one speaker says, optionally only about a subject.",
+          "type": "object",
+          "required": [
+            "kind",
+            "who"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "speaker"
+              ]
+            },
+            "topic": {
+              "description": "About what.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "who": {
+              "description": "Who.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Who"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "description": "Swear words.",
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "profanity"
+              ]
+            }
+          }
+        },
+        {
+          "description": "The whole video.",
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "everything"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Whatever the last instruction pointed at.",
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "that"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "VagueGoal": {
+      "description": "Goals that need a question, never a guess.",
+      "oneOf": [
+        {
+          "description": "\"remove the boring bit\".",
+          "type": "string",
+          "enum": [
+            "boring"
+          ]
+        },
+        {
+          "description": "\"make it shorter\".",
+          "type": "string",
+          "enum": [
+            "shorter"
+          ]
+        }
+      ]
+    },
+    "Who": {
+      "description": "A speaker.",
+      "oneOf": [
+        {
+          "description": "Whoever speaks first.",
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "host"
+              ]
+            }
+          }
+        },
+        {
+          "description": "The other speaker.",
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "guest"
+              ]
+            }
+          }
+        },
+        {
+          "description": "A diarization label, `S1`, `S2`, ...",
+          "type": "object",
+          "required": [
+            "kind",
+            "label"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "label"
+              ]
+            },
+            "label": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

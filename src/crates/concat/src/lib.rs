@@ -912,21 +912,27 @@ fn start(project: Option<std::path::PathBuf>, smoke: bool) -> Result<(), slint::
         state.reload_packages(true);
     }));
 
-    // ── AI Conversation ──
-    editor.on_ai_cut_range(on_window!(|state, start: f32, end: f32| {
-        state.ai_cut_range(start as f64, end as f64);
+    // ── AI Conversation: the IncuBrix engine (panes/ai.rs) ──
+    editor.on_ai_say(on_window!(|state, prompt: SharedString| {
+        crate::panes::ai::say(&mut state, prompt.as_str());
     }));
-    editor.on_ai_speed_range(on_window!(|state, start: f32, end: f32, speed: f32| {
-        state.ai_speed_range(start as f64, end as f64, speed as f64);
-    }));
-    editor.on_ai_restore_intro(on_window!(|state| {
-        state.ai_restore_intro();
+    editor.on_ai_answer(on_window!(|state, row: i32| {
+        crate::panes::ai::answer(&mut state, row);
     }));
     editor.on_ai_undo(on_window!(|state| {
-        state.undo();
+        crate::panes::ai::step(&mut state, false);
     }));
-    editor.on_ai_apply_prompt(on_window!(|state, prompt: SharedString| {
-        state.ai_apply_prompt(prompt.as_str());
+    editor.on_ai_redo(on_window!(|state| {
+        crate::panes::ai::step(&mut state, true);
+    }));
+    editor.on_ai_reset(on_window!(|state| {
+        crate::panes::ai::reset(&mut state);
+    }));
+    editor.on_ai_transcribe(on_window!(|state| {
+        crate::panes::ai::transcribe(&mut state);
+    }));
+    editor.on_ai_restore(on_window!(|state, edit: i32| {
+        crate::panes::ai::restore(&mut state, edit);
     }));
 
     // ── the inspector's effect stacks ──

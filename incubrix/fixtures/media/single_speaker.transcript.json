@@ -1,0 +1,154 @@
+{
+  "transcript": {
+    "words": [
+      {
+        "id": "w00000",
+        "text": "Hi",
+        "start": 200000,
+        "end": 500000,
+        "speaker": "S1",
+        "confidence": 0.98
+      },
+      {
+        "id": "w00001",
+        "text": "everyone,",
+        "start": 500000,
+        "end": 1000000,
+        "speaker": "S1",
+        "confidence": 0.97
+      },
+      {
+        "id": "w00002",
+        "text": "um,",
+        "start": 1300000,
+        "end": 1600000,
+        "speaker": "S1",
+        "confidence": 0.91
+      },
+      {
+        "id": "w00003",
+        "text": "welcome",
+        "start": 2000000,
+        "end": 2400000,
+        "speaker": "S1",
+        "confidence": 0.99
+      },
+      {
+        "id": "w00004",
+        "text": "to",
+        "start": 2400000,
+        "end": 2550000,
+        "speaker": "S1",
+        "confidence": 0.95
+      },
+      {
+        "id": "w00005",
+        "text": "the",
+        "start": 2550000,
+        "end": 2700000,
+        "speaker": "S1",
+        "confidence": 0.95
+      },
+      {
+        "id": "w00006",
+        "text": "channel.",
+        "start": 2700000,
+        "end": 3200000,
+        "speaker": "S1",
+        "confidence": 0.98
+      },
+      {
+        "id": "w00007",
+        "text": "Today",
+        "start": 4200000,
+        "end": 4600000,
+        "speaker": "S1",
+        "confidence": 0.95
+      },
+      {
+        "id": "w00008",
+        "text": "we",
+        "start": 4600000,
+        "end": 4750000,
+        "speaker": "S1",
+        "confidence": 0.95
+      },
+      {
+        "id": "w00009",
+        "text": "talk",
+        "start": 4750000,
+        "end": 5000000,
+        "speaker": "S1",
+        "confidence": 0.95
+      },
+      {
+        "id": "w00010",
+        "text": "about",
+        "start": 5000000,
+        "end": 5300000,
+        "speaker": "S1",
+        "confidence": 0.95
+      },
+      {
+        "id": "w00011",
+        "text": "pricing.",
+        "start": 5300000,
+        "end": 5900000,
+        "speaker": "S1",
+        "confidence": 0.97
+      },
+      {
+        "id": "w00012",
+        "text": "Our",
+        "start": 7000000,
+        "end": 7200000,
+        "speaker": "S1",
+        "confidence": 0.95
+      },
+      {
+        "id": "w00013",
+        "text": "pricing",
+        "start": 7200000,
+        "end": 7700000,
+        "speaker": "S1",
+        "confidence": 0.96
+      },
+      {
+        "id": "w00014",
+        "text": "is",
+        "start": 7700000,
+        "end": 7850000,
+        "speaker": "S1",
+        "confidence": 0.95
+      },
+      {
+        "id": "w00015",
+        "text": "simple.",
+        "start": 7850000,
+        "end": 8400000,
+        "speaker": "S1",
+        "confidence": 0.42
+      },
+      {
+        "id": "w00016",
+        "text": "Thanks",
+        "start": 10500000,
+        "end": 10900000,
+        "speaker": "S1",
+        "confidence": 0.96
+      },
+      {
+        "id": "w00017",
+        "text": "bye",
+        "start": 10900000,
+        "end": 11300000,
+        "speaker": "S1",
+        "confidence": 0.94
+      }
+    ]
+  },
+  "warnings": [
+    "Recogniser output fixed: 0 word time(s) outside the video clamped, 1 overlapping word(s) trimmed, 0 empty token(s) dropped.",
+    "1 word(s) have low recognition confidence and are flagged, never cut or bleeped blindly: 'simple.' at 0:07.9."
+  ]
+}

@@ -1,0 +1,365 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Timeline",
+  "description": "The whole edited video, as data. This is what is hashed and rendered.",
+  "type": "object",
+  "required": [
+    "captions",
+    "duration",
+    "marks",
+    "music",
+    "protected_pauses",
+    "segments"
+  ],
+  "properties": {
+    "captions": {
+      "description": "Captions, in the order they were added (hidden ones included, with no playback).",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Caption"
+      }
+    },
+    "duration": {
+      "description": "Length of the edited video.",
+      "type": "integer",
+      "format": "int64"
+    },
+    "marks": {
+      "description": "Mutes and bleeps.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/AudioMark"
+      }
+    },
+    "music": {
+      "description": "Music beds.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Music"
+      }
+    },
+    "protected_pauses": {
+      "description": "Pauses silence removal must keep.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/SrcRange"
+      }
+    },
+    "segments": {
+      "description": "What plays, in order.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Segment"
+      }
+    }
+  },
+  "definitions": {
+    "Anchor": {
+      "description": "What an overlay is attached to. Content, never a clock position.",
+      "oneOf": [
+        {
+          "description": "A run of transcript words, first to last inclusive.",
+          "type": "object",
+          "required": [
+            "first",
+            "kind",
+            "last"
+          ],
+          "properties": {
+            "first": {
+              "description": "First word id.",
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "words"
+              ]
+            },
+            "last": {
+              "description": "Last word id.",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "description": "A span of the source with no words in it (e.g. a caption over music).",
+          "type": "object",
+          "required": [
+            "kind",
+            "range"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "source"
+              ]
+            },
+            "range": {
+              "description": "The span.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/SrcRange"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "AudioMark": {
+      "description": "A mute or bleep, with where it lands now.",
+      "type": "object",
+      "required": [
+        "anchor",
+        "id",
+        "kind",
+        "playback",
+        "tx"
+      ],
+      "properties": {
+        "anchor": {
+          "description": "What it covers.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Anchor"
+            }
+          ]
+        },
+        "id": {
+          "description": "Mark id.",
+          "type": "string"
+        },
+        "kind": {
+          "description": "Mute or bleep.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/MarkKind"
+            }
+          ]
+        },
+        "playback": {
+          "description": "Where it plays in the edited video.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PbRange"
+          }
+        },
+        "tx": {
+          "description": "The transaction that added it.",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      }
+    },
+    "Caption": {
+      "description": "A caption, with where it lands now.",
+      "type": "object",
+      "required": [
+        "anchor",
+        "id",
+        "playback",
+        "style",
+        "text",
+        "tx"
+      ],
+      "properties": {
+        "anchor": {
+          "description": "What it is attached to.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Anchor"
+            }
+          ]
+        },
+        "id": {
+          "description": "Caption id.",
+          "type": "string"
+        },
+        "playback": {
+          "description": "Where it plays in the edited video; empty when its content is cut.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PbRange"
+          }
+        },
+        "style": {
+          "description": "How it looks.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/CaptionStyle"
+            }
+          ]
+        },
+        "text": {
+          "description": "Text shown.",
+          "type": "string"
+        },
+        "tx": {
+          "description": "The transaction that added it.",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      }
+    },
+    "CaptionStyle": {
+      "description": "How a caption looks.",
+      "type": "object",
+      "required": [
+        "bold",
+        "color",
+        "position",
+        "size"
+      ],
+      "properties": {
+        "bold": {
+          "description": "Bold or not.",
+          "type": "boolean"
+        },
+        "color": {
+          "description": "`#RRGGBB`.",
+          "type": "string"
+        },
+        "position": {
+          "description": "`bottom`, `top` or `center`.",
+          "type": "string"
+        },
+        "size": {
+          "description": "Font size in pixels at 1080p.",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      }
+    },
+    "MarkKind": {
+      "description": "Mute or bleep.",
+      "oneOf": [
+        {
+          "description": "Silence.",
+          "type": "string",
+          "enum": [
+            "mute"
+          ]
+        },
+        {
+          "description": "A tone over the words.",
+          "type": "string",
+          "enum": [
+            "bleep"
+          ]
+        }
+      ]
+    },
+    "Music": {
+      "description": "Background music.",
+      "type": "object",
+      "required": [
+        "duck_db",
+        "id",
+        "path",
+        "tx",
+        "volume_db"
+      ],
+      "properties": {
+        "duck_db": {
+          "description": "Drop under speech, dB.",
+          "type": "integer",
+          "format": "int32"
+        },
+        "id": {
+          "description": "Music id.",
+          "type": "string"
+        },
+        "path": {
+          "description": "File path or URL.",
+          "type": "string"
+        },
+        "tx": {
+          "description": "The transaction that added it.",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "volume_db": {
+          "description": "Level with no speech, dB.",
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "PbRange": {
+      "description": "A half-open span `[start, end)` of the **edited playback**.",
+      "type": "object",
+      "required": [
+        "end",
+        "start"
+      ],
+      "properties": {
+        "end": {
+          "description": "End (exclusive), microseconds into the edited video.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "start": {
+          "description": "Start, microseconds into the edited video.",
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "Segment": {
+      "description": "A piece of the source playing at one speed.",
+      "type": "object",
+      "required": [
+        "playback_start",
+        "source",
+        "speed"
+      ],
+      "properties": {
+        "playback_start": {
+          "description": "Where it starts in the edited video.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "source": {
+          "description": "The source span.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/SrcRange"
+            }
+          ]
+        },
+        "speed": {
+          "description": "Speed in thousandths.",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      }
+    },
+    "SrcRange": {
+      "description": "A half-open span `[start, end)` of the **original source** file.",
+      "type": "object",
+      "required": [
+        "end",
+        "start"
+      ],
+      "properties": {
+        "end": {
+          "description": "End (exclusive), microseconds into the source.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "start": {
+          "description": "Start, microseconds into the source.",
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    }
+  }
+}

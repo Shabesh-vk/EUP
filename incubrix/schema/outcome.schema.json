@@ -1,0 +1,115 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Outcome",
+  "description": "The response to one instruction.",
+  "type": "object",
+  "required": [
+    "duration_s",
+    "operations",
+    "options",
+    "status",
+    "summary",
+    "time_policy",
+    "timeline_hash",
+    "warnings"
+  ],
+  "properties": {
+    "code": {
+      "description": "For a rejection: the UPPER_SNAKE_CASE reason code.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "duration_s": {
+      "description": "Length of the edited video after this step, seconds.",
+      "type": "number",
+      "format": "double"
+    },
+    "operations": {
+      "description": "What was done, one line each.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "options": {
+      "description": "Choices for the question.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "question": {
+      "description": "The question, when one is asked.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "description": "Which answer.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Status"
+        }
+      ]
+    },
+    "summary": {
+      "description": "Before/after in a sentence, or the reason for a rejection.",
+      "type": "string"
+    },
+    "time_policy": {
+      "description": "Always \"current\": typed times are current playback time.",
+      "type": "string"
+    },
+    "timeline_hash": {
+      "description": "Hash of the timeline after this step.",
+      "type": "string"
+    },
+    "tx": {
+      "description": "The transaction recorded, if any.",
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "uint32",
+      "minimum": 0.0
+    },
+    "warnings": {
+      "description": "Consequences and doubts worth knowing.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "definitions": {
+    "Status": {
+      "description": "Which of the three answers.",
+      "oneOf": [
+        {
+          "description": "Done; `operations` and `summary` say what.",
+          "type": "string",
+          "enum": [
+            "applied"
+          ]
+        },
+        {
+          "description": "Not done; `question` and `options` say what to answer.",
+          "type": "string",
+          "enum": [
+            "needs_clarification"
+          ]
+        },
+        {
+          "description": "Not done; `summary` says why.",
+          "type": "string",
+          "enum": [
+            "rejected"
+          ]
+        }
+      ]
+    }
+  }
+}

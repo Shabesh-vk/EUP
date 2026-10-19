@@ -1,0 +1,13 @@
+[package]
+name = "incubrix-core"
+description = "IncuBrix editing engine core: content-anchored timeline, operations, history, deterministic hash. No AI, no IO."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+thiserror.workspace = true
+schemars.workspace = true
