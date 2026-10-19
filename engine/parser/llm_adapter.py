@@ -56,7 +56,7 @@ class OllamaAdapter(BaseLLMAdapter):
         prompt_text = f"Context: {json.dumps(context or {})}\nInstruction: {instruction}"
 
         try:
-            with httpx.Client(timeout=10.0) as client:
+            with httpx.Client(timeout=60.0) as client:
                 resp = client.post(
                     url,
                     json={
@@ -113,6 +113,18 @@ class RuleBasedMockAdapter(BaseLLMAdapter):
         if m_color:
             return {"intent": "update_caption", "params": {"color": m_color.group(1)}}
 
+        # Auto caption -- MUST come before add_caption check so "add auto captions" routes here
+        if (
+            "auto-caption" in text
+            or "auto caption" in text
+            or "caption the whole video" in text
+            or ("auto" in text and "caption" in text)
+            or ("entire" in text and "caption" in text)
+            or ("whole" in text and "caption" in text)
+            or ("full" in text and "caption" in text)
+        ):
+            return {"intent": "auto_caption", "params": {}}
+
         # Add caption: e.g. "Add a caption 'Welcome!' when I say welcome to the channel"
         if "caption" in text and ("add" in text or "create" in text or "insert" in text):
             m_quote = re.search(r"['\"]([^'\"]+)['\"]", instruction)
@@ -124,12 +136,24 @@ class RuleBasedMockAdapter(BaseLLMAdapter):
                 "params": {"text": cap_text, "phrase": trigger_phrase.strip(".,!?:;\"'")}
             }
 
-        # Auto caption
-        if "auto-caption" in text or "auto caption" in text or "caption the whole video" in text:
-            return {"intent": "auto_caption", "params": {}}
-
-        # Speed up: e.g. "Speed up from 1:00 to 1:30 by 2x", "Speed up 10x"
-        m_speed = re.search(r"speed\s+up(?:\s+from\s+([^\s]+)\s+to\s+([^\s]+))?\s+by\s+(\d+(?:\.\d+)?)x", text)
+        # Speed up: accepts "by 2x" OR "to 2x" OR "2x speed"
+        # e.g. "Speed up from 1:00 to 1:30 by 2x"
+        #      "Speed up from 30 seconds to 50 seconds to 2x"
+        #      "Speed up 10x"
+        m_speed = re.search(
+            r"speed\s+up"
+            r"(?:\s+from\s+([^\s]+(?:\s+seconds?)?)\s+to\s+([^\s]+(?:\s+seconds?)?))?"
+            r"\s+(?:by|to|at)\s+(\d+(?:\.\d+)?)x",
+            text
+        )
+        if not m_speed:
+            # Also match trailing "2x" without a keyword: "speed up ... 2x"
+            m_speed = re.search(
+                r"speed\s+up"
+                r"(?:\s+from\s+([^\s]+(?:\s+seconds?)?)\s+to\s+([^\s]+(?:\s+seconds?)?))?"
+                r"\s+(\d+(?:\.\d+)?)x",
+                text
+            )
         if m_speed:
             t1, t2, factor = m_speed.group(1), m_speed.group(2), float(m_speed.group(3))
             return {
@@ -157,8 +181,17 @@ class RuleBasedMockAdapter(BaseLLMAdapter):
         if "guest" in text and ("job" in text or "say" in text or "remove" in text):
             return {"intent": "remove_guest_topic", "params": {"topic": "job"}}
 
-        # Remove filler words
-        if "filler words" in text or "cut out the ums" in text or "remove ums" in text or "ums" in text or "fillers" in text:
+        # Remove filler words -- broad match for natural phrasings
+        _filler_phrases = ("filler words", "filler word", "fillers", "filler",
+                           "cut out the ums", "remove ums", " ums", " um ", " uh ",
+                           " er ", " ah ", "um and uh", "uh and um", "um,", "uh,")
+        _filler_kws = ("um", "uh", "er", "ah")
+        if (
+            any(p in text for p in _filler_phrases)
+            or ("remove" in text and any(kw in text.split() for kw in _filler_kws))
+            or ("cut" in text and any(kw in text.split() for kw in _filler_kws))
+            or ("delete" in text and any(kw in text.split() for kw in _filler_kws))
+        ):
             return {"intent": "remove_filler", "params": {}}
 
         # Remove silences

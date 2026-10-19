@@ -504,4 +504,11 @@ export global Editor {
     in-out property <string> keys-delete-right;
     in-out property <string> keys-pan;
     in-out property <string> keys-preview-axis;
+
+    // ── AI Conversation ──
+    callback ai-cut-range(start: float, end: float);
+    callback ai-speed-range(start: float, end: float, speed: float);
+    callback ai-restore-intro();
+    callback ai-undo();
+    callback ai-apply-prompt(prompt: string);
 }

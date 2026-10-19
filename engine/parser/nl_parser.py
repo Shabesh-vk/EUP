@@ -12,7 +12,7 @@ from typing import Dict, Any, Optional, List, Tuple
 import re
 from engine.core.timeline import Timeline
 from engine.core.models import InstructionResult, Word, CaptionStyle
-from engine.parser.time_parser import parse_time_range, parse_timestamp_str
+from engine.parser.time_parser import parse_time_range, parse_timestamp_str, parse_duration_expression
 from engine.parser.llm_adapter import get_llm_adapter, BaseLLMAdapter
 from engine.core.operations import (
     execute_cut_range,
@@ -28,11 +28,12 @@ from engine.config import settings
 
 class PendingClarification:
     """Stores context for an ongoing clarification dialogue."""
-    def __init__(self, original_instruction: str, question: str, options: List[str], matches: List[Any]):
+    def __init__(self, original_instruction: str, question: str, options: List[str], matches: List[Any], clarif_type: str = "topic"):
         self.original_instruction = original_instruction
         self.question = question
         self.options = options
         self.matches = matches
+        self.clarif_type = clarif_type
 
 
 class InstructionEngine:
@@ -105,7 +106,7 @@ class InstructionEngine:
             elif intent in ("mute_words", "bleep_words"):
                 return self._handle_audio_effects(intent, instruction)
             elif intent == "cut_range":
-                return self._handle_cut_range(instruction)
+                return self._handle_cut_range(instruction, answer=answer)
             else:
                 # Fallback to direct text heuristic checks for hard cases
                 return self._handle_fallback(text, instruction, answer)
@@ -547,7 +548,11 @@ class InstructionEngine:
 
         matches = self.pending_clarification.matches
         orig_inst = self.pending_clarification.original_instruction
+        clarif_type = getattr(self.pending_clarification, "clarif_type", "topic")
         self.pending_clarification = None
+
+        if clarif_type == "cut_duration":
+            return self._handle_cut_range(orig_inst, answer=answer)
 
         return self._apply_topic_selection(matches, answer, orig_inst)
 
@@ -633,15 +638,48 @@ class InstructionEngine:
             duration_s=self.timeline.total_duration
         )
 
-    def _handle_cut_range(self, instruction: str) -> InstructionResult:
+    def _handle_cut_range(self, instruction: str, answer: Optional[str] = None) -> InstructionResult:
         rng = parse_time_range(instruction, self.timeline.total_duration)
         if not rng:
-            return InstructionResult(
-                status="rejected",
-                reason=f"Could not parse valid cut time range from: '{instruction}'",
-                timeline_hash=self.timeline.timeline_hash,
-                duration_s=self.timeline.total_duration
-            )
+            dur = parse_duration_expression(instruction)
+            if dur is not None and 0.0 < dur < self.timeline.total_duration:
+                end_start = self.timeline.total_duration - dur
+                opt1_label = f"Cut the first {dur:.0f} seconds (0:00 - {int(dur // 60)}:{int(dur % 60):02d})"
+                opt2_label = f"Cut the last {dur:.0f} seconds ({int(end_start // 60)}:{int(end_start % 60):02d} - {int(self.timeline.total_duration // 60)}:{int(self.timeline.total_duration % 60):02d})"
+                matches = [{"start": 0.0, "end": dur}, {"start": end_start, "end": self.timeline.total_duration}]
+
+                if not answer:
+                    question = f"You asked to cut {dur:.0f}s of the video: did you mean from the beginning or the end?"
+                    options = [opt1_label, opt2_label]
+                    self.pending_clarification = PendingClarification(
+                        original_instruction=instruction,
+                        question=question,
+                        options=options,
+                        matches=matches,
+                        clarif_type="cut_duration"
+                    )
+                    return InstructionResult(
+                        status="needs_clarification",
+                        question=question,
+                        options=options,
+                        timeline_hash=self.timeline.timeline_hash,
+                        duration_s=self.timeline.total_duration
+                    )
+                else:
+                    ans_lower = answer.lower().strip()
+                    if "first" in ans_lower or "1" in ans_lower or "start" in ans_lower or "beginning" in ans_lower:
+                        rng = (matches[0]["start"], matches[0]["end"])
+                    elif "last" in ans_lower or "2" in ans_lower or "end" in ans_lower or re.search(r"\bsecond\b", ans_lower):
+                        rng = (matches[1]["start"], matches[1]["end"])
+                    else:
+                        rng = (matches[0]["start"], matches[0]["end"])
+            else:
+                return InstructionResult(
+                    status="rejected",
+                    reason=f"Could not parse valid cut time range from: '{instruction}'",
+                    timeline_hash=self.timeline.timeline_hash,
+                    duration_s=self.timeline.total_duration
+                )
 
         start_s, end_s = rng
 
@@ -720,8 +758,11 @@ class InstructionEngine:
                 duration_s=self.timeline.total_duration
             )
 
-        # "cut everything"
-        if "cut everything" in lower or "remove all" in lower:
+        # "cut everything" -- guard against wiping the entire timeline
+        # NOTE: only exact or near-exact phrases; 'remove all the ums' is NOT this.
+        _destroy_phrases = ("cut everything", "remove everything", "cut all", "remove all",
+                            "delete everything", "wipe everything")
+        if any(lower.strip() == p or lower.strip().startswith(p + " content") for p in _destroy_phrases):
             return InstructionResult(
                 status="rejected",
                 reason="Cannot cut everything. The timeline cannot be emptied.",

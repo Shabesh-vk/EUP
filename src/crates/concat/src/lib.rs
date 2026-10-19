@@ -912,6 +912,23 @@ fn start(project: Option<std::path::PathBuf>, smoke: bool) -> Result<(), slint::
         state.reload_packages(true);
     }));
 
+    // ── AI Conversation ──
+    editor.on_ai_cut_range(on_window!(|state, start: f32, end: f32| {
+        state.ai_cut_range(start as f64, end as f64);
+    }));
+    editor.on_ai_speed_range(on_window!(|state, start: f32, end: f32, speed: f32| {
+        state.ai_speed_range(start as f64, end as f64, speed as f64);
+    }));
+    editor.on_ai_restore_intro(on_window!(|state| {
+        state.ai_restore_intro();
+    }));
+    editor.on_ai_undo(on_window!(|state| {
+        state.undo();
+    }));
+    editor.on_ai_apply_prompt(on_window!(|state, prompt: SharedString| {
+        state.ai_apply_prompt(prompt.as_str());
+    }));
+
     // ── the inspector's effect stacks ──
     editor.on_add_effect(on_window!(|state, _audio: bool| {
         state.notify(&i18n::t("lib.pickEffectFilterLibrary"), false);

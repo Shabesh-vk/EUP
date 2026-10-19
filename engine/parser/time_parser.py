@@ -34,6 +34,26 @@ def parse_word_number(phrase: str) -> Optional[int]:
     return total if total > 0 else None
 
 
+def parse_duration_expression(text: str) -> Optional[float]:
+    """Extracts a duration (in seconds) from phrases like '30sec', '30 seconds', '30s', '1 minute'."""
+    lower = text.lower().strip()
+    m_sec = re.search(r"\b(\d+(?:\.\d+)?)\s*(?:seconds?|secs?|s)\b", lower)
+    if m_sec:
+        return float(m_sec.group(1))
+
+    m_min = re.search(r"\b(\d+(?:\.\d+)?)\s*(?:minutes?|mins?|m)\b", lower)
+    if m_min:
+        return float(m_min.group(1)) * 60.0
+
+    for word, num in NUMBER_WORDS.items():
+        if f"{word} second" in lower or f"{word} sec" in lower:
+            return float(num)
+        if f"{word} minute" in lower or f"{word} min" in lower:
+            return float(num * 60)
+
+    return None
+
+
 def parse_timestamp_str(text: str) -> Optional[float]:
     """Parses a single timestamp expression into seconds."""
     text = text.strip().lower()

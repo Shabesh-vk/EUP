@@ -49,7 +49,7 @@ fn across(uv: vec2<f32>) -> vec4<f32> {
     let sigma = params.radius / 100.0 * screen * frame.size.y / TAU;
     let centre = uv.x * width;
     let first = floor(centre - TAU * sigma - 0.5) + 0.5;
-    let pairs = i32(ceil(TAU * sigma)) + 1;
+    let pairs = min(32, i32(ceil(TAU * sigma)) + 1);
     var sum = vec4<f32>(0.0);
     var total = 0.0;
     for (var i = 0; i < pairs; i++) {
@@ -75,7 +75,7 @@ fn down(uv: vec2<f32>) -> vec4<f32> {
     let sigma = params.radius / 100.0 * screen * 2.0;
     let centre = uv.y * rows;
     let first = floor(centre - TAU * sigma - 0.5) + 0.5;
-    let pairs = i32(ceil(TAU * sigma)) + 1;
+    let pairs = min(32, i32(ceil(TAU * sigma)) + 1);
     var sum = vec4<f32>(0.0);
     var total = 0.0;
     for (var i = 0; i < pairs; i++) {

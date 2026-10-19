@@ -1795,6 +1795,12 @@ export component MediaPane inherits Rectangle {
     /// That row was used.
     callback pane-removed();
 
+    callback ai-cut-range(float, float);
+    callback ai-speed-range(float, float, float);
+    callback ai-restore-intro();
+    callback ai-undo();
+    callback ai-apply-prompt(string);
+
     property <int> tab;
     property <int> ai-category: 0;
     /// The Audio page is up, or not: a drop of sound files on the window
@@ -2840,7 +2846,13 @@ export component MediaPane inherits Rectangle {
                 }
 
                 if root.tab == 9: AIConversationDashboard {
+                    width: parent.width;
                     category <=> root.ai-category;
+                    cut-range(s, e) => { root.ai-cut-range(s, e); }
+                    speed-range(s, e, sp) => { root.ai-speed-range(s, e, sp); }
+                    restore-intro => { root.ai-restore-intro(); }
+                    undo-action => { root.ai-undo(); }
+                    apply-prompt(p) => { root.ai-apply-prompt(p); }
                 }
             }
         }
