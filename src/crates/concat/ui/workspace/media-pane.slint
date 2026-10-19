@@ -14,7 +14,7 @@ import { Wave } from "../primitives/wave.slint";
 import { ContextMenu, MenuItemData } from "../primitives/context-menu.slint";
 import { SourcePreview } from "source-preview.slint";
 import { Sounds, SoundList, VoiceList } from "audio-page.slint";
-import { AIConversationDashboard } from "ai-conversation.slint";
+import { AIConversationDashboard, AiPanelData } from "ai-conversation.slint";
 
 export { SourcePreview }
 
@@ -1795,11 +1795,14 @@ export component MediaPane inherits Rectangle {
     /// That row was used.
     callback pane-removed();
 
-    callback ai-cut-range(float, float);
-    callback ai-speed-range(float, float, float);
-    callback ai-restore-intro();
+    in property <AiPanelData> ai;
+    callback ai-say(string);
+    callback ai-answer(int);
     callback ai-undo();
-    callback ai-apply-prompt(string);
+    callback ai-redo();
+    callback ai-reset();
+    callback ai-transcribe();
+    callback ai-restore(int);
 
     property <int> tab;
     property <int> ai-category: 0;
@@ -2107,13 +2110,13 @@ export component MediaPane inherits Rectangle {
                         }
                         CategoryRow {
                             height: 24px;
-                            label: "Edit History";
+                            label: "Edit history";
                             current: root.ai-category == 1;
                             clicked => { root.ai-category = 1; }
                         }
                         CategoryRow {
                             height: 24px;
-                            label: "Worked Steps";
+                            label: "Examples";
                             current: root.ai-category == 2;
                             clicked => { root.ai-category = 2; }
                         }
@@ -2424,6 +2427,7 @@ export component MediaPane inherits Rectangle {
             }
 
             pages := PaneScroll {
+                visible: root.tab != 9;
                 x: root.sidebar + 1px;
                 width: Math.max(0px, parent.width - root.sidebar - 1px);
                 height: parent.height;
@@ -2844,16 +2848,25 @@ export component MediaPane inherits Rectangle {
                     glyph: Glyph.slot;
                     text: I18n.t("mediaPane.noTemplatesYetMark");
                 }
+            }
 
-                if root.tab == 9: AIConversationDashboard {
-                    width: parent.width;
-                    category <=> root.ai-category;
-                    cut-range(s, e) => { root.ai-cut-range(s, e); }
-                    speed-range(s, e, sp) => { root.ai-speed-range(s, e, sp); }
-                    restore-intro => { root.ai-restore-intro(); }
-                    undo-action => { root.ai-undo(); }
-                    apply-prompt(p) => { root.ai-apply-prompt(p); }
-                }
+            // The AI tab sizes itself to the pane rather than scrolling with
+            // the pages: its conversation scrolls inside, and the box you
+            // type in stays at the bottom.
+            if root.tab == 9: AIConversationDashboard {
+                x: root.sidebar + 1px;
+                y: 0;
+                width: Math.max(0px, parent.width - root.sidebar - 1px);
+                height: parent.height;
+                data: root.ai;
+                category <=> root.ai-category;
+                say(p) => { root.ai-say(p); }
+                answer(i) => { root.ai-answer(i); }
+                undo-action => { root.ai-undo(); }
+                redo-action => { root.ai-redo(); }
+                reset-session => { root.ai-reset(); }
+                transcribe => { root.ai-transcribe(); }
+                restore(id) => { root.ai-restore(id); }
             }
         }
     }

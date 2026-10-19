@@ -54,6 +54,7 @@ import {
 
 // Re-exported so main.rs can reach the globals and the struct.
 import { KeyEditor, KeyMarkData, KeyRowData } from "workspace/keyframes-pane.slint";
+import { AiEditData, AiMessageData, AiPanelData } from "workspace/ai-conversation.slint";
 
 export {
     Curves, Fmt, Focus, Payload, Theme, Bezier, Editor, I18n,
@@ -66,6 +67,7 @@ export {
     TimelineTool, TrackData, TrackSize, MenuItemData, MenuRow, ExportData, ExportPhase, ModelData, SettingsData,
     ChipOption, RecentProjectData, StartData, SystemFactData, ToastData, ProjectSheetData,
     CaptionsSheetData, SpeechSheetData, VoiceoverData, SoundCardData, Sounds, VoiceCardData,
+    AiEditData, AiMessageData, AiPanelData,
 }
 
 export component App inherits Window {

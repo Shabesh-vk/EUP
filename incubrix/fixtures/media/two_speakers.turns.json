@@ -1,0 +1,34 @@
+{
+  "turns": [
+    {
+      "start": 200000,
+      "end": 1700000,
+      "speaker": "spk_a"
+    },
+    {
+      "start": 1900000,
+      "end": 5400000,
+      "speaker": "spk_b"
+    },
+    {
+      "start": 4900000,
+      "end": 7400000,
+      "speaker": "spk_a"
+    },
+    {
+      "start": 7900000,
+      "end": 8400000,
+      "speaker": "spk_b"
+    },
+    {
+      "start": 8400000,
+      "end": 8800000,
+      "speaker": "spk_a"
+    },
+    {
+      "start": 8800000,
+      "end": 9500000,
+      "speaker": "spk_b"
+    }
+  ]
+}

@@ -1,0 +1,142 @@
+{
+  "words": [
+    {
+      "text": " Thanks",
+      "start": 10500000,
+      "end": 10900000,
+      "confidence": 0.96
+    },
+    {
+      "text": " bye",
+      "start": 10900000,
+      "end": 11300000,
+      "confidence": 0.94
+    },
+    {
+      "text": " Hi",
+      "start": 200000,
+      "end": 500000,
+      "confidence": 0.98
+    },
+    {
+      "text": " everyone",
+      "start": 500000,
+      "end": 1000000,
+      "confidence": 0.97
+    },
+    {
+      "text": ",",
+      "start": 1000000,
+      "end": 1000000,
+      "confidence": 0.95
+    },
+    {
+      "text": " um",
+      "start": 1300000,
+      "end": 1600000,
+      "confidence": 0.91
+    },
+    {
+      "text": ",",
+      "start": 1600000,
+      "end": 1600000,
+      "confidence": 0.95
+    },
+    {
+      "text": " welcome",
+      "start": 2000000,
+      "end": 2400000,
+      "confidence": 0.99
+    },
+    {
+      "text": " to",
+      "start": 2400000,
+      "end": 2550000,
+      "confidence": 0.95
+    },
+    {
+      "text": " the",
+      "start": 2550000,
+      "end": 2700000,
+      "confidence": 0.95
+    },
+    {
+      "text": " channel",
+      "start": 2700000,
+      "end": 3200000,
+      "confidence": 0.98
+    },
+    {
+      "text": ".",
+      "start": 3200000,
+      "end": 3200000,
+      "confidence": 0.95
+    },
+    {
+      "text": " Today",
+      "start": 4200000,
+      "end": 4600000,
+      "confidence": 0.95
+    },
+    {
+      "text": " we",
+      "start": 4600000,
+      "end": 4750000,
+      "confidence": 0.95
+    },
+    {
+      "text": " talk",
+      "start": 4750000,
+      "end": 5100000,
+      "confidence": 0.95
+    },
+    {
+      "text": " about",
+      "start": 5000000,
+      "end": 5300000,
+      "confidence": 0.95
+    },
+    {
+      "text": " pricing",
+      "start": 5300000,
+      "end": 5900000,
+      "confidence": 0.97
+    },
+    {
+      "text": ".",
+      "start": 5900000,
+      "end": 5900000,
+      "confidence": 0.95
+    },
+    {
+      "text": " Our",
+      "start": 7000000,
+      "end": 7200000,
+      "confidence": 0.95
+    },
+    {
+      "text": " pricing",
+      "start": 7200000,
+      "end": 7700000,
+      "confidence": 0.96
+    },
+    {
+      "text": " is",
+      "start": 7700000,
+      "end": 7850000,
+      "confidence": 0.95
+    },
+    {
+      "text": " simple",
+      "start": 7850000,
+      "end": 8400000,
+      "confidence": 0.42
+    },
+    {
+      "text": ".",
+      "start": 8400000,
+      "end": 8400000,
+      "confidence": 0.95
+    }
+  ]
+}

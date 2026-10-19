@@ -1,0 +1,206 @@
+{
+  "final_timeline": {
+    "captions": [
+      {
+        "anchor": {
+          "first": "w00084",
+          "kind": "words",
+          "last": "w00087"
+        },
+        "id": "cap_1",
+        "playback": [
+          {
+            "end": 14000000,
+            "start": 12000000
+          }
+        ],
+        "style": {
+          "bold": false,
+          "color": "#FF0000",
+          "position": "bottom",
+          "size": 48
+        },
+        "text": "Welcome!",
+        "tx": 1
+      }
+    ],
+    "duration": 193500000,
+    "marks": [],
+    "music": [],
+    "protected_pauses": [],
+    "segments": [
+      {
+        "playback_start": 0,
+        "source": {
+          "end": 90000000,
+          "start": 30000000
+        },
+        "speed": 1000
+      },
+      {
+        "playback_start": 60000000,
+        "source": {
+          "end": 120000000,
+          "start": 90000000
+        },
+        "speed": 2000
+      },
+      {
+        "playback_start": 75000000,
+        "source": {
+          "end": 135000000,
+          "start": 120000000
+        },
+        "speed": 1000
+      },
+      {
+        "playback_start": 90000000,
+        "source": {
+          "end": 240000000,
+          "start": 136500000
+        },
+        "speed": 1000
+      }
+    ]
+  },
+  "final_timeline_hash": "c7fde24a81a766a95ef9283203796589a77759d5dda7e204a9676d983cab780b",
+  "steps": [
+    {
+      "result": {
+        "duration_s": 240.0,
+        "operations": [
+          "added caption cap_1 'Welcome!'"
+        ],
+        "options": [],
+        "question": null,
+        "status": "applied",
+        "summary": "Caption attached to 'welcome to the channel' (now 0:42-0:44).",
+        "time_policy": "current",
+        "timeline_hash": "b89140a06e13bd46b1fe3d68528fef79eb5d7c938b64c05fff277cfa96f55156",
+        "tx": 1,
+        "warnings": []
+      },
+      "say": "Add a caption 'Welcome!' when I say welcome to the channel"
+    },
+    {
+      "result": {
+        "duration_s": 210.0,
+        "operations": [
+          "cut source 0:00-0:30"
+        ],
+        "options": [],
+        "question": null,
+        "status": "applied",
+        "summary": "Video is 30 s shorter. Caption now plays at 0:12-0:14, still on the same words. Times are read as the current edited playback time.",
+        "time_policy": "current",
+        "timeline_hash": "72a916187ff7992c442e7ca6c767d5157a4b2d5528091817abb669e75177094c",
+        "tx": 2,
+        "warnings": []
+      },
+      "say": "Cut the first 30 seconds"
+    },
+    {
+      "result": {
+        "duration_s": 210.0,
+        "operations": [],
+        "options": [
+          "#1 at 0:35.5",
+          "#2 at 1:45.5",
+          "#3 at 2:45",
+          "all"
+        ],
+        "question": "Pricing is mentioned 3 times - which one, or all?",
+        "status": "needs_clarification",
+        "summary": "",
+        "time_policy": "current",
+        "timeline_hash": "72a916187ff7992c442e7ca6c767d5157a4b2d5528091817abb669e75177094c",
+        "tx": null,
+        "warnings": []
+      },
+      "say": "Remove the part about pricing"
+    },
+    {
+      "result": {
+        "duration_s": 208.5,
+        "operations": [
+          "cut source 2:15-2:16.5"
+        ],
+        "options": [],
+        "question": null,
+        "status": "applied",
+        "summary": "Removed 'the pricing changed'.",
+        "time_policy": "current",
+        "timeline_hash": "2f16f2dfe01065a304e10acff221a59e97b90240bc8082bd09c095bb6620beaf",
+        "tx": 3,
+        "warnings": []
+      },
+      "say": "the second one"
+    },
+    {
+      "result": {
+        "duration_s": 193.5,
+        "operations": [
+          "speed 2x on source 1:30-2:00"
+        ],
+        "options": [],
+        "question": null,
+        "status": "applied",
+        "summary": "1:00-1:30 now plays at 2x. Times are read as the current edited playback time.",
+        "time_policy": "current",
+        "timeline_hash": "251cd8bb305102a649b14c97a13f6d31a6daa86aabf92df3ea1e522972fc5cc2",
+        "tx": 4,
+        "warnings": []
+      },
+      "say": "Speed up from 1:00 to 1:30 by 2x"
+    },
+    {
+      "result": {
+        "duration_s": 223.5,
+        "operations": [
+          "restored edit #2"
+        ],
+        "options": [],
+        "question": null,
+        "status": "applied",
+        "summary": "The first 30 s are back; caption at 0:42-0:44; the pricing cut and speed change stay.",
+        "time_policy": "current",
+        "timeline_hash": "53877f4c2390df7ece9a6262d72e63070cfcbb60993da89155acb5a35c3324d2",
+        "tx": 5,
+        "warnings": []
+      },
+      "say": "Actually, put the intro back"
+    },
+    {
+      "result": {
+        "duration_s": 193.5,
+        "operations": [],
+        "options": [],
+        "question": null,
+        "status": "applied",
+        "summary": "Undid: 'Actually, put the intro back'. The intro is cut again; caption at 0:12-0:14.",
+        "time_policy": "current",
+        "timeline_hash": "251cd8bb305102a649b14c97a13f6d31a6daa86aabf92df3ea1e522972fc5cc2",
+        "tx": null,
+        "warnings": []
+      },
+      "say": "Undo"
+    },
+    {
+      "result": {
+        "duration_s": 193.5,
+        "operations": [
+          "restyled caption cap_1"
+        ],
+        "options": [],
+        "question": null,
+        "status": "applied",
+        "summary": "The Welcome! caption (the only one) is now red.",
+        "time_policy": "current",
+        "timeline_hash": "c7fde24a81a766a95ef9283203796589a77759d5dda7e204a9676d983cab780b",
+        "tx": 6,
+        "warnings": []
+      },
+      "say": "Make that caption red"
+    }
+  ]
+}

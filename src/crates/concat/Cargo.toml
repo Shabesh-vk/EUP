@@ -157,6 +157,10 @@ concat-vision.workspace = true
 # The title painter's font list: the families on the machine and the ones
 # in a file, for the Text inspector's picker and its import button.
 concat-text.workspace = true
+# The IncuBrix editing engine (MIT OR Apache-2.0), run in-process by the AI
+# tab (ai.rs). Concat may depend on it; it never depends on Concat.
+incubrix-core = { path = "../../../incubrix/crates/incubrix-core" }
+incubrix-nlu = { path = "../../../incubrix/crates/incubrix-nlu" }
 
 # Remembered preferences, as a small JSON file in the config directory.
 serde = { version = "1", features = ["derive"] }
