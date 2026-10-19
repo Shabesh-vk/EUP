@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # AI_USE.md - AI Coding Assistance Disclosure
 
 This document discloses all AI tools and models utilized during the design, implementation, and testing of the **IncuBrix Prompt-Based Video Editing Engine**.
@@ -34,3 +35,28 @@ This document discloses all AI tools and models utilized during the design, impl
 
 4. **Review & Verification**:
    - All code logic was executed, tested, and validated locally against Python 3.11 and FFmpeg 9.0.
+=======
+# AI Use Disclosure
+
+This document discloses all AI tools, models, and assistants utilized during the design, development, and testing of the IncuBrix Prompt-Based Video Editing Engine, in full accordance with the assessment requirements.
+
+## 1. AI Coding Assistants
+
+| Tool / Assistant | Provider | Role & Tasks Performed |
+| :--- | :--- | :--- |
+| **Antigravity AI Agent** | Google DeepMind | Pair programming, architecture scaffolding, test suite development, FFmpeg filtergraph construction, and CI automation. |
+
+## 2. Models Used for Natural Language Understanding & Prompts
+
+| Model | Purpose | Usage Mode |
+| :--- | :--- | :--- |
+| **Internal Rule-Based Parser** | Deterministic translation of common video editing instructions (Cut, Speed, Caption, Mute, Bleep, Silence, Filler, Restore) | Default in-engine mode for 100% reproducible tests without external API dependencies. |
+| **OpenAI / Claude / Gemini API Adapter** | Natural language disambiguation and semantic search (e.g. matching "pricing" with "cost") | Pluggable cloud adapter behind `nlu_provider` configuration. |
+
+## 3. Speech-to-Text Models
+
+| Model | Purpose | Usage Mode |
+| :--- | :--- | :--- |
+| **Deterministic Mock STT** | Word-level timing, confidence scores, and multi-speaker assignment for tests | Default for credential-free CI and local offline execution. |
+| **Whisper (base.en / tiny.en)** | Real transcription on unfamiliar uploaded MP4/MOV videos | Enabled via `STT_PROVIDER=whisper` (MIT license). |
+>>>>>>> 18d551fd02fc30603ac5339893e00ef8d9a870b2

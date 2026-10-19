@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ssh.sh
 
 ## Do not remove these
@@ -69,3 +70,68 @@ output/
 # FFmpeg built for a phone by src/scripts/ffmpeg-mobile.sh: sources,
 # build trees and the installed prefixes, all machine-built.
 /src/vendor/
+=======
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+.venv/
+venv/
+build/
+
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# Node / UI
+node_modules/
+ui/dist/
+ui/.next/
+ui/.vite/
+.vite/
+
+# Environment and secrets
+.env
+*.local
+*.key
+*.pem
+
+# Assessment Brief & Confidential files
+*.pdf
+*Brief*
+*brief*
+IncuBrix_Assessment_2_Prompt_Based_Video_Editing_Engine_Brief.pdf
+submission_forms/
+
+# Local Storage, Media & Logs
+storage_data/
+postgres_data/
+*.log
+temp/
+tmp/
+artifacts_output/
+*.mp4
+*.mov
+*.wav
+*.mp3
+!tests/fixtures/*.mp4
+!tests/fixtures/*.wav
+>>>>>>> 18d551fd02fc30603ac5339893e00ef8d9a870b2

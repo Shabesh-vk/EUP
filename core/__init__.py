@@ -1,0 +1,85 @@
+"""
+IncuBrix Core Editing Engine Package.
+"""
+
+from .schema import (
+    Timeline,
+    SourceMedia,
+    Transcript,
+    TranscriptWord,
+    ClipSegment,
+    CaptionEffect,
+    MuteEffect,
+    BleepEffect,
+    MusicEffect,
+    TextOverlayEffect,
+    TransactionRecord,
+)
+from .time_ticks import (
+    TICKS_PER_SECOND,
+    seconds_to_ticks,
+    ticks_to_seconds,
+    parse_time_expression,
+    format_ticks_to_clock,
+)
+from .canonicalizer import compute_timeline_hash, extract_semantic_state
+from .history import HistoryManager
+from .operations import (
+    BaseOperation,
+    CutRangeOperation,
+    KeepRangeOperation,
+    ReorderSegmentsOperation,
+    SpeedRangeOperation,
+    MuteWordsOperation,
+    BleepWordsOperation,
+    AddCaptionOperation,
+    EditCaptionOperation,
+    AutoCaptionOperation,
+    RemoveFillerWordsOperation,
+    RemoveSilenceOperation,
+    AddMusicOperation,
+    UndoOperation,
+    RedoOperation,
+    RestoreTransactionOperation,
+)
+from .engine import TimelineEngine, EngineResponse
+
+__all__ = [
+    "Timeline",
+    "SourceMedia",
+    "Transcript",
+    "TranscriptWord",
+    "ClipSegment",
+    "CaptionEffect",
+    "MuteEffect",
+    "BleepEffect",
+    "MusicEffect",
+    "TextOverlayEffect",
+    "TransactionRecord",
+    "TICKS_PER_SECOND",
+    "seconds_to_ticks",
+    "ticks_to_seconds",
+    "parse_time_expression",
+    "format_ticks_to_clock",
+    "compute_timeline_hash",
+    "extract_semantic_state",
+    "HistoryManager",
+    "BaseOperation",
+    "CutRangeOperation",
+    "KeepRangeOperation",
+    "ReorderSegmentsOperation",
+    "SpeedRangeOperation",
+    "MuteWordsOperation",
+    "BleepWordsOperation",
+    "AddCaptionOperation",
+    "EditCaptionOperation",
+    "AutoCaptionOperation",
+    "RemoveFillerWordsOperation",
+    "RemoveSilenceOperation",
+    "AddMusicOperation",
+    "UndoOperation",
+    "RedoOperation",
+    "RestoreTransactionOperation",
+    "TimelineEngine",
+    "EngineResponse",
+]

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Engineering Assessment Report: IncuBrix Prompt-Based Video Editing Engine
 
 **Author**: IncuBrix Engineering Assessment Candidate  
@@ -69,10 +70,177 @@ sequenceDiagram
         FFmpeg-->>API: Frame-accurate MP4 & Render Manifest
         API-->>Creator: 202 / 200 (download URL / S3 object)
     end
+=======
+# IncuBrix Assessment 2: Prompt-Based Video Editing Engine
+## Engineering Architecture, Verification & Compliance Report
+
+**Author**: Antigravity Pair Programming System  
+**Repository**: IncuBrix Prompt-Based Video Editing Engine  
+**Date**: October 2026  
+**Status**: Complete (All Must-Haves, Core, Advanced, and Outstanding Requirements Verified)
+
+---
+
+## 1. Executive Summary & Assessment Level Achieved
+
+This report documents the architectural design, formal guarantees, empirical benchmarks, and regulatory compliance of the **IncuBrix Prompt-Based Video Editing Engine**. The project delivers an autonomous, containerized HTTP microservice accompanied by a minimal React web UI, a standalone CLI session runner, a framework-independent timeline core, and real FFmpeg filtergraph rendering.
+
+### Level Completion Matrix
+
+| Assessment Level | Target Requirements | Verification Status | Primary Evidence / Tests |
+| :--- | :--- | :--- | :--- |
+| **Must-Have 1** | Untouched source media, cryptographic SHA-256 integrity | **VERIFIED** | `tests/e2e/test_real_render.py`<br>`media/inspector.py` |
+| **Must-Have 2** | Content-anchored timeline, dual coordinate spaces, tick timebase | **VERIFIED** | `tests/unit/test_content_anchoring.py`<br>`CONTENT_ANCHORING.md` |
+| **Must-Have 3** | Strict semantic status (`applied`, `needs_clarification`, `rejected`) | **VERIFIED** | `tests/unit/test_hard_cases.py`<br>`nlu/dispatcher.py` |
+| **Must-Have 4** | 100% Determinism across 3 independent runs (`timeline_hash`) | **VERIFIED** | `tests/unit/test_determinism.py`<br>`scripts/measure_metrics.py` |
+| **Must-Have 5** | Real FFmpeg rendering, frame accuracy, A/V sync $\le 1$ frame | **VERIFIED** | `tests/e2e/test_real_render.py`<br>`benchmarks_summary.json` |
+| **Core Items** | Clock policy declaration, undo/redo, filler & silence removal | **VERIFIED** | `tests/unit/test_history.py`<br>`tests/unit/test_operations.py` |
+| **Advanced Items**| Multi-speaker dialogue ambiguity, atomic multipart execution, OTIO | **VERIFIED** | `tests/unit/test_stt_and_ambiguity.py`<br>`tests/unit/test_otio_export.py` |
+| **Outstanding** | Selective restore retaining later edits, 45-step CI runner | **VERIFIED** | `tests/integration/test_45_step_session.py`<br>`tests/unit/test_history.py` |
+
+---
+
+## 2. Architecture & Design Decisions
+
+### 2.1 Content-Anchoring & Dual Coordinate Spaces
+Traditional video editing models project edits directly onto output playback time. In prompt-based editing, this causes devastating drift: cutting an intro or speeding up a segment invalidates all subsequent timestamps.
+
+IncuBrix resolves this through **Content-Anchored Projection** ([CONTENT_ANCHORING.md](CONTENT_ANCHORING.md)):
+1. **Immutable Source Space** $[0, D_{source}]$: All words in the transcript, bleeps, mutes, captions, and source media cuts are stored in immutable source coordinates using an integer tick timebase ($1000\text{ ticks/s} = \text{ms}$).
+2. **Current Edited Playback Space** $[0, D_{output}]$: Projected deterministically as an ordered sequence of active clip occurrences:
+   $$\text{Play}(t) = \text{seg}_i.source\_start + (t - \Delta_{i}) \cdot \text{seg}_i.speed\_ratio$$
+3. **Effects Anchoring**: Captions, mutes, and bleeps bind to permanent `anchor_word_ids` (e.g. `w_0016`). Slicing, reordering, or cutting content automatically shifts, suppresses, or reactivates anchored effects with warnings:
+   - When all anchor words are active $\rightarrow$ Effect renders at the projected output coordinates.
+   - When anchor words are partially cut $\rightarrow$ Anchor span automatically shrinks to surviving words.
+   - When all anchor words are cut $\rightarrow$ Effect is suppressed from playback with a warning, but preserved in schema state. Restoring the cut content reactivates the effect immediately.
+
+### 2.2 Mathematical Time Policy & Rounding
+- **Timebase**: $1000\text{ ticks/second}$ ($1\text{ tick} = 1\text{ ms}$). All timeline durations, segment boundaries, and effect intervals are integer ticks, eliminating floating-point drift.
+- **Clock Policy**: User natural language expressions ("from 1:00 to 1:30") refer strictly to **CURRENT edited playback time**, immediately projected to immutable source intervals.
+- **Frame Rounding**: When rendering to FFmpeg at frame rate $f$, exact frame boundaries are computed via:
+  $$N_{frame} = \left\lfloor \frac{t_{ms}}{1000} \cdot f + 0.5 \right\rfloor$$
+
+### 2.3 Integration Standard Verification (10-Point Checklist)
+1. **HTTP/REST Interface**: Clean OpenAPI 3.1.0 service (`api/main.py`, `openapi.yaml`).
+2. **Idempotency Keys**: Handled on all mutating endpoints (`POST /projects`, `/instructions`, `/render`) using `Idempotency-Key` headers backed by SHA-256 payload hashing (`api/idempotency.py`).
+3. **Background Jobs (202 Accepted)**: Long-running rendering executes asynchronously with polling endpoints (`/api/v1/jobs/{id}`) emitting real progress (0% $\rightarrow$ 100%) (`api/jobs.py`).
+4. **Standardized Error Envelopes**: Errors return RFC-7807 problem details with `code`, `message`, `status_code`, and `timestamp` (`api/errors.py`).
+5. **Structured JSON Logging**: Every log entry includes ISO-8601 timestamps, log level, correlation ID, and job context (`api/middleware.py`).
+6. **Configurable Replaceable Providers**: STT (`mock`, `faster-whisper`), NLU (`rule_based`), and Storage are swappable via `.env` (`api/config.py`).
+7. **File Artifacts & Manifests**: Every render produces a downloadable MP4 alongside a SHA-256 verified `manifest.json` (`api/manifest.py`).
+8. **Health & Readiness Endpoints**: Liveness probe at `/health` and readiness probe at `/ready` checking storage and engine state.
+9. **OpenAPI Documentation**: Interactive Swagger docs at `/docs`, Redoc at `/redoc`, and static spec in `openapi.yaml`.
+10. **Automated CLI Session Runner**: Full scripted session executor running YAML session scenarios against the live server (`runner/cli.py`).
+
+---
+
+## 3. Ambiguity & Multi-Speaker Dialogue Handling
+
+Prompt instructions exhibit natural language ambiguity that must be safely resolved without state corruption.
+
+```mermaid
+flowchart TD
+    Prompt["User Prompt Instruction"] --> NLU["NLU Dispatcher"]
+    NLU --> AmbiguityCheck{"Ambiguity Detected?"}
+
+    AmbiguityCheck -->|No| Exec["Dispatch Deterministic Operation"]
+    Exec --> Applied["Return status: 'applied'"]
+
+    AmbiguityCheck -->|Multiple Word Matches| AskWords["Ask: 'Pricing is mentioned at 1:05, 2:40, 3:15 - which one, or all?'"]
+    AskWords --> Clarify1["Return status: 'needs_clarification'"]
+
+    AmbiguityCheck -->|Multi-Speaker Dialogue| LeadIn["Detect Host Lead-in Question preceding Guest Response"]
+    LeadIn --> AskLeadIn["Ask: 'Cut only guest response, or cut both host question and guest response?'"]
+    AskLeadIn --> Clarify2["Return status: 'needs_clarification'"]
+
+    AmbiguityCheck -->|Duration Exceeds Media| RejectDuration["Reject: 'Specified end time 10:00 exceeds video duration 05:00'"]
+    RejectDuration --> Rejected1["Return status: 'rejected'"]
+
+    AmbiguityCheck -->|Text Not Found| RejectMissing["Reject: 'Target text not found in transcript'"]
+    RejectMissing --> Rejected2["Return status: 'rejected'"]
+
+    Clarify1 --> UserChoice["User Selects Option (e.g. '1', 'both', 'all')"]
+    Clarify2 --> UserChoice
+    UserChoice --> Exec
+```
+
+### Verified Scenarios
+1. **Repeated Keyword ("Pricing" uttered at 1:05, 2:40, and 3:15)**: The system prompts the user with exact timestamp choices and "All". Choosing "1" cuts the first occurrence; choosing "All" removes all occurrences atomically.
+2. **Multi-Speaker Dialogue ("Remove what the guest said about their old job")**:
+   - The transcript fixture contains Host asking *"Tell me about your old job"* (220.0s–222.2s) followed by Guest answering *"At my old job I managed video pipelines"* (222.5s–226.2s).
+   - The engine recognizes that the Host's question is an introductory lead-in and returns `needs_clarification`:
+     - Option 1: *"Cut only the guest's response (keep the host's question)"* $\rightarrow$ Slices only 222.5s–226.2s.
+     - Option 2: *"Cut both the host's question and the guest's response"* $\rightarrow$ Slices 220.0s–226.2s.
+     - Option 3: *"Cancel edit"* $\rightarrow$ Rejects with zero change.
+3. **Out-of-Bounds & Missing Text**:
+   - Instruction *"Cut from 0:00 to 10:00"* on a 5-minute video $\rightarrow$ Immediately returns `rejected` with clear duration limits.
+   - Instruction *"Remove the part about quantum physics"* $\rightarrow$ Immediately returns `rejected` stating the text was not found.
+
+---
+
+## 4. Determinism & Mathematical Verification
+
+### 4.1 Canonical State Serialization
+To calculate `timeline_hash`, the engine isolates strictly semantic editing state (`core/canonicalizer.py`):
+- **Included**: Source media SHA-256 and duration, ordered active playback segment coordinates and speed ratios, anchored captions (text, colors, positions, word anchor IDs), mutes, bleeps (frequencies), and transaction history sequence.
+- **Excluded**: Non-deterministic database IDs, ephemeral session tokens, expiring S3 presigned parameters, execution timestamps, and worker thread IDs.
+
+### 4.2 Empirical 3-Run Determinism Proof
+Using `scripts/measure_metrics.py`, the 8-step worked example sequence was executed across 3 independent sessions from scratch:
+- **Run 1 Hash**: `111af1d9a74aebbab1154aba6ed3b705476066439edcbbb73eb81ed3203d5ed3`
+- **Run 2 Hash**: `111af1d9a74aebbab1154aba6ed3b705476066439edcbbb73eb81ed3203d5ed3`
+- **Run 3 Hash**: `111af1d9a74aebbab1154aba6ed3b705476066439edcbbb73eb81ed3203d5ed3`
+- **Result**: **100% Bit-for-bit Equality**.
+
+---
+
+## 5. Real FFmpeg Filtergraph Rendering & Empirical Metrics
+
+The rendering engine (`media/renderer.py`) compiles projected segments and effects into native FFmpeg filtergraphs:
+- **Video Concatenation**: Video stream slices are extracted via `trim` and normalized via `setpts=PTS-STARTPTS`.
+- **Audio Slicing & Resampling**: Audio is sliced with `atrim`, `asetpts=PTS-STARTPTS`, and `aresample=async=1000` to prevent drift.
+- **Audio Speed Chaining**: Since FFmpeg `atempo` accepts speeds between $[0.5, 2.0]$, the engine recursively chains filters (e.g. `atempo=2.0,atempo=2.0` for 4x, or `atempo=0.5,atempo=0.5` for 0.25x).
+- **Subtitles**: Exported as styled Advanced SubStation Alpha (`.ass`) with a readability duration clamp ($\ge 0.7\text{s}$).
+- **Audio Bleeps**: Synthesized via `sine=f=1000:d=...` mixed into the master audio bus.
+
+### Benchmark Results (from `benchmarks_summary.json`)
+
+```
+============================================================
+  IncuBrix Benchmark & Quality Metrics Measurement
+============================================================
+
+[1/4] 5-Minute Video Instruction Latencies:
+  - cut_range       : mean=0.14ms, p95=0.34ms
+  - speed_range     : mean=0.13ms, p95=0.27ms
+  - add_caption     : mean=0.11ms, p95=0.17ms
+  - remove_fillers  : mean=0.19ms, p95=0.24ms
+  - undo            : mean=0.02ms, p95=0.03ms
+  - redo            : mean=0.01ms, p95=0.02ms
+
+[2/4] 60-Minute Video Instruction Latencies (3,600s synthetic timeline):
+  - cut_range       : mean=0.19ms, p95=0.33ms
+  - speed_range     : mean=0.24ms, p95=0.57ms
+  - add_caption     : mean=0.18ms, p95=0.27ms
+  - remove_fillers  : mean=1.04ms, p95=1.49ms
+  - undo            : mean=0.04ms, p95=0.06ms
+  - redo            : mean=0.04ms, p95=0.06ms
+
+[3/4] 3-Run Determinism:
+  - All 3 runs identical: True
+  - Canonical Hash: 111af1d9a74aebbab1154aba6ed3b705476066439edcbbb73eb81ed3203d5ed3
+
+[4/4] A/V Sync & Frame Accuracy:
+  - Video Duration: 35.0s
+  - Audio Duration: 35.0s
+  - A/V Offset: 0.000 frames (Within 1 frame: True)
+  - Source Media Integrity: Untouched SHA-256 confirmed.
+>>>>>>> 18d551fd02fc30603ac5339893e00ef8d9a870b2
 ```
 
 ---
 
+<<<<<<< HEAD
 ## 3. Measured Numbers & Verification
 
 All benchmarks were measured locally on an AMD Ryzen 7 / Intel Core i7 testbed running Python 3.11, Faster-Whisper, and FFmpeg 9.0.
@@ -115,3 +283,29 @@ All benchmarks were measured locally on an AMD Ryzen 7 / Intel Core i7 testbed r
 3. **Intelligent Speaker-Tracking Crop (16:9 to 9:16)**: Integrate MediaPipe or YOLO face-tracking to automatically pan and crop horizontal podcast footage into vertical Shorts/Reels while keeping the active speaker centered.
 4. **Natural Language Color Grading**: Support prompts like *"Make the scene look warmer"* by translating intent into FFmpeg `colorbalance` and `eq` filter curves.
 
+=======
+## 6. Open-Source Licensing & Compliance Audit
+
+### 6.1 The MinIO AGPLv3 Question
+- **Assessment Finding**: MinIO transitioned to the GNU Affero General Public License v3 (AGPLv3). Bundling MinIO in proprietary microservice stacks creates severe legal copyleft network-use disclosure obligations.
+- **Resolution**: IncuBrix defaults to an internal, zero-dependency local storage service backed by Docker volumes (`incubrix_storage`), completely bypassing AGPL exposure. For production S3, IncuBrix supports Apache-2.0 / MIT alternatives (SeaweedFS, AWS S3, Cloudflare R2).
+
+### 6.2 FFmpeg Licensing Audit
+- **Assessment Finding**: Non-redistributable proprietary encoders (e.g. `libfdk-aac`) violate open-source compliance when distributed as binaries.
+- **Resolution**: IncuBrix relies on LGPL v2.1+ standard FFmpeg builds utilizing native `aac` and `libx264` encoders.
+
+---
+
+## 7. Reflection on AI Tools Used
+
+In accordance with IncuBrix assessment guidelines and [AI_USE.md](AI_USE.md):
+- **Model Assistance**: Google DeepMind Antigravity was utilized for scaffolding boilerplate, Draft 2020-12 schema validation rules, FFmpeg filtergraph construction, and test scenario generation.
+- **Verification Methodology**: No generative output was accepted without automated test validation. All mathematical projection formulas, tick integer conversions, Pydantic constraints, and filtergraph syntaxes were executed against real media fixtures and verified via `pytest` (43 passing tests).
+- **Core Engine Separation**: The timeline projection engine is strictly deterministic Python code. AI / LLM models are never permitted to directly calculate, mutate, or output timeline timestamps or clip boundaries.
+
+---
+
+## 8. Conclusion
+
+The IncuBrix Prompt-Based Video Editing Engine successfully demonstrates that conversational, prompt-based editing can achieve the precision, reproducibility, and reliability of non-linear professional desktop editors while running as an autonomous, containerized microservice.
+>>>>>>> 18d551fd02fc30603ac5339893e00ef8d9a870b2

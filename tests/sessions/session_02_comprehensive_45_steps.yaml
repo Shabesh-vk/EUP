@@ -1,0 +1,69 @@
+name: "Comprehensive 45-Step CI Session"
+description: "Rigorous 45-step automated validation covering all operations, ambiguities, rejections, history branching, and real rendering."
+video: "tests/fixtures/test_interview.mp4"
+
+steps:
+  # 1-8: Core Worked Example Baseline
+  - say: "Cut the first 30 seconds"
+  - say: "Add a caption 'Welcome to the channel' when I say welcome to the channel"
+  - say: "Make that caption red"
+  - say: "Speed up from 1:00 to 1:30 by 2x"
+  - say: "Remove filler words"
+  - say: "Remove pricing"
+    answer: "1"
+  - say: "Put the intro back"
+  - say: "undo"
+
+  # 9-13: History & Multi-Speaker Lead-in Clarifications
+  - say: "redo"
+  - say: "Remove what the guest said about their old job"
+    answer: "1"
+  - say: "undo"
+  - say: "Remove what the guest said about their old job"
+    answer: "2"
+  - say: "undo"
+
+  # 14-18: Boundary and Semantic Rejections
+  - say: "Remove the part about quantum physics"
+  - say: "Cut from 0:00 to 10:00"
+  - say: "Cut the first 15 minutes"
+  - say: "Speed up from 0:10 to 0:20 by 12x"
+  - say: "Speed up from 0:10 to 0:20 by 0.1x"
+
+  # 19-25: Complex Operations & Re-cuts
+  - say: "Speed up from 0:10 to 0:20 by 1.5x"
+  - say: "Cut from 0:10 to 0:20"
+  - say: "Cut from 0:10 to 0:20"
+  - say: "Make that caption blue"
+  - say: "Make that caption yellow"
+  - say: "Remove silences"
+  - say: "Remove filler words"
+
+  # 26-34: Repeated Edits, Undos, and Redos
+  - say: "Speed up from 0:30 to 0:50 by 2x"
+  - say: "undo"
+  - say: "redo"
+  - say: "Cut 10 to 20"
+  - say: "undo"
+  - say: "Cut the first 5 seconds"
+  - say: "undo"
+  - say: "Cut the first 10 seconds"
+  - say: "undo"
+
+  # 35-40: Caption Styles & Multiple Keyword Disambiguation
+  - say: "Add a caption 'Summary'"
+  - say: "Make it red"
+  - say: "undo"
+  - say: "Make it blue"
+  - say: "Remove pricing"
+    answer: "all"
+  - say: "undo"
+
+  # 41-44: Failure Modes & Restoration
+  - say: "Remove the part about teleportation"
+  - say: "Random unsupported instruction xyz"
+  - say: "Put back the intro"
+  - say: "undo"
+
+  # 45: Final Full Render Verification
+  - say: "render"

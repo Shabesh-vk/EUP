@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 openapi: 3.1.0
 info:
   title: IncuBrix Video Editing Engine
@@ -434,11 +435,167 @@ components:
       - duration_s
       - timeline_hash
       title: CreateSessionResponse
+=======
+components:
+  schemas:
+    AutoEditApplyRequest:
+      properties:
+        excluded_item_ids:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Excluded Item Ids
+        plan:
+          $ref: '#/components/schemas/AutoEditPlan'
+      required:
+      - plan
+      title: AutoEditApplyRequest
+      type: object
+    AutoEditItem:
+      additionalProperties: false
+      properties:
+        category:
+          enum:
+          - silence
+          - filler_word
+          - auto_caption
+          - music
+          title: Category
+          type: string
+        confidence:
+          default: 1.0
+          maximum: 1.0
+          minimum: 0.0
+          title: Confidence
+          type: number
+        description:
+          title: Description
+          type: string
+        excluded:
+          default: false
+          title: Excluded
+          type: boolean
+        is_uncertain:
+          default: false
+          title: Is Uncertain
+          type: boolean
+        item_id:
+          title: Item Id
+          type: string
+        output_end_ticks:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Output End Ticks
+        output_start_ticks:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Output Start Ticks
+        source_end_ticks:
+          minimum: 0.0
+          title: Source End Ticks
+          type: integer
+        source_start_ticks:
+          minimum: 0.0
+          title: Source Start Ticks
+          type: integer
+      required:
+      - item_id
+      - category
+      - description
+      - source_start_ticks
+      - source_end_ticks
+      title: AutoEditItem
+      type: object
+    AutoEditPlan:
+      additionalProperties: false
+      properties:
+        base_timeline_hash:
+          title: Base Timeline Hash
+          type: string
+        created_at:
+          title: Created At
+          type: number
+        current_duration_s:
+          title: Current Duration S
+          type: number
+        estimated_duration_s:
+          title: Estimated Duration S
+          type: number
+        items:
+          items:
+            $ref: '#/components/schemas/AutoEditItem'
+          title: Items
+          type: array
+        plan_id:
+          title: Plan Id
+          type: string
+        project_id:
+          title: Project Id
+          type: string
+        warnings:
+          items:
+            type: string
+          title: Warnings
+          type: array
+      required:
+      - plan_id
+      - project_id
+      - base_timeline_hash
+      - created_at
+      - current_duration_s
+      - estimated_duration_s
+      title: AutoEditPlan
+      type: object
+    AutoEditPlanRequest:
+      properties:
+        options:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Options
+      title: AutoEditPlanRequest
+      type: object
+    Body_create_project_api_v1_projects_post:
+      properties:
+        transcription_mode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Transcription Mode
+        video_file:
+          anyOf:
+          - contentMediaType: application/octet-stream
+            type: string
+          - type: 'null'
+          title: Video File
+        video_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Video Url
+      title: Body_create_project_api_v1_projects_post
+      type: object
+    ChatMessageRequest:
+      properties:
+        message:
+          title: Message
+          type: string
+      required:
+      - message
+      title: ChatMessageRequest
+      type: object
+>>>>>>> 18d551fd02fc30603ac5339893e00ef8d9a870b2
     HTTPValidationError:
       properties:
         detail:
           items:
             $ref: '#/components/schemas/ValidationError'
+<<<<<<< HEAD
           type: array
           title: Detail
       type: object
@@ -519,6 +676,31 @@ components:
       - op
       title: Operation
       description: Structured operation emitted by AI brain or user action.
+=======
+          title: Detail
+          type: array
+      title: HTTPValidationError
+      type: object
+    InstructionRequest:
+      properties:
+        answer:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Answer
+        instruction:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Instruction
+        say:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Say
+      title: InstructionRequest
+      type: object
+>>>>>>> 18d551fd02fc30603ac5339893e00ef8d9a870b2
     RenderRequest:
       properties:
         callback_url:
@@ -526,6 +708,7 @@ components:
           - type: string
           - type: 'null'
           title: Callback Url
+<<<<<<< HEAD
       type: object
       title: RenderRequest
     StepRequest:
@@ -616,11 +799,23 @@ components:
       description: Immutable source transcript of the video.
     ValidationError:
       properties:
+=======
+      title: RenderRequest
+      type: object
+    ValidationError:
+      properties:
+        ctx:
+          title: Context
+          type: object
+        input:
+          title: Input
+>>>>>>> 18d551fd02fc30603ac5339893e00ef8d9a870b2
         loc:
           items:
             anyOf:
             - type: string
             - type: integer
+<<<<<<< HEAD
           type: array
           title: Location
         msg:
@@ -635,11 +830,22 @@ components:
           type: object
           title: Context
       type: object
+=======
+          title: Location
+          type: array
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+>>>>>>> 18d551fd02fc30603ac5339893e00ef8d9a870b2
       required:
       - loc
       - msg
       - type
       title: ValidationError
+<<<<<<< HEAD
     Word:
       properties:
         id:
@@ -683,3 +889,515 @@ components:
       - end
       title: Word
       description: Word-level transcript entry.
+=======
+      type: object
+info:
+  title: IncuBrix Prompt-Based Editing Engine
+  version: 1.0.0
+openapi: 3.1.0
+paths:
+  /api/v1/jobs/{job_id}:
+    get:
+      operationId: get_job_status_api_v1_jobs__job_id__get
+      parameters:
+      - in: path
+        name: job_id
+        required: true
+        schema:
+          title: Job Id
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Job Status
+      tags:
+      - Jobs
+  /api/v1/model/status:
+    get:
+      description: 'Integration Standard & NLU status: report model connectivity,
+        active provider,
+
+        and availability separately from API service health.'
+      operationId: model_status_endpoint_api_v1_model_status_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Model Status Endpoint
+      tags:
+      - System
+  /api/v1/projects:
+    post:
+      operationId: create_project_api_v1_projects_post
+      parameters:
+      - in: header
+        name: Idempotency-Key
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_create_project_api_v1_projects_post'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Create Project
+      tags:
+      - Projects
+  /api/v1/projects/{project_id}:
+    get:
+      operationId: get_project_api_v1_projects__project_id__get
+      parameters:
+      - in: path
+        name: project_id
+        required: true
+        schema:
+          title: Project Id
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Project
+      tags:
+      - Projects
+  /api/v1/projects/{project_id}/auto-edit/apply:
+    post:
+      operationId: apply_auto_edit_plan_endpoint_api_v1_projects__project_id__auto_edit_apply_post
+      parameters:
+      - in: path
+        name: project_id
+        required: true
+        schema:
+          title: Project Id
+          type: string
+      - in: header
+        name: Idempotency-Key
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AutoEditApplyRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Apply Auto Edit Plan Endpoint
+      tags:
+      - AutoEdit
+  /api/v1/projects/{project_id}/auto-edit/plan:
+    post:
+      operationId: create_auto_edit_plan_api_v1_projects__project_id__auto_edit_plan_post
+      parameters:
+      - in: path
+        name: project_id
+        required: true
+        schema:
+          title: Project Id
+          type: string
+      - in: header
+        name: Idempotency-Key
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AutoEditPlanRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Create Auto Edit Plan
+      tags:
+      - AutoEdit
+  /api/v1/projects/{project_id}/chat:
+    get:
+      operationId: get_project_chat_api_v1_projects__project_id__chat_get
+      parameters:
+      - in: path
+        name: project_id
+        required: true
+        schema:
+          title: Project Id
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Project Chat
+      tags:
+      - Chat
+    post:
+      operationId: post_project_chat_api_v1_projects__project_id__chat_post
+      parameters:
+      - in: path
+        name: project_id
+        required: true
+        schema:
+          title: Project Id
+          type: string
+      - in: header
+        name: Idempotency-Key
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatMessageRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Post Project Chat
+      tags:
+      - Chat
+  /api/v1/projects/{project_id}/export:
+    get:
+      operationId: export_project_otio_api_v1_projects__project_id__export_get
+      parameters:
+      - in: path
+        name: project_id
+        required: true
+        schema:
+          title: Project Id
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Export Project Otio
+      tags:
+      - Export
+  /api/v1/projects/{project_id}/export/otio:
+    get:
+      operationId: export_project_otio_api_v1_projects__project_id__export_otio_get
+      parameters:
+      - in: path
+        name: project_id
+        required: true
+        schema:
+          title: Project Id
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Export Project Otio
+      tags:
+      - Export
+  /api/v1/projects/{project_id}/instructions:
+    post:
+      operationId: apply_instruction_api_v1_projects__project_id__instructions_post
+      parameters:
+      - in: path
+        name: project_id
+        required: true
+        schema:
+          title: Project Id
+          type: string
+      - in: header
+        name: Idempotency-Key
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstructionRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Apply Instruction
+      tags:
+      - Instructions
+  /api/v1/projects/{project_id}/render:
+    post:
+      operationId: trigger_render_api_v1_projects__project_id__render_post
+      parameters:
+      - in: path
+        name: project_id
+        required: true
+        schema:
+          title: Project Id
+          type: string
+      - in: header
+        name: Idempotency-Key
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RenderRequest'
+        required: true
+      responses:
+        '202':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Trigger Render
+      tags:
+      - Render
+  /api/v1/projects/{project_id}/transactions/{tx_id}/restore:
+    post:
+      operationId: restore_project_transaction_api_v1_projects__project_id__transactions__tx_id__restore_post
+      parameters:
+      - in: path
+        name: project_id
+        required: true
+        schema:
+          title: Project Id
+          type: string
+      - in: path
+        name: tx_id
+        required: true
+        schema:
+          title: Tx Id
+          type: string
+      - in: header
+        name: Idempotency-Key
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Restore Project Transaction
+      tags:
+      - History
+  /api/v1/projects/{project_id}/transcript:
+    get:
+      operationId: get_project_transcript_api_v1_projects__project_id__transcript_get
+      parameters:
+      - in: path
+        name: project_id
+        required: true
+        schema:
+          title: Project Id
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Project Transcript
+      tags:
+      - Projects
+  /api/v1/storage/{filename}:
+    get:
+      operationId: get_storage_file_api_v1_storage__filename__head
+      parameters:
+      - in: path
+        name: filename
+        required: true
+        schema:
+          title: Filename
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Storage File
+      tags:
+      - Storage
+    head:
+      operationId: get_storage_file_api_v1_storage__filename__head
+      parameters:
+      - in: path
+        name: filename
+        required: true
+        schema:
+          title: Filename
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Storage File
+      tags:
+      - Storage
+  /health:
+    get:
+      operationId: health_check_health_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Health Check
+      tags:
+      - System
+  /ready:
+    get:
+      operationId: readiness_check_ready_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+      summary: Readiness Check
+      tags:
+      - System
+>>>>>>> 18d551fd02fc30603ac5339893e00ef8d9a870b2

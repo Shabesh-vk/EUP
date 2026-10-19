@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://incubrix.ai/schemas/timeline.v1.json",
+  "title": "IncuBrix Timeline Schema",
+  "description": "Versioned, content-anchored video editing timeline schema.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "project_id",
+    "timebase",
+    "source_media",
+    "transcript",
+    "segments",
+    "effects",
+    "transactions",
+    "timeline_hash"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Semantic schema version."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Unique identifier for the editing project."
+    },
+    "timebase": {
+      "type": "integer",
+      "default": 1000,
+      "description": "Ticks per second for integer temporal coordinates (default: 1000 = milliseconds)."
+    },
+    "source_media": {
+      "type": "object",
+      "required": ["id", "filename", "sha256_hash", "duration_ticks", "fps"],
+      "properties": {
+        "id": { "type": "string" },
+        "filename": { "type": "string" },
+        "sha256_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "Cryptographic SHA-256 hash of the untouched source media."
+        },
+        "duration_ticks": { "type": "integer", "minimum": 0 },
+        "fps": { "type": "number", "exclusiveMinimum": 0 },
+        "width": { "type": ["integer", "null"] },
+        "height": { "type": ["integer", "null"] },
+        "audio_channels": { "type": ["integer", "null"] },
+        "sample_rate": { "type": ["integer", "null"] }
+      }
+    },
+    "transcript": {
+      "type": "object",
+      "required": ["words"],
+      "properties": {
+        "words": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TranscriptWord"
+          }
+        },
+        "language": { "type": "string", "default": "en" },
+        "is_mock": { "type": "boolean", "default": false }
+      }
+    },
+    "segments": {
+      "type": "array",
+      "description": "Ordered sequence of active playback clip segments referencing immutable source time ranges.",
+      "items": {
+        "$ref": "#/$defs/ClipSegment"
+      }
+    },
+    "effects": {
+      "type": "object",
+      "required": ["captions", "mutes", "bleeps", "music", "text_overlays"],
+      "properties": {
+        "captions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/CaptionEffect" }
+        },
+        "mutes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/MuteEffect" }
+        },
+        "bleeps": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/BleepEffect" }
+        },
+        "music": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/MusicEffect" }
+        },
+        "text_overlays": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/TextOverlayEffect" }
+        }
+      }
+    },
+    "transactions": {
+      "type": "array",
+      "description": "Append-only journal of editing operations.",
+      "items": {
+        "$ref": "#/$defs/TransactionRecord"
+      }
+    },
+    "timeline_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "Deterministic SHA-256 hash of canonicalized semantic timeline state."
+    }
+  },
+  "$defs": {
+    "TranscriptWord": {
+      "type": "object",
+      "required": ["id", "word", "start_ticks", "end_ticks", "speaker", "confidence"],
+      "properties": {
+        "id": { "type": "string", "description": "Permanent stable identifier for the word occurrence." },
+        "word": { "type": "string" },
+        "start_ticks": { "type": "integer", "minimum": 0 },
+        "end_ticks": { "type": "integer", "minimum": 0 },
+        "speaker": { "type": "string", "description": "Speaker label, e.g. 'host', 'guest', 'speaker_0'." },
+        "confidence": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "is_filler": { "type": "boolean", "default": false },
+        "is_silence": { "type": "boolean", "default": false }
+      }
+    },
+    "ClipSegment": {
+      "type": "object",
+      "required": ["segment_id", "source_start_ticks", "source_end_ticks", "speed_ratio"],
+      "properties": {
+        "segment_id": { "type": "string" },
+        "source_start_ticks": { "type": "integer", "minimum": 0 },
+        "source_end_ticks": { "type": "integer", "minimum": 0 },
+        "speed_ratio": { "type": "number", "exclusiveMinimum": 0.0, "default": 1.0 }
+      }
+    },
+    "CaptionEffect": {
+      "type": "object",
+      "required": ["id", "text", "anchor_word_ids", "source_start_ticks", "source_end_ticks"],
+      "properties": {
+        "id": { "type": "string" },
+        "text": { "type": "string" },
+        "anchor_word_ids": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Stable IDs of words this caption is anchored to."
+        },
+        "source_start_ticks": { "type": "integer", "minimum": 0 },
+        "source_end_ticks": { "type": "integer", "minimum": 0 },
+        "color": { "type": "string", "default": "white" },
+        "font_size": { "type": "integer", "default": 36 },
+        "position": { "type": "string", "enum": ["bottom", "top", "center"], "default": "bottom" },
+        "min_duration_s": { "type": "number", "default": 0.7 },
+        "is_suppressed": { "type": "boolean", "default": false },
+        "suppression_reason": { "type": ["string", "null"], "default": null }
+      }
+    },
+    "MuteEffect": {
+      "type": "object",
+      "required": ["id", "anchor_word_ids", "source_start_ticks", "source_end_ticks"],
+      "properties": {
+        "id": { "type": "string" },
+        "anchor_word_ids": { "type": "array", "items": { "type": "string" } },
+        "source_start_ticks": { "type": "integer", "minimum": 0 },
+        "source_end_ticks": { "type": "integer", "minimum": 0 },
+        "is_suppressed": { "type": "boolean", "default": false }
+      }
+    },
+    "BleepEffect": {
+      "type": "object",
+      "required": ["id", "anchor_word_ids", "source_start_ticks", "source_end_ticks"],
+      "properties": {
+        "id": { "type": "string" },
+        "anchor_word_ids": { "type": "array", "items": { "type": "string" } },
+        "source_start_ticks": { "type": "integer", "minimum": 0 },
+        "source_end_ticks": { "type": "integer", "minimum": 0 },
+        "frequency_hz": { "type": "integer", "default": 1000 },
+        "is_suppressed": { "type": "boolean", "default": false }
+      }
+    },
+    "MusicEffect": {
+      "type": "object",
+      "required": ["id", "asset_url", "source_start_ticks", "source_end_ticks"],
+      "properties": {
+        "id": { "type": "string" },
+        "asset_url": { "type": "string" },
+        "source_start_ticks": { "type": "integer", "minimum": 0 },
+        "source_end_ticks": { "type": "integer", "minimum": 0 },
+        "volume": { "type": "number", "minimum": 0.0, "maximum": 2.0, "default": 0.3 },
+        "ducking": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean", "default": true },
+            "threshold_db": { "type": "number", "default": -20.0 },
+            "attenuation_db": { "type": "number", "default": -14.0 }
+          }
+        }
+      }
+    },
+    "TextOverlayEffect": {
+      "type": "object",
+      "required": ["id", "text", "source_start_ticks", "source_end_ticks"],
+      "properties": {
+        "id": { "type": "string" },
+        "text": { "type": "string" },
+        "source_start_ticks": { "type": "integer", "minimum": 0 },
+        "source_end_ticks": { "type": "integer", "minimum": 0 },
+        "color": { "type": "string", "default": "white" },
+        "is_suppressed": { "type": "boolean", "default": false }
+      }
+    },
+    "TransactionRecord": {
+      "type": "object",
+      "required": ["id", "instruction", "operation_type", "status", "applied_at_step"],
+      "properties": {
+        "id": { "type": "string" },
+        "instruction": { "type": "string" },
+        "operation_type": { "type": "string" },
+        "status": { "type": "string", "enum": ["applied", "undone", "restored"] },
+        "applied_at_step": { "type": "integer" },
+        "details": { "type": "object" }
+      }
+    }
+  }
+}

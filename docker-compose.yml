@@ -1,5 +1,6 @@
 version: '3.8'
 
+<<<<<<< HEAD
 services:
   # Primary IncuBrix Editing Engine Service
   engine:
@@ -81,3 +82,79 @@ services:
 
 volumes:
   minio_data:
+=======
+# ==============================================================================
+# IncuBrix Prompt-Based Video Editing Engine - Docker Compose Orchestration
+# Includes:
+# 1. 'api': FastAPI HTTP application + React SPA UI + Background Job Worker + FFmpeg
+# 2. 'postgres': Persistent relational store for project metadata and idempotency
+#
+# STORAGE & LICENSING ARCHITECTURE NOTE:
+# Local development and containerized instances utilize the built-in storage service
+# backed by a named Docker volume ('incubrix_storage').
+# While MinIO is S3-compatible, MinIO is licensed under GNU AGPLv3, which imposes
+# strict copyleft network-use disclosure obligations that are problematic for
+# proprietary enterprise distributions.
+# For production S3 compatibility without AGPL risk, this service seamlessly connects
+# to Apache-2.0 / MIT object stores (e.g., AWS S3, Cloudflare R2, or SeaweedFS)
+# via standard S3 environment variables.
+# ==============================================================================
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: incubrix_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=production
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8000
+      - DATABASE_URL=postgresql://incubrix:incubrix_password@postgres:5432/incubrix
+      - STORAGE_DIR=/app/storage_data
+      - STORAGE_PUBLIC_URL=http://localhost:8000/api/v1/storage
+      - STT_PROVIDER=mock
+      - NLU_PROVIDER=rule_based
+      - TIME_POLICY=current_edited_time
+      - JOB_TIMEOUT_SECONDS=300
+      - WEBHOOK_SIGNING_SECRET=incubrix_production_secret_key_789
+    volumes:
+      - incubrix_storage:/app/storage_data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: incubrix_postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=incubrix
+      - POSTGRES_USER=incubrix
+      - POSTGRES_PASSWORD=incubrix_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - incubrix_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U incubrix -d incubrix"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  incubrix_storage:
+    name: incubrix_storage
+  incubrix_pgdata:
+    name: incubrix_pgdata
+>>>>>>> 18d551fd02fc30603ac5339893e00ef8d9a870b2

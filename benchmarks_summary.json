@@ -1,0 +1,105 @@
+{
+  "timestamp": "2026-10-17T09:50:20Z",
+  "latency_5min_ms": {
+    "cut_range": {
+      "mean_ms": 0.135,
+      "p95_ms": 0.342,
+      "min_ms": 0.081,
+      "max_ms": 0.342
+    },
+    "speed_range": {
+      "mean_ms": 0.134,
+      "p95_ms": 0.267,
+      "min_ms": 0.089,
+      "max_ms": 0.267
+    },
+    "add_caption": {
+      "mean_ms": 0.111,
+      "p95_ms": 0.171,
+      "min_ms": 0.068,
+      "max_ms": 0.171
+    },
+    "remove_fillers": {
+      "mean_ms": 0.186,
+      "p95_ms": 0.239,
+      "min_ms": 0.129,
+      "max_ms": 0.239
+    },
+    "undo": {
+      "mean_ms": 0.017,
+      "p95_ms": 0.034,
+      "min_ms": 0.009,
+      "max_ms": 0.034
+    },
+    "redo": {
+      "mean_ms": 0.013,
+      "p95_ms": 0.023,
+      "min_ms": 0.008,
+      "max_ms": 0.023
+    }
+  },
+  "latency_60min_ms": {
+    "cut_range": {
+      "mean_ms": 0.193,
+      "p95_ms": 0.328,
+      "min_ms": 0.149,
+      "max_ms": 0.328
+    },
+    "speed_range": {
+      "mean_ms": 0.237,
+      "p95_ms": 0.575,
+      "min_ms": 0.161,
+      "max_ms": 0.575
+    },
+    "add_caption": {
+      "mean_ms": 0.178,
+      "p95_ms": 0.272,
+      "min_ms": 0.117,
+      "max_ms": 0.272
+    },
+    "remove_fillers": {
+      "mean_ms": 1.037,
+      "p95_ms": 1.486,
+      "min_ms": 0.816,
+      "max_ms": 1.486
+    },
+    "undo": {
+      "mean_ms": 0.042,
+      "p95_ms": 0.059,
+      "min_ms": 0.025,
+      "max_ms": 0.059
+    },
+    "redo": {
+      "mean_ms": 0.038,
+      "p95_ms": 0.057,
+      "min_ms": 0.028,
+      "max_ms": 0.057
+    }
+  },
+  "determinism": {
+    "runs": 3,
+    "hashes": [
+      "111af1d9a74aebbab1154aba6ed3b705476066439edcbbb73eb81ed3203d5ed3",
+      "111af1d9a74aebbab1154aba6ed3b705476066439edcbbb73eb81ed3203d5ed3",
+      "111af1d9a74aebbab1154aba6ed3b705476066439edcbbb73eb81ed3203d5ed3"
+    ],
+    "durations_s": [
+      249.75,
+      249.75,
+      249.75
+    ],
+    "all_hashes_identical": true,
+    "canonical_hash": "111af1d9a74aebbab1154aba6ed3b705476066439edcbbb73eb81ed3203d5ed3"
+  },
+  "av_sync_and_frame_accuracy": {
+    "expected_duration_s": 35.0,
+    "video_duration_s": 35.0,
+    "audio_duration_s": 35.0,
+    "fps": 30.0,
+    "av_offset_seconds": 0.0,
+    "av_offset_frames": 0.0,
+    "sync_within_one_frame": true,
+    "rendered_file_sha256": "ad794543145cda0aa86e1f793e4b827dde15bc9f34bae356d74f5a74f6a6ea86",
+    "source_untouched_sha256": "0b6a6f58063c1b01e3c841cd677af2b0e3b4a5aba9f421b131da514d45873bf3"
+  }
+}
