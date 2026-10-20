@@ -16,7 +16,7 @@ jobs:
       run:
         working-directory: incubrix
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
@@ -31,7 +31,7 @@ jobs:
       - run: cargo run -p incubrix-cli -- check fixtures/sessions
       - run: cargo test --release -p incubrix-cli --test scale
       - run: cargo run --release -p incubrix-cli -- metrics --out metrics
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: metrics
           path: incubrix/metrics/METRICS.md
@@ -42,7 +42,7 @@ jobs:
       run:
         working-directory: incubrix
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: docker compose up -d --build api
       - run: docker compose run --rm test
       - if: always()
