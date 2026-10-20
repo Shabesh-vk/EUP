@@ -1,7 +1,7 @@
 # AI use
 
 How AI tools were used to build the IncuBrix engine (`incubrix/`) and its
-Concat integration.
+EUP integration (EUP is the renamed fork of Concat in `src/`).
 
 ## Coding assistant
 

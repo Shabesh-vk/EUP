@@ -21,7 +21,7 @@ locale is a JSON file that maps each key to your language:
   Language list shows, so someone who cannot read the current language can
   still find their own.
 - Every other key is one of those in
-  [`src/crates/concat/locales/en.json`](src/crates/concat/locales/en.json),
+  [`src/crates/eup/locales/en.json`](src/crates/eup/locales/en.json),
   the complete inventory, which holds the English for each. Copy that file,
   keep the keys, replace the values.
 - A key is dotted lowerCamelCase: the part of the interface the string
@@ -56,9 +56,9 @@ change.
 
 ## Shipping a language with Concat
 
-1. Put the file in `src/crates/concat/locales/`.
+1. Put the file in `src/crates/eup/locales/`.
 2. Add its code and file to the `BUILT_IN` table at the top of
-   `src/crates/concat/src/i18n.rs`.
+   `src/crates/eup/src/i18n.rs`.
 3. Give it a README: add `scripts/readme/lang_<code>.py` with the README's
    words in your language, add the code to `ORDER` in
    `scripts/readme/gen.py`, and run `python3 scripts/readme/gen.py`. The app

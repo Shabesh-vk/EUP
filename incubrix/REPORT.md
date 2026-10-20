@@ -66,7 +66,7 @@ engine; these notes are kept here until it is cleaned up.)
   replaced by one that shows the engine's real answers: status, summary,
   operations, warnings, the question with clickable options, hash, length,
   edit history with per-edit Restore, and captions.
-- `src/crates/concat/src/panes/ai.rs` runs `incubrix_nlu::Session` in
+- `src/crates/eup/src/panes/ai.rs` runs `incubrix_nlu::Session` in
   process and, after every change, rebuilds the engine-managed clips on the
   Concat timeline in one gesture (one Ctrl+Z): a clip per segment
   (in-point, length, speed, muted where a mute or bleep lands) and a title
@@ -261,7 +261,7 @@ engine; these notes are kept here until it is cleaned up.)
   buttons that send the answer; status, summary and warnings come from the
   engine. Speech recognition runs on a worker with progress in the tab.
 - Done when: `worked_example_matches_the_session_runner`
-  (`src/crates/concat/src/panes/ai.rs`) types the 8 worked-example prompts
+  (`src/crates/eup/src/panes/ai.rs`) types the 8 worked-example prompts
   into the tab's session and gets the session runner's `timeline_hash` after
   every step. The clips it lays are back to back and add up to the
   timeline's 193 s, with the 2x section and the red caption.
@@ -295,3 +295,11 @@ engine; these notes are kept here until it is cleaned up.)
   a link to its proof; unproven rows marked Partial).
 - Not done (needs the candidate): the public deployment, the demo video,
   the listening check of 20 cuts, reviewer access to the repository.
+
+## Rename: Concat is now EUP
+
+- The desktop app in `src/` is renamed from Concat to EUP: crates `concat-*`
+  are `eup-*`, the binary is `eup`, the window and every string say EUP. It
+  is still a fork of jub0t/Concat under AGPL-3.0. The licence rule for this
+  engine is unchanged in substance: it never depends on an `eup-*` crate.
+- Older notes above say "Concat"; they mean the same app.

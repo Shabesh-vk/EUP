@@ -28,7 +28,7 @@ bundles them. See "The model mirror" below.
 
 ## Slint (used under GPL-3.0-only)
 
-The `concat` crate (`src/crates/concat`) builds against
+The `concat` crate (`src/crates/eup`) builds against
 [Slint](https://github.com/slint-ui/slint), which its authors offer under
 **any one** of three licences, at the user's choice: a Royalty-free licence, a
 paid commercial licence, or **GNU GPL-3.0-only**.
@@ -53,30 +53,30 @@ would rather not be bound by the GPL must take Slint under one of its other
 two licences and remove or replace Concat's AGPL-licensed code accordingly;
 the two cannot be mixed.
 
-Slint pulls in its Skia renderer (see `src/crates/concat/Cargo.toml`) along
+Slint pulls in its Skia renderer (see `src/crates/eup/Cargo.toml`) along
 with winit and their transitive crates, which are
 predominantly MIT/Apache-2.0/BSD licensed. The Skia renderer crate,
 `i-slint-renderer-skia`, is built from a patched copy in
 `src/patches/i-slint-renderer-skia`; its changes are listed in
 `src/patches/README.md` and marked `Concat:` in the source.
-`cargo tree -p concat` gives the resolved set of any given build.
+`cargo tree -p eup` gives the resolved set of any given build.
 
 ## Fonts
 
 The window and the title painter embed the interface's font into the binary
-(`src/crates/concat/build.rs`, `EmbedResourcesKind::EmbedFiles`, and
-`include_bytes!` in `concat-text`), so a distributed binary carries it and its
+(`src/crates/eup/build.rs`, `EmbedResourcesKind::EmbedFiles`, and
+`include_bytes!` in `eup-text`), so a distributed binary carries it and its
 licence travels with it. The files and the full licence text are in
-`src/crates/concat-text/fonts/`.
+`src/crates/eup-text/fonts/`.
 
 - **Hanken Grotesk**: Copyright 2021 The Hanken Grotesk Project Authors
   (https://github.com/marcologous/hanken-grotesk), SIL Open Font License
   1.1. The Regular, Medium, SemiBold, Bold and Italic static instances are
   embedded. See `fonts/LICENSE-HankenGrotesk.txt`.
 
-These are the base fonts every title can use, embedded by `concat-text`
+These are the base fonts every title can use, embedded by `eup-text`
 (`BASE_FONTS`) and registered with the window for the text presets. Each
-file's licence is beside it in `src/crates/concat-text/fonts/`, as
+file's licence is beside it in `src/crates/eup-text/fonts/`, as
 `LICENSE-<Family>.txt`; OFL is the SIL Open Font License 1.1.
 
 - **Inter**: Copyright 2016 The Inter Project Authors (https://github.com/rsms/inter). OFL. See `fonts/LICENSE-Inter.txt`.
@@ -110,22 +110,22 @@ file's licence is beside it in `src/crates/concat-text/fonts/`, as
 - **Mystery Quest**: The Mystery Quest Project Authors. OFL. See `fonts/LICENSE-MysteryQuest.txt`.
 - **Zen Tokyo Zoo**: The Zen Tokyo Zoo Project Authors. OFL. See `fonts/LICENSE-ZenTokyoZoo.txt`.
 
-The Noto faces in `src/crates/concat-text/fonts/` are the fallback for the
+The Noto faces in `src/crates/eup-text/fonts/` are the fallback for the
 scripts the other faces do not draw, in the interface and in titles and
 captions alike, compiled into the binary once
-(`src/crates/concat-text/src/lib.rs`, `SCRIPT_FALLBACKS`). Each is the
+(`src/crates/eup-text/src/lib.rs`, `SCRIPT_FALLBACKS`). Each is the
 Regular face from the notofonts project's own release, cut down with
 fonttools' `pyftsubset`; the release, the SHA-256 of the archive it came
 in and the command that cut it are recorded beside each face there. A subset is a Modified
 Version under the OFL, and keeps the family name the release gave it, as
 the OFL allows for Noto, which reserves no font name.
 
-- **Noto Sans CJK SC** (a subset: GB 2312, Big5 level 1, JIS X 0208, the Hangul of KS X 1001 and the kana): Copyright 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'. OFL. See `src/crates/concat-text/fonts/LICENSE-NotoSansCJK.txt`.
-- **Noto Sans Arabic UI** 2.011 (a subset: the Arabic block and the characters the Arabic, Persian and Urdu interface uses): Copyright 2022 The Noto Project Authors (https://github.com/notofonts/arabic). OFL. See `src/crates/concat-text/fonts/LICENSE-NotoSansArabicUI.txt`.
-- **Noto Sans Hebrew** 3.001 (a subset: the Hebrew block): Copyright 2022 The Noto Project Authors (https://github.com/notofonts/hebrew). OFL. See `src/crates/concat-text/fonts/LICENSE-NotoSansHebrew.txt`.
-- **Noto Sans Devanagari** 2.007 (a subset: the Devanagari block): Copyright 2022 The Noto Project Authors (https://github.com/notofonts/devanagari). OFL. See `src/crates/concat-text/fonts/LICENSE-NotoSansDevanagari.txt`.
-- **Noto Sans Bengali** 3.011 (a subset: the Bengali block): Copyright 2022 The Noto Project Authors (https://github.com/notofonts/bengali). OFL. See `src/crates/concat-text/fonts/LICENSE-NotoSansBengali.txt`.
-- **Noto Sans Thai** 2.002 (a subset: the Thai block): Copyright 2022 The Noto Project Authors (https://github.com/notofonts/thai). OFL. See `src/crates/concat-text/fonts/LICENSE-NotoSansThai.txt`.
+- **Noto Sans CJK SC** (a subset: GB 2312, Big5 level 1, JIS X 0208, the Hangul of KS X 1001 and the kana): Copyright 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'. OFL. See `src/crates/eup-text/fonts/LICENSE-NotoSansCJK.txt`.
+- **Noto Sans Arabic UI** 2.011 (a subset: the Arabic block and the characters the Arabic, Persian and Urdu interface uses): Copyright 2022 The Noto Project Authors (https://github.com/notofonts/arabic). OFL. See `src/crates/eup-text/fonts/LICENSE-NotoSansArabicUI.txt`.
+- **Noto Sans Hebrew** 3.001 (a subset: the Hebrew block): Copyright 2022 The Noto Project Authors (https://github.com/notofonts/hebrew). OFL. See `src/crates/eup-text/fonts/LICENSE-NotoSansHebrew.txt`.
+- **Noto Sans Devanagari** 2.007 (a subset: the Devanagari block): Copyright 2022 The Noto Project Authors (https://github.com/notofonts/devanagari). OFL. See `src/crates/eup-text/fonts/LICENSE-NotoSansDevanagari.txt`.
+- **Noto Sans Bengali** 3.011 (a subset: the Bengali block): Copyright 2022 The Noto Project Authors (https://github.com/notofonts/bengali). OFL. See `src/crates/eup-text/fonts/LICENSE-NotoSansBengali.txt`.
+- **Noto Sans Thai** 2.002 (a subset: the Thai block): Copyright 2022 The Noto Project Authors (https://github.com/notofonts/thai). OFL. See `src/crates/eup-text/fonts/LICENSE-NotoSansThai.txt`.
 
 The licence does not permit selling the font on its own; shipping the
 `fonts/` directory as it stands satisfies it.
@@ -205,8 +205,8 @@ except the first:
 - Google's MediaPipe Selfie Segmentation (Apache-2.0), in the ONNX
   conversion published by the ONNX Community
   (https://huggingface.co/onnx-community/mediapipe_selfie_segmentation,
-  Apache-2.0), compiled into the `concat-vision` crate; see
-  `src/crates/concat-vision/models/NOTICE.md`. The answer when nothing
+  Apache-2.0), compiled into the `eup-vision` crate; see
+  `src/crates/eup-vision/models/NOTICE.md`. The answer when nothing
   has been downloaded.
 - Robust Video Matting, the MobileNetV3 variant, by Peter Lin and others
   (https://github.com/PeterL1n/RobustVideoMatting, GPL-3.0), from that
@@ -252,7 +252,7 @@ of it.
 
 The effect catalogue cards are drawn from a photograph by Vitaly Gariev on
 Unsplash (https://unsplash.com/@silverkblack), used under the Unsplash
-License. The still lives at `src/crates/concat-host/assets/card-still.jpg`
+License. The still lives at `src/crates/eup-host/assets/card-still.jpg`
 and is embedded in the app; each card is the effect's own shader run over
-it on the GPU when the app first needs the card (`concat-host`'s
+it on the GPU when the app first needs the card (`eup-host`'s
 `cards.rs`).

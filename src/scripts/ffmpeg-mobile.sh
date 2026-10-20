@@ -7,7 +7,7 @@
 #   scripts/ffmpeg-mobile.sh aarch64-apple-ios     [out-dir]
 #   scripts/ffmpeg-mobile.sh aarch64-apple-ios-sim [out-dir]
 #
-# The result is a prefix - include/ and lib/ - that concat-media's
+# The result is a prefix - include/ and lib/ - that eup-media's
 # bindings take through FFMPEG_DIR, exactly as they take a Homebrew or
 # BtbN build on the desktop. It lands in vendor/ffmpeg/<target> under the
 # engine by default, outside target/, so a `cargo clean` does not cost

@@ -1,8 +1,8 @@
 # IncuBrix Engine (Rust)
 
 The prompt-based video editing engine for IncuBrix Assessment 2. Licensed
-MIT OR Apache-2.0. It never depends on Concat's AGPL `concat-*` crates;
-Concat (in `../src`) uses this engine, not the other way round.
+MIT OR Apache-2.0. It never depends on EUP's AGPL `eup-*` crates;
+EUP (in `../src`, a renamed fork of Concat) uses this engine, not the other way round.
 
 ## Status
 
@@ -16,7 +16,7 @@ Concat (in `../src`) uses this engine, not the other way round.
 | 6 | Rendering (ffmpeg), A/V checks, OTIO | done |
 | 7 | Session runner, 40+ scenarios | done |
 | 8 | HTTP service, Integration Standard | done (public demo deploy pending) |
-| 9 | Concat AI tab, in-process | done |
+| 9 | EUP AI tab, in-process | done |
 | 10 | Outstanding level, metrics, evidence | done (`metrics/METRICS.md`, `SUBMISSION.md`) |
 
 The full plan is `../docs/RUST_ENGINE_PLAN.md`.

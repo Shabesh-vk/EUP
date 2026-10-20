@@ -29,7 +29,7 @@ You will need Rust (see `rust-version` in `src/Cargo.toml`), the FFmpeg
 Windows and Linux), cmake and a C++ compiler. Then:
 
 ```sh
-cd src && cargo run -p concat
+cd src && cargo run -p eup
 ```
 
 That is the editor window. Everything - the engine, the host layer and the
@@ -39,7 +39,7 @@ Slint UI - is one Cargo workspace under `src/`.
 
 | Path | What lives there |
 |---|---|
-| `src/crates/` | The engine (core, media, render, effects, export, project), the host layer (`concat-host`, `concat-speech`), the API (`concat-api`, `concat-server`), the CLI, and `concat`, the Slint editor window |
+| `src/crates/` | The engine (core, media, render, effects, export, project), the host layer (`eup-host`, `eup-speech`), the API (`eup-api`, `eup-server`), the CLI, and `concat`, the Slint editor window |
 
 [`src/README.md`](src/README.md) explains how the crates fit together and
 where the sharp edges are. Read it before touching the engine.
@@ -68,7 +68,7 @@ Write what happens through the `log` facade (`log::info!`, `log::warn!`,
 `log::error!`) rather than to standard output or standard error. Every run
 writes `<app data>/logs/concat-<when>.log`, and a packaged build has no
 terminal for anything that goes anywhere else; `CONCAT_LOG=debug` turns the
-level up. See `src/crates/concat-host/src/logs.rs`.
+level up. See `src/crates/eup-host/src/logs.rs`.
 
 New source files need a licence header (see below). Match the style of the code
 around you; the engine avoids cleverness on purpose.

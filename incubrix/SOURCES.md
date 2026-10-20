@@ -5,10 +5,11 @@ tools, data and media, with licences. The engine itself is MIT OR Apache-2.0.
 
 ## Licence boundary
 
-The engine never depends on Concat (`src/`, AGPL-3.0). Concat is only the
+The engine never depends on EUP (`src/`, AGPL-3.0; a renamed fork of
+Concat). EUP is only the
 desktop demo, and it depends on the engine (`incubrix-core`, `incubrix-nlu`,
 and `incubrix-cli` for one test), never the other way round. The HTTP service,
-the CLI and every test run without Concat.
+the CLI and every test run without EUP.
 
 ## Models
 

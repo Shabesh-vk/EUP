@@ -4,7 +4,7 @@
   #
   #   nix build            the editor window, ./result/bin/concat
   #   nix run              build and launch it
-  #   nix develop          a shell with everything `cargo run -p concat` needs
+  #   nix develop          a shell with everything `cargo run -p eup` needs
   #
   # The build is one Cargo workspace under src/, so cargo dependencies
   # come straight from src/Cargo.lock and there is no vendor hash to keep
@@ -240,7 +240,7 @@
           LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (runtimeLibs pkgs);
 
           shellHook = ''
-            echo "Concat: cd src && cargo run -p concat"
+            echo "Concat: cd src && cargo run -p eup"
           '';
         };
       });

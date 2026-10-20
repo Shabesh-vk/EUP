@@ -12,7 +12,7 @@
 //! An AI model never touches the timeline: the worst a bad parse can do is
 //! produce the wrong intent, which the resolver still validates.
 //!
-//! Licence: MIT OR Apache-2.0. Never depends on Concat's `concat-*` crates.
+//! Licence: MIT OR Apache-2.0. Never depends on EUP's `eup-*` crates.
 
 pub mod answer;
 pub mod auto;

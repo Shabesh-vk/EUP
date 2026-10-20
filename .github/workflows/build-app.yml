@@ -1,6 +1,6 @@
 name: Build app
 
-# Builds Concat - the Slint window, `src/crates/concat` - for every
+# Builds Concat - the Slint window, `src/crates/eup` - for every
 # platform and architecture it ships on, each on a runner of that
 # architecture so nothing is cross-compiled, and uploads one artifact per
 # target:
@@ -89,7 +89,7 @@ env:
   # the last release Microsoft made for them. It serves API 23, which is
   # what ort asks for there, and it is built for macOS 13.4, so it is not
   # linked: the app loads it at first use, and not on an older macOS (see
-  # concat-vision's manifest and onnx.rs, and #333).
+  # eup-vision's manifest and onnx.rs, and #333).
   ORT_INTEL_MAC_VERSION: 1.23.2
   # WiX for the Windows .msi, as a dotnet tool, pinned by version.
   WIX_VERSION: 6.0.2
@@ -189,7 +189,7 @@ jobs:
       #   generation - ggml-cpu-x64, -sse42, -sandybridge, -haswell,
       #   -skylakex, -icelake, -alderlake and more - shipped beside the
       #   program. At the first transcription ggml scores each against the
-      #   CPU's CPUID and loads the best it can run (concat-speech's
+      #   CPU's CPUID and loads the best it can run (eup-speech's
       #   `cpu_backend`), so a Haswell or a Ryzen gets AVX2 and FMA, and a
       #   Sandy Bridge the AVX kernels it had. The modules are what the
       #   whisper.cpp and llama.cpp projects ship their own x86 builds as.
@@ -479,7 +479,7 @@ jobs:
           test -d "sherpa/$stem/lib"
           echo "SHERPA_ONNX_LIB_DIR=$PWD/sherpa/$stem/lib" >> "$GITHUB_ENV"
 
-      # On Windows it links shared (see concat-speech's manifest for why
+      # On Windows it links shared (see eup-speech's manifest for why
       # static cannot work there), from a directory holding only the
       # import libraries. The separation matters: when the sys crate's
       # build script sees DLLs beside the .lib files it tries to copy them
@@ -547,7 +547,7 @@ jobs:
         working-directory: src
         run: |
           set -o pipefail
-          cargo build --profile app -p concat --target ${{ matrix.target }} 2>&1 | tee build.log
+          cargo build --profile app -p eup --target ${{ matrix.target }} 2>&1 | tee build.log
 
       - name: Build log to the summary (failure only)
         if: failure()
@@ -632,7 +632,7 @@ jobs:
 
           # ONNX Runtime is never linked at launch: on an Intel Mac it is
           # loaded at first use from Frameworks, under the name the app
-          # looks for (concat-vision's onnx.rs), and on Apple silicon it is
+          # looks for (eup-vision's onnx.rs), and on Apple silicon it is
           # inside the binary. A link here is #333 back: the app closing at
           # launch on every macOS older than the runtime.
           if otool -L "$app/Contents/MacOS/concat" | grep libonnxruntime ; then
@@ -738,7 +738,7 @@ jobs:
           # the cache satisfied does not run that script again, and the
           # cache does not promise to keep loose files at the top of a
           # profile. In lib/ the rpath finds the libraries and
-          # concat-speech's `cpu_backend` the modules.
+          # eup-speech's `cpu_backend` the modules.
           if [ "${{ matrix.ggml }}" = variants ]; then
             out=$(ls -dt "src/target/${{ matrix.target }}/app/build"/whisper-rs-sys-*/out/bin | head -1)
             out=${out%/bin}
@@ -978,7 +978,7 @@ jobs:
           # (the job's `env` says why), from the bin\ whisper-rs-sys
           # installed them to; see the Linux stage for why not from beside
           # the program. Beside concat.exe Windows finds the DLLs and
-          # concat-speech's `cpu_backend` the modules.
+          # eup-speech's `cpu_backend` the modules.
           if ("${{ matrix.ggml }}" -eq "variants") {
             $built = Get-ChildItem "src\target\${{ matrix.target }}\app\build\whisper-rs-sys-*\out\bin\ggml-cpu-x64.dll" |
               Sort-Object LastWriteTime -Descending | Select-Object -First 1

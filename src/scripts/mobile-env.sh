@@ -2,10 +2,10 @@
 # The build environment for a phone, as shell exports:
 #
 #   eval "$(scripts/mobile-env.sh aarch64-linux-android)"
-#   cargo ndk -t arm64-v8a --platform 26 build -p concat-android
+#   cargo ndk -t arm64-v8a --platform 26 build -p eup-android
 #
 #   eval "$(scripts/mobile-env.sh aarch64-apple-ios)"
-#   cargo build -p concat --target aarch64-apple-ios
+#   cargo build -p eup --target aarch64-apple-ios
 #
 # It names what the two fetch scripts left in vendor/ - FFmpeg through
 # FFMPEG_DIR, sherpa-onnx through SHERPA_ONNX_LIB_DIR - and on Android the

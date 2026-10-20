@@ -185,8 +185,8 @@ jobs:
           CARGO_PROFILE_DEV_DEBUG: "0"
         run: cargo test --workspace --doc -j 1
       # The gRPC transport is a feature nothing else in the workspace turns
-      # on, so it is linted and tested here on its own. See concat-server.
-      - run: cargo clippy -p concat-server -p concat-cli --features grpc --all-targets -- -D warnings
+      # on, so it is linted and tested here on its own. See eup-server.
+      - run: cargo clippy -p eup-server -p eup-cli --features grpc --all-targets -- -D warnings
         timeout-minutes: 10
         working-directory: src
       - name: Run the gRPC tests
@@ -195,7 +195,7 @@ jobs:
         run: |
           set -o pipefail
           status=0
-          cargo nextest run -p concat-server --features grpc --profile ci 2>&1 | tee nextest-grpc.log || status=$?
+          cargo nextest run -p eup-server --features grpc --profile ci 2>&1 | tee nextest-grpc.log || status=$?
           mv target/nextest/ci/junit.xml target/nextest/ci/junit-grpc.xml 2>/dev/null || true
           exit "$status"
 
@@ -388,7 +388,7 @@ jobs:
         shell: bash
         run: |
           status=0
-          cargo nextest run -p concat-host --test export --build-jobs 2 --profile ci --no-capture \
+          cargo nextest run -p eup-host --test export --build-jobs 2 --profile ci --no-capture \
             -E 'test(=every_edit_still_exports)' 2>&1 | tee nextest-every-edit.log || status=$?
           mv target/nextest/ci/junit.xml target/nextest/ci/junit-every-edit.xml 2>/dev/null || true
           exit "$status"

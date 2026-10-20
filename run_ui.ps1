@@ -10,7 +10,7 @@ if ($Preview) {
     exit 0
 }
 
-# Concat Desktop Editor Launcher with AI Conversation Tab
+# EUP Desktop Editor Launcher with AI Conversation Tab
 $env:FFMPEG_DIR = "N:\Concat\ffmpeg-dev"
 $env:LIBCLANG_PATH = "N:\llvm\bin"
 $env:ORT_DIR = "N:\Concat\onnxruntime-win-x64-1.28.0"
@@ -21,11 +21,11 @@ $env:PATH = "N:\Concat\ffmpeg-dev\bin;N:\llvm\bin;N:\Concat\onnxruntime-win-x64-
 
 Set-Location -Path "$PSScriptRoot\src"
 
-$exePath = "N:\Concat\src\target\quick\concat.exe"
+$exePath = "$PSScriptRoot\src\target\quick\eup.exe"
 
 if (-not $Rebuild -and (Test-Path $exePath)) {
     Write-Host "============================================================" -ForegroundColor Cyan
-    Write-Host "  FAST LAUNCH: Starting Concat Desktop Editor (Instant Mode)" -ForegroundColor Green
+    Write-Host "  FAST LAUNCH: Starting EUP Desktop Editor (Instant Mode)" -ForegroundColor Green
     Write-Host "  Binary: $exePath" -ForegroundColor DarkGray
     Write-Host "  (To do a full cargo rebuild instead, run: .\run_ui.ps1 -Rebuild)" -ForegroundColor DarkGray
     Write-Host "  (To preview the dashboard in 0ms, run: .\run_ui.ps1 -Preview)" -ForegroundColor Yellow
@@ -33,7 +33,7 @@ if (-not $Rebuild -and (Test-Path $exePath)) {
     & $exePath $args
 } else {
     Write-Host "============================================================" -ForegroundColor Cyan
-    Write-Host "  REBUILD MODE: Compiling and launching Concat via cargo dev..." -ForegroundColor Yellow
+    Write-Host "  REBUILD MODE: Compiling and launching EUP via cargo dev..." -ForegroundColor Yellow
     Write-Host "============================================================" -ForegroundColor Cyan
     cargo dev $args
 }

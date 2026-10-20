@@ -11,7 +11,7 @@
 //! - [`intake()`]: all of the above in one call.
 //!
 //! Nothing here edits; the result is handed to `incubrix-core` untouched.
-//! Licence: MIT OR Apache-2.0. Never depends on Concat's `concat-*` crates.
+//! Licence: MIT OR Apache-2.0. Never depends on EUP's `eup-*` crates.
 //!
 //! [`Project`]: incubrix_core::Project
 

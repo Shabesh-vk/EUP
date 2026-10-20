@@ -15,8 +15,8 @@
 //! - [`hash`]: the deterministic `timeline_hash`.
 //! - [`otio`]: OpenTimelineIO export for other editors.
 //!
-//! Licence: MIT OR Apache-2.0. This crate must never depend on Concat's
-//! AGPL `concat-*` crates.
+//! Licence: MIT OR Apache-2.0. This crate must never depend on EUP's
+//! AGPL `eup-*` crates.
 
 pub mod detect;
 pub mod hash;

@@ -33,7 +33,7 @@ and each sound from, in order:
 Upload every file to the `audio-v1` release as well. Then a file that moves in
 the repository can't break the shelf. Whichever source the bytes come from,
 they are checked against the manifest's `sha256`. The URLs are constants in
-`src/crates/concat-host/src/models.rs`: `SOUNDS_MANIFEST`, `SOUNDS_REPO` and
+`src/crates/eup-host/src/models.rs`: `SOUNDS_MANIFEST`, `SOUNDS_REPO` and
 `SOUNDS_RELEASE`.
 
 Until `audio/manifest.json` exists (the request answers 404), the shelf says
