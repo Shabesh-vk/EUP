@@ -530,7 +530,7 @@ export component AIConversationDashboard inherits Rectangle {
                 }
 
                 // Speech and the technical side, after the pages.
-                if root.data.ready && root.category != 0: Card {
+                if root.data.ready: Card {
                     min-height: speech.preferred-height;
                     speech := VerticalLayout {
                         padding: 8px;

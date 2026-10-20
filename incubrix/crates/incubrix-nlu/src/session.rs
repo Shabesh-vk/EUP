@@ -355,6 +355,12 @@ impl Session {
         }
     }
 
+    /// Swaps the parser, keeping the edit and the conversation - for a
+    /// model that became available after the session began.
+    pub fn set_parser(&mut self, parser: Box<dyn Parser>) {
+        self.parser = parser;
+    }
+
     /// The AI model reading instructions, if one is set up, for people.
     pub fn model_label(&self) -> Option<String> {
         self.parser.model_label()

@@ -124,11 +124,24 @@ impl LlmConfig {
         Some(cfg)
     }
 
-    /// [`LlmConfig::detect`], worked out once per run: it may probe a local
-    /// Ollama server, which a window redrawing must not wait on.
+    /// [`LlmConfig::detect`], remembered: it may probe a local Ollama
+    /// server, which a window redrawing must not wait on every time.
+    ///
+    /// A model found is kept; while none is found, the check is repeated at
+    /// most every 10 s, so a local server started later is picked up.
     pub fn detected() -> Option<Self> {
-        static ONCE: std::sync::OnceLock<Option<LlmConfig>> = std::sync::OnceLock::new();
-        ONCE.get_or_init(Self::detect).clone()
+        use std::sync::Mutex;
+        use std::time::Instant;
+        static LAST: Mutex<Option<(Option<LlmConfig>, Instant)>> = Mutex::new(None);
+        let mut last = LAST.lock().unwrap_or_else(|e| e.into_inner());
+        if let Some((cfg, at)) = &*last {
+            if cfg.is_some() || at.elapsed() < Duration::from_secs(10) {
+                return cfg.clone();
+            }
+        }
+        let cfg = Self::detect();
+        *last = Some((cfg.clone(), Instant::now()));
+        cfg
     }
 
     fn for_provider(provider: Provider) -> Self {
