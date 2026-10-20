@@ -13,6 +13,7 @@
 //! - [`search`], [`detect`]: finding phrases, fillers, silences, caption chunks.
 //! - [`outcome`]: the applied / needs_clarification / rejected answer.
 //! - [`hash`]: the deterministic `timeline_hash`.
+//! - [`otio`]: OpenTimelineIO export for other editors.
 //!
 //! Licence: MIT OR Apache-2.0. This crate must never depend on Concat's
 //! AGPL `concat-*` crates.
@@ -22,6 +23,7 @@ pub mod hash;
 pub mod history;
 pub mod model;
 pub mod ops;
+pub mod otio;
 pub mod outcome;
 pub mod resolve;
 pub mod search;

@@ -13,8 +13,8 @@ Concat (in `../src`) uses this engine, not the other way round.
 | 3 | Operations, undo/redo, selective restore, validation | done |
 | 4 | Intake, transcript, diarization | done |
 | 5 | Instruction understanding (rules + LLM + mock) | done |
-| 6 | Rendering (ffmpeg), A/V checks, OTIO | next |
-| 7 | Session runner, 40+ scenarios | |
+| 6 | Rendering (ffmpeg), A/V checks, OTIO | done |
+| 7 | Session runner, 40+ scenarios | next |
 | 8 | HTTP service, Integration Standard | |
 | 9 | Concat AI tab, in-process | started early: the tab runs the engine (REPORT.md) |
 | 10 | Outstanding level, metrics, evidence | |
@@ -72,6 +72,7 @@ crates/incubrix-core/src
   detect.rs     fillers, silences, caption chunks
   outcome.rs    applied / needs_clarification / rejected
   hash.rs       timeline_hash
+  otio.rs       OpenTimelineIO export
 crates/incubrix-media/src
   probe.rs      ffprobe: exact duration and fps, VFR, audio; MP4/MOV only
   hash.rs       source SHA-256 at intake and after renders
@@ -79,6 +80,7 @@ crates/incubrix-media/src
   diarize.rs    Diarizer trait, speaker labels, overlap and swap warnings
   cache.rs      transcripts cached by source hash
   intake.rs     all of the above in one call
+  render.rs     the timeline to MP4 with ffmpeg, then checked (length, A/V, source hash)
   whisper.rs    whisper.cpp adapter (feature whisper)
   sherpa.rs     sherpa-onnx diarization adapter (feature sherpa)
 

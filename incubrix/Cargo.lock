@@ -546,6 +546,7 @@ name = "incubrix-nlu"
 version = "0.1.0"
 dependencies = [
  "incubrix-core",
+ "incubrix-media",
  "regex",
  "schemars",
  "serde",

@@ -79,10 +79,90 @@ pub fn speed_playback(
         .collect())
 }
 
+/// How far a typed cut point may move to reach a pause between words.
+pub const SNAP_US: Us = 150_000;
+
+/// Moves the ends of a typed span out of the middle of a word, to the
+/// nearer edge of that word, when that edge is within [`SNAP_US`] - so a
+/// cut never clips a word. Returns the span and, for each end that landed
+/// in a word, a sentence saying what happened.
+pub fn snap_to_silence(t: &Transcript, r: SrcRange) -> (SrcRange, Vec<String>) {
+    let mut notes = Vec::new();
+    let mut snap = |at: Us| -> Us {
+        let Some(w) = t.words.iter().find(|w| w.start < at && at < w.end) else {
+            return at;
+        };
+        let to = if at - w.start <= w.end - at {
+            w.start
+        } else {
+            w.end
+        };
+        if (to - at).abs() <= SNAP_US {
+            notes.push(format!(
+                "Moved the cut point from {} to {} so '{}' is not clipped.",
+                clock(at),
+                clock(to),
+                w.text
+            ));
+            to
+        } else {
+            notes.push(format!(
+                "The cut at {} falls inside '{}' with no pause nearby; it may clip that word.",
+                clock(at),
+                w.text
+            ));
+            at
+        }
+    };
+    let (a, b) = (snap(r.start), snap(r.end));
+    match SrcRange::new(a, b) {
+        Some(snapped) => (snapped, notes),
+        None => (r, vec![]),
+    }
+}
+
 /// An anchor on words `first..=last` (indices into the transcript).
 pub fn words_anchor(t: &Transcript, first: usize, last: usize) -> Anchor {
     Anchor::Words {
         first: t.words[first].id.clone(),
         last: t.words[last].id.clone(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::Word;
+
+    fn word(id: &str, text: &str, start: Us, end: Us) -> Word {
+        Word {
+            id: id.into(),
+            text: text.into(),
+            start,
+            end,
+            speaker: String::new(),
+            confidence: 1.0,
+        }
+    }
+
+    #[test]
+    fn typed_cuts_move_out_of_words() {
+        let t = Transcript {
+            words: vec![
+                word("w0", "hello", 1_000_000, 1_500_000),
+                word("w1", "world", 3_000_000, 4_000_000),
+            ],
+        };
+        // 1.45 s is 50 ms before the end of "hello": the cut starts after it.
+        let (r, notes) = snap_to_silence(&t, SrcRange::new(1_450_000, 2_000_000).unwrap());
+        assert_eq!(r.start, 1_500_000);
+        assert_eq!(notes.len(), 1);
+        // 3.5 s is mid-word, 0.5 s from either edge: left, with a warning.
+        let (r, notes) = snap_to_silence(&t, SrcRange::new(2_000_000, 3_500_000).unwrap());
+        assert_eq!(r.end, 3_500_000);
+        assert!(notes[0].contains("may clip"));
+        // In silence: untouched, nothing said.
+        let (r, notes) = snap_to_silence(&t, SrcRange::new(2_000_000, 2_500_000).unwrap());
+        assert_eq!((r.start, notes.len()), (2_000_000, 0));
     }
 }

@@ -13,7 +13,7 @@
 //! - one instruction (with its answer) is one transaction, one undo.
 
 use incubrix_core::detect::{caption_chunks, fillers, silences, LOW_CONFIDENCE};
-use incubrix_core::resolve::{playback_span, TIME_POLICY_NOTE};
+use incubrix_core::resolve::{playback_span, snap_to_silence, TIME_POLICY_NOTE};
 use incubrix_core::search::{find_phrase, Hit};
 use incubrix_core::time::{clock, to_secs_ms, PbRange};
 use incubrix_core::{
@@ -752,15 +752,28 @@ impl Session {
                     }
                 }
                 self.with_targets(p, &tl, target, Purpose::Cut, |cands| {
-                    let ranges: Vec<SrcRange> =
-                        cands.iter().flat_map(|c| c.spans.clone()).collect();
+                    let mut notes = Vec::new();
+                    let ranges: Vec<SrcRange> = cands
+                        .iter()
+                        .flat_map(|c| c.spans.clone())
+                        .map(|r| {
+                            // Typed times may land mid-word; words found by
+                            // search are already whole.
+                            if !is_typed(target) {
+                                return r;
+                            }
+                            let (r, n) = snap_to_silence(&p.transcript, r);
+                            notes.extend(n);
+                            r
+                        })
+                        .collect();
                     Ok(Done {
                         ops: vec![Op::Cut {
                             ranges,
                             reason: CutReason::User,
                         }],
                         said: format!("Cut {}", labels(cands)),
-                        notes: vec![],
+                        notes,
                         typed: is_typed(target),
                     })
                 })
