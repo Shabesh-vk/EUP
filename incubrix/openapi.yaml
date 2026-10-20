@@ -1,0 +1,837 @@
+openapi: 3.1.0
+info:
+  title: IncuBrix editing engine
+  description: 'Prompt-based video editing: plain-English instructions become exact, reversible edits on a timeline that is replayed on the untouched source. Every instruction answers applied, needs_clarification or rejected; times are read as current playback time. Slow work runs as jobs (202 + job_id). Every POST accepts an Idempotency-Key. Errors are {"error": {code, message, retryable, details}}.'
+  license:
+    name: MIT OR Apache-2.0
+  version: 1.0.0
+servers:
+- url: http://localhost:8080
+  description: docker compose
+paths:
+  /api/v1/files/{key}:
+    get:
+      tags:
+      - jobs
+      summary: A stored file (local storage mode; with S3 the links are presigned).
+      operationId: file
+      parameters:
+      - name: key
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The file
+          content:
+            application/octet-stream: {}
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /api/v1/jobs/{id}:
+    get:
+      tags:
+      - jobs
+      summary: A job's status, progress and result links.
+      operationId: get_job
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /api/v1/projects:
+    post:
+      tags:
+      - projects
+      summary: |-
+        Take in a video: upload (multipart `video`) or `video_url`. Probing,
+        hashing and speech recognition run as a job.
+      operationId: create_project
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Same key + same request = same job, never repeated work
+        required: false
+        schema:
+          type:
+          - string
+          - 'null'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProject'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateProjectForm'
+        required: true
+      responses:
+        '202':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Accepted'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '409':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '413':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '422':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /api/v1/projects/{id}:
+    get:
+      tags:
+      - projects
+      summary: A project's state.
+      operationId: get_project
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectSummary'
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /api/v1/projects/{id}/answers:
+    post:
+      tags:
+      - editing
+      summary: Answer the waiting question.
+      operationId: answer
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Answer'
+        required: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutcomeDoc'
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /api/v1/projects/{id}/history:
+    get:
+      tags:
+      - projects
+      summary: The untouched source's facts and every transaction on it.
+      operationId: history
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 'The project: source, transcript, history'
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /api/v1/projects/{id}/instructions:
+    post:
+      tags:
+      - editing
+      summary: |-
+        Send one instruction in plain English. Answers at once (the engine
+        takes milliseconds) with applied, needs_clarification or rejected.
+      operationId: instruct
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Instruction'
+        required: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutcomeDoc'
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '409':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /api/v1/projects/{id}/otio:
+    get:
+      tags:
+      - projects
+      summary: The timeline as OpenTimelineIO.
+      operationId: otio
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OTIO Timeline.1 JSON
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /api/v1/projects/{id}/redo:
+    post:
+      tags:
+      - editing
+      summary: Redo the instruction last undone.
+      operationId: redo
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutcomeDoc'
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /api/v1/projects/{id}/renders:
+    post:
+      tags:
+      - jobs
+      summary: |-
+        Render the current timeline (a job). The result links to the video,
+        the timeline and the OTIO file, with the frame checks.
+      operationId: render
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        description: Same key + same request = same job
+        required: false
+        schema:
+          type:
+          - string
+          - 'null'
+      requestBody:
+        description: Optional
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RenderRequest'
+        required: true
+      responses:
+        '202':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Accepted'
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '409':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /api/v1/projects/{id}/timeline:
+    get:
+      tags:
+      - projects
+      summary: 'The edited timeline (JSON Schema: `schema/timeline.schema.json`).'
+      operationId: timeline
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The timeline
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /api/v1/projects/{id}/undo:
+    post:
+      tags:
+      - editing
+      summary: Undo the last instruction.
+      operationId: undo
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutcomeDoc'
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /api/v1/sessions:
+    post:
+      tags:
+      - jobs
+      summary: |-
+        Play a scripted session (the batch runner's call): every step's answer
+        in `results.json`, plus the final timeline, history, OTIO and, for a
+        "render" step, the video.
+      operationId: run_session
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        description: Same key + same request = same job
+        required: false
+        schema:
+          type:
+          - string
+          - 'null'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionRequest'
+        required: true
+      responses:
+        '202':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Accepted'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '422':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+  /health:
+    get:
+      tags:
+      - service
+      summary: Liveness.
+      operationId: health
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+  /ready:
+    get:
+      tags:
+      - service
+      summary: 'Readiness: database, store, ffmpeg.'
+      operationId: ready
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ready'
+        '503':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ready'
+components:
+  schemas:
+    Accepted:
+      type: object
+      description: 'Start work: a job was accepted.'
+      required:
+      - job_id
+      - status_url
+      properties:
+        job_id:
+          type: string
+          description: Poll `GET /api/v1/jobs/{job_id}`.
+        project_id:
+          type:
+          - string
+          - 'null'
+          description: The project the job belongs to, if any.
+        status_url:
+          type: string
+          description: Where to poll.
+    Answer:
+      type: object
+      description: The reply to the waiting question.
+      required:
+      - answer
+      properties:
+        answer:
+          type: string
+          description: E.g. "the second one", "all", or an option's own words.
+    CreateProject:
+      type: object
+      description: A new project from a video URL (JSON body).
+      required:
+      - transcript
+      properties:
+        callback_url:
+          type:
+          - string
+          - 'null'
+          description: Told when intake ends (HMAC-SHA256 signed).
+        transcript:
+          type: object
+          description: |-
+            Recorded words (`{"words": [{text, start, end, confidence}]}`, microseconds),
+            used instead of speech recognition.
+        video_url:
+          type:
+          - string
+          - 'null'
+          description: http(s) URL of an MP4 or MOV.
+    CreateProjectForm:
+      type: object
+      description: A new project from an upload (multipart form).
+      required:
+      - video
+      properties:
+        callback_url:
+          type:
+          - string
+          - 'null'
+          description: Told when intake ends.
+        transcript:
+          type:
+          - string
+          - 'null'
+          description: Recorded words as JSON text (optional).
+        video:
+          type: string
+          format: binary
+          description: The MP4 or MOV file.
+    ErrorBody:
+      type: object
+      description: The error body.
+      required:
+      - error
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorDetail'
+          description: The error.
+    ErrorDetail:
+      type: object
+      description: One error.
+      required:
+      - code
+      - message
+      - retryable
+      - details
+      properties:
+        code:
+          type: string
+          description: UPPER_SNAKE_CASE code.
+        details:
+          type: object
+          description: Anything that helps (field names, limits).
+        message:
+          type: string
+          description: For people.
+        retryable:
+          type: boolean
+          description: Whether the same request may succeed later.
+    Health:
+      type: object
+      description: '`GET /health`.'
+      required:
+      - status
+      - version
+      properties:
+        status:
+          type: string
+          description: Always "ok" while the process runs.
+        version:
+          type: string
+          description: Service version.
+    Instruction:
+      type: object
+      description: One instruction in plain English.
+      required:
+      - say
+      properties:
+        say:
+          type: string
+          description: What the user typed, e.g. "Cut the first 30 seconds".
+    Job:
+      type: object
+      description: A background job.
+      required:
+      - job_id
+      - kind
+      - status
+      - progress
+      - result
+      - error
+      - manifest
+      - created_at
+      - updated_at
+      properties:
+        created_at:
+          type: integer
+          format: int64
+          description: Seconds since the epoch.
+          minimum: 0
+        error:
+          type: object
+          description: The error when it failed (same shape as an error response's `error`).
+        job_id:
+          type: string
+          description: Id.
+        kind:
+          type: string
+          description: '`intake`, `render` or `session`.'
+        manifest:
+          type: object
+          description: 'What produced the result: models, settings, timings, licences.'
+        progress:
+          type: integer
+          format: int32
+          description: 0 to 100.
+          minimum: 0
+        project_id:
+          type:
+          - string
+          - 'null'
+          description: The project it belongs to.
+        result:
+          type: object
+          description: Links and figures when it succeeded.
+        status:
+          $ref: '#/components/schemas/JobStatus'
+          description: Where it is.
+        updated_at:
+          type: integer
+          format: int64
+          description: Seconds since the epoch.
+          minimum: 0
+    JobStatus:
+      type: string
+      description: A job's state (Integration Standard point 3).
+      enum:
+      - queued
+      - running
+      - succeeded
+      - failed
+    OutcomeDoc:
+      type: object
+      description: 'An editing answer: applied, needs_clarification or rejected.'
+      required:
+      - status
+      - operations
+      - summary
+      - options
+      - warnings
+      - time_policy
+      - timeline_hash
+      - duration_s
+      - project_id
+      - manifest
+      properties:
+        action:
+          type:
+          - string
+          - 'null'
+          description: What the caller should do next ("render"), if anything.
+        code:
+          type:
+          - string
+          - 'null'
+          description: Reason code of a rejection.
+        duration_s:
+          type: number
+          format: double
+          description: Edited length after the step, seconds.
+        manifest:
+          type: object
+          description: Models, settings, timings, licences.
+        operations:
+          type: array
+          items:
+            type: string
+          description: What was done, one line each.
+        options:
+          type: array
+          items:
+            type: string
+          description: Its options.
+        project_id:
+          type: string
+          description: The project.
+        question:
+          type:
+          - string
+          - 'null'
+          description: The question, when one is asked.
+        status:
+          type: string
+          description: '`applied` | `needs_clarification` | `rejected`.'
+        summary:
+          type: string
+          description: Before/after, or the reason.
+        time_policy:
+          type: string
+          description: 'Always "current": typed times are current playback time.'
+        timeline_hash:
+          type: string
+          description: Hash of the timeline after the step.
+        tx:
+          type:
+          - integer
+          - 'null'
+          format: int32
+          description: The undo step recorded, if any.
+          minimum: 0
+        warnings:
+          type: array
+          items:
+            type: string
+          description: Consequences worth knowing.
+    ProjectSummary:
+      type: object
+      description: A project's state.
+      required:
+      - project_id
+      - ready
+      - edits
+      - captions
+      - words
+      - options
+      - warnings
+      properties:
+        captions:
+          type: integer
+          description: Captions.
+          minimum: 0
+        duration_s:
+          type:
+          - number
+          - 'null'
+          format: double
+          description: Edited length, seconds.
+        edits:
+          type: integer
+          description: Active edits.
+          minimum: 0
+        options:
+          type: array
+          items:
+            type: string
+          description: Its options.
+        original_duration_s:
+          type:
+          - number
+          - 'null'
+          format: double
+          description: Source length, seconds.
+        pending_question:
+          type:
+          - string
+          - 'null'
+          description: The question waiting for an answer.
+        project_id:
+          type: string
+          description: Id.
+        ready:
+          type: boolean
+          description: Intake finished.
+        timeline_hash:
+          type:
+          - string
+          - 'null'
+          description: Current timeline hash.
+        warnings:
+          type: array
+          items:
+            type: string
+          description: Intake warnings.
+        words:
+          type: integer
+          description: Words in the transcript.
+          minimum: 0
+    Ready:
+      type: object
+      description: '`GET /ready`.'
+      required:
+      - ready
+      - checks
+      properties:
+        checks:
+          type: object
+          description: Each dependency.
+        ready:
+          type: boolean
+          description: All checks passed.
+    RenderRequest:
+      type: object
+      description: Optional body for a render.
+      properties:
+        callback_url:
+          type:
+          - string
+          - 'null'
+          description: Told when the render ends.
+    SessionRequest:
+      type: object
+      description: A scripted session to play (JSON body).
+      required:
+      - session
+      - transcript
+      - speakers
+      properties:
+        callback_url:
+          type:
+          - string
+          - 'null'
+          description: Told when the session ends.
+        session:
+          type: object
+          description: |-
+            The session: an object, or YAML text, in the brief's format
+            (`video`, `steps: [{say, answer}]`).
+        speakers:
+          type: object
+          description: Recorded speaker turns.
+        transcript:
+          type: object
+          description: Recorded words for the video.
+        video_url:
+          type:
+          - string
+          - 'null'
+          description: Overrides the session's `video`.
+tags:
+- name: service
+  description: Health and readiness
+- name: projects
+  description: Videos taken in for editing
+- name: editing
+  description: Instructions, answers, undo and redo
+- name: jobs
+  description: 'Background work: intake, render, sessions'

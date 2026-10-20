@@ -1,0 +1,75 @@
+# One command starts everything: `docker compose up`
+#   API      http://localhost:8080   (OpenAPI: /api/v1/openapi.json)
+#   S3       http://localhost:9000   (SeaweedFS; keys in .env, default incubrix/incubrix-secret)
+# One command tests everything: `docker compose run --rm test`
+# Settings: copy .env.example to .env to change any of them.
+
+services:
+  # S3-compatible object store. SeaweedFS (Apache-2.0): MinIO's public
+  # images were withdrawn from Docker Hub and quay.io in 2025.
+  s3:
+    image: chrislusf/seaweedfs:4.48
+    entrypoint: >
+      sh -c "printf '{\"identities\":[{\"name\":\"incubrix\",\"credentials\":[{\"accessKey\":\"%s\",\"secretKey\":\"%s\"}],\"actions\":[\"Admin\",\"Read\",\"Write\",\"List\",\"Tagging\"]}]}' \"$$S3_ACCESS_KEY\" \"$$S3_SECRET_KEY\" > /tmp/s3.json
+      && exec weed server -dir=/data -s3 -s3.port=9000 -s3.config=/tmp/s3.json"
+    environment:
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-incubrix}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-incubrix-secret}
+    ports: ["9000:9000"]
+    volumes: [s3-data:/data]
+    healthcheck:
+      test: ["CMD", "sh", "-c", "wget -q -O /dev/null http://127.0.0.1:9333/cluster/status && wget -q -S -O /dev/null http://127.0.0.1:9000/ 2>&1 | grep -q HTTP/"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+
+  s3-init:
+    image: chrislusf/seaweedfs:4.48
+    depends_on:
+      s3: { condition: service_healthy }
+    entrypoint: >
+      sh -c "echo 's3.bucket.create -name ${S3_BUCKET:-incubrix}' | weed shell -master=s3:9333 2>&1 | tee /tmp/out
+      ; grep -q -i -E 'error|fail' /tmp/out && ! grep -q -i 'exist' /tmp/out && exit 1 || exit 0"
+
+  api:
+    build: { context: ., target: runtime }
+    image: incubrix-api:local
+    depends_on:
+      s3-init: { condition: service_completed_successfully }
+    environment:
+      STORAGE: s3
+      S3_ENDPOINT: http://s3:9000
+      S3_PUBLIC_ENDPOINT: ${S3_PUBLIC_ENDPOINT:-http://localhost:9000}
+      S3_BUCKET: ${S3_BUCKET:-incubrix}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-incubrix}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-incubrix-secret}
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:8080}
+      CALLBACK_SECRET: ${CALLBACK_SECRET:-change-me}
+      LINK_TTL_SECONDS: ${LINK_TTL_SECONDS:-3600}
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-2048}
+      NLU_PROVIDER: ${NLU_PROVIDER:-rules}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      API_TOKEN: ${API_TOKEN:-}
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-600}
+      TRUST_FORWARDED: ${TRUST_FORWARDED:-false}
+    ports: ["8080:8080"]
+    volumes: [api-data:/data]
+
+  # `docker compose run --rm test`: unit + integration tests, the 47
+  # scenarios, and an end-to-end run against the live api + S3 store above.
+  test:
+    build: { context: ., target: test }
+    profiles: [test]
+    depends_on:
+      api: { condition: service_healthy }
+    # Shares the S3 store's network: presigned links for localhost:9000 resolve
+    # here exactly as they do for a user on the host.
+    network_mode: "service:s3"
+    environment:
+      API_URL: http://api:8080
+      CALLBACK_HOST: s3
+      CALLBACK_SECRET: ${CALLBACK_SECRET:-change-me}
+
+volumes:
+  s3-data:
+  api-data:

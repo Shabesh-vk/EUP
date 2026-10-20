@@ -20,6 +20,8 @@
 //! session runs with no video at all), and `expect:` on any step, checked
 //! by `incubrix check`.
 
+pub mod metrics;
+
 use std::path::{Path, PathBuf};
 
 use incubrix_core::time::to_secs_ms;
@@ -239,7 +241,12 @@ fn read_transcript(path: &Path, duration: incubrix_core::Us) -> Result<Transcrip
 }
 
 /// Builds the project a session edits. Relative paths are read from `base`.
-pub fn project(file: &SessionFile, base: &Path, work: &Path) -> Result<Project, RunError> {
+pub fn project(
+    file: &SessionFile,
+    base: &Path,
+    work: &Path,
+    transcriber: Option<&SharedTranscriber>,
+) -> Result<Project, RunError> {
     let at = |p: &str| -> PathBuf {
         let p = Path::new(p);
         if p.is_absolute() {
@@ -265,6 +272,20 @@ pub fn project(file: &SessionFile, base: &Path, work: &Path) -> Result<Project, 
     } else {
         at(video)
     };
+    if let (None, Some(t)) = (&file.transcript, transcriber) {
+        let diarizer = file
+            .speakers
+            .as_deref()
+            .map(|s| FixtureDiarizer::new(at(s)));
+        return Ok(intake(
+            &path,
+            t.as_ref(),
+            diarizer.as_ref().map(|d| d as &dyn Diarizer),
+            None,
+        )
+        .map_err(err)?
+        .into_project());
+    }
     let words = file.transcript.as_deref().map(&at).ok_or_else(|| {
         RunError(
             "no transcript: give `transcript:` (or build with the `whisper` feature and a model)"
@@ -311,13 +332,18 @@ fn download(url: &str, work: &Path) -> Result<PathBuf, RunError> {
     Ok(out)
 }
 
+/// A speech recogniser shared with the caller (the HTTP service's whisper).
+pub type SharedTranscriber = std::sync::Arc<dyn incubrix_media::Transcriber + Send + Sync>;
+
 /// What to do besides answering.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Default)]
 pub struct RunOptions {
     /// Where results, timeline and video go; nothing is written when `None`.
     pub out: Option<PathBuf>,
     /// Render on "render" steps (needs a real video).
     pub render: bool,
+    /// Hears the video when the session gives no `transcript:`.
+    pub transcriber: Option<SharedTranscriber>,
 }
 
 fn result(
@@ -362,7 +388,7 @@ pub fn run(
         .out
         .clone()
         .unwrap_or_else(|| std::env::temp_dir().join("incubrix-run"));
-    let project = project(&file, base, &work)?;
+    let project = project(&file, base, &work, opts.transcriber.as_ref())?;
     let source_sha256 = project.source.sha256.clone();
     let mut session = Session::new(project, parser);
     let mut steps = Vec::new();

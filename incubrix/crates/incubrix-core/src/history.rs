@@ -150,13 +150,31 @@ impl Project {
         };
         let mut staged: Vec<Tx> = self.active().to_vec();
         let mut after = before.clone();
+        // Ops not yet replayed into `now`, and whether any of them changes
+        // more than overlays. An overlay (caption, mute, bleep) is checked
+        // only against the cuts, which overlays never change, so a run of
+        // them needs no replay in between: auto-captioning a 60-minute video
+        // replays once, not once per caption.
+        let (mut pending, mut pending_structural) = (0usize, false);
+        let overlay = |op: &Op| {
+            matches!(
+                op,
+                Op::AddCaption { .. } | Op::Mute { .. } | Op::Bleep { .. }
+            )
+        };
         for op in ops {
+            if pending > 0 && (pending_structural || !overlay(&op)) {
+                after = self.stage(&mut staged, &tx)?;
+                now = after.timeline.clone();
+                (pending, pending_structural) = (0, false);
+            }
             self.validate(&op, &now)?;
+            pending_structural |= !overlay(&op);
+            pending += 1;
             tx.ops.push(op);
-            staged.truncate(self.cursor);
-            staged.push(tx.clone());
-            after = replay(&self.source, &self.transcript, &staged)?;
-            now = after.timeline.clone();
+        }
+        if pending > 0 {
+            after = self.stage(&mut staged, &tx)?;
         }
         let before_hash = timeline_hash(&before.timeline);
         let after_hash = timeline_hash(&after.timeline);
@@ -190,6 +208,13 @@ impl Project {
             warnings,
             timeline_hash: after_hash,
         })
+    }
+
+    /// Replays the active history plus `tx` as it stands.
+    fn stage(&self, staged: &mut Vec<Tx>, tx: &Tx) -> Result<Replay, EditError> {
+        staged.truncate(self.cursor);
+        staged.push(tx.clone());
+        replay(&self.source, &self.transcript, staged)
     }
 
     /// Steps back one instruction. Returns the transaction undone.
