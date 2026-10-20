@@ -1,0 +1,18 @@
+# Hard case: a three-part instruction with one impossible part applies nothing.
+source:
+  duration_s: 240
+  lines:
+    - [5, "Hi everyone."]
+    - [42, "Welcome to the channel."]
+    - [65, "Our pricing is simple."]
+    - [100, "Let me show you the dashboard."]
+    - [135, "The pricing changed last year."]
+    - [195, "Pricing for teams is different."]
+    - [230, "Thanks for watching."]
+steps:
+  - say: "Cut the first 10 seconds, speed up 10x and add a caption 'Bye' at 0:05"
+    expect:
+      status: "rejected"
+      summary_contains: "part 2"
+      duration_s: 240.0
+      captions: 0

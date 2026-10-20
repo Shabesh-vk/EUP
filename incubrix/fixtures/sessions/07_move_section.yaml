@@ -1,0 +1,17 @@
+# Reorder: a moved section keeps the length.
+source:
+  duration_s: 240
+  lines:
+    - [5, "Hi everyone."]
+    - [42, "Welcome to the channel."]
+    - [65, "Our pricing is simple."]
+    - [100, "Let me show you the dashboard."]
+    - [135, "The pricing changed last year."]
+    - [195, "Pricing for teams is different."]
+    - [230, "Thanks for watching."]
+steps:
+  - say: "move 0:40 to 0:50 to the end"
+    expect:
+      status: "applied"
+      duration_s: 240.0
+      recorded: true

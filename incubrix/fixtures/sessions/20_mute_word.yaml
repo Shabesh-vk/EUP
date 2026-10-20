@@ -1,0 +1,11 @@
+# Muting a word.
+source:
+  duration_s: 60
+  lines:
+    - [10, "The secret word is banana."]
+steps:
+  - say: "mute the word banana"
+    expect:
+      status: "applied"
+      recorded: true
+      duration_s: 60.0

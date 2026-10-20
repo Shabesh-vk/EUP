@@ -1,0 +1,14 @@
+# Ambiguity: "make it shorter" asks; the user declines.
+source:
+  duration_s: 60
+  lines:
+    - [5, "So um this is it."]
+    - [40, "Done."]
+steps:
+  - say: "make it shorter"
+    answer: "none"
+    expect:
+      asked: true
+      status: "applied"
+      recorded: false
+      duration_s: 60.0

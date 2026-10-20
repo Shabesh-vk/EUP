@@ -1,0 +1,24 @@
+# Restore one earlier edit, keeping later ones.
+source:
+  duration_s: 240
+  lines:
+    - [5, "Hi everyone."]
+    - [42, "Welcome to the channel."]
+    - [65, "Our pricing is simple."]
+    - [100, "Let me show you the dashboard."]
+    - [135, "The pricing changed last year."]
+    - [195, "Pricing for teams is different."]
+    - [230, "Thanks for watching."]
+steps:
+  - say: "Cut the first 30 seconds"
+    expect:
+      status: "applied"
+      duration_s: 210.0
+  - say: "speed up 1:00 to 1:30 by 2x"
+    expect:
+      status: "applied"
+      duration_s: 195.0
+  - say: "put the intro back"
+    expect:
+      status: "applied"
+      duration_s: 225.0

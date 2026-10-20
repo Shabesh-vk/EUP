@@ -1,0 +1,14 @@
+# "pricing" finds "cost" and shows it before cutting.
+source:
+  duration_s: 60
+  lines:
+    - [10, "The cost went up."]
+    - [30, "Anyway, moving on."]
+steps:
+  - say: "Remove the part about pricing"
+    answer: "1"
+    expect:
+      asked: true
+      question_contains: "by meaning"
+      status: "applied"
+      duration_s: 58.4

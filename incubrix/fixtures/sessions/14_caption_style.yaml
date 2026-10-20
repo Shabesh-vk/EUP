@@ -1,0 +1,20 @@
+# Styling a caption by reference.
+source:
+  duration_s: 240
+  lines:
+    - [5, "Hi everyone."]
+    - [42, "Welcome to the channel."]
+    - [65, "Our pricing is simple."]
+    - [100, "Let me show you the dashboard."]
+    - [135, "The pricing changed last year."]
+    - [195, "Pricing for teams is different."]
+    - [230, "Thanks for watching."]
+steps:
+  - say: "Add a caption 'Welcome!' when I say welcome to the channel"
+    expect:
+      status: "applied"
+  - say: "make it bigger, red and at the top"
+    expect:
+      status: "applied"
+      recorded: true
+      captions: 1

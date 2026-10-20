@@ -167,3 +167,31 @@ engine; these notes are kept here until it is cleaned up.)
 - Not done: the file has not been opened in DaVinci Resolve (not installed
   here); music ducking depth is approximate (a compressor, not a fixed
   gain); bleeps and mutes in the Concat preview are still mutes only.
+
+## Phase 7 - Session runner and the test suite
+
+- New crate `incubrix-cli`, binary `incubrix`:
+  `session run <file> --out DIR` plays a session in the brief's format
+  (`video`, `steps` with `say` and `answer`) and writes `results.json`
+  (per step: status, operations, summary, question, options,
+  timeline_hash, duration_s, plus warnings and code), `timeline.json`,
+  `history.json`, `timeline.otio`, and the render for a "render" step.
+  `batch run <folder>` does the same for every session in a folder (the
+  `--api` mode belongs to Phase 8). `check <folder>` plays every session
+  three times, compares the hashes and checks the `expect:` blocks.
+- Session-file extensions (optional): `transcript:` (recorded words),
+  `speakers:` (turns), `source:` (a length and spoken lines, so engine-only
+  scenarios need no video), `expect:` per step.
+- 47 scenarios in `fixtures/sessions/`: every operation in the brief, every
+  hard-case row, ambiguity and references, conflicts, two speakers, low
+  confidence, conversation. Expected values were worked out by hand before
+  the first run (e.g. 2.9 s after silence removal, 7.4 s with a protected
+  pause, 9.3 s for the guest's lines); all 47 pass, 3 runs each with the
+  same hashes. A planted wrong expectation is reported (test).
+- Done when: the worked example as a session file naming a real 4-minute
+  video reproduces exactly (240, 210, 208, 193, 223, 193, 193, 193 s; the
+  pricing question with 4 options) and step 8 renders at 0.22 frames off
+  the timeline with A/V offset 0. CI runs `incubrix check fixtures/sessions`.
+- Not done: videos given as URLs are downloaded but not cached by hash;
+  speech recognition in the runner needs `transcript:` (whisper adapter
+  not wired to the CLI yet).

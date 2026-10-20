@@ -1,0 +1,27 @@
+# A new edit clears redo.
+source:
+  duration_s: 240
+  lines:
+    - [5, "Hi everyone."]
+    - [42, "Welcome to the channel."]
+    - [65, "Our pricing is simple."]
+    - [100, "Let me show you the dashboard."]
+    - [135, "The pricing changed last year."]
+    - [195, "Pricing for teams is different."]
+    - [230, "Thanks for watching."]
+steps:
+  - say: "Cut the first 30 seconds"
+    expect:
+      status: "applied"
+  - say: "undo"
+    expect:
+      status: "applied"
+      duration_s: 240.0
+  - say: "cut the last 10 seconds"
+    expect:
+      status: "applied"
+      duration_s: 230.0
+  - say: "redo"
+    expect:
+      status: "rejected"
+      code: "NOTHING_TO_REDO"

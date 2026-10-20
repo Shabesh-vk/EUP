@@ -1,0 +1,16 @@
+# Speed up a range.
+source:
+  duration_s: 240
+  lines:
+    - [5, "Hi everyone."]
+    - [42, "Welcome to the channel."]
+    - [65, "Our pricing is simple."]
+    - [100, "Let me show you the dashboard."]
+    - [135, "The pricing changed last year."]
+    - [195, "Pricing for teams is different."]
+    - [230, "Thanks for watching."]
+steps:
+  - say: "speed up 1:00 to 1:30 by 2x"
+    expect:
+      status: "applied"
+      duration_s: 225.0

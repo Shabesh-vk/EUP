@@ -1,0 +1,12 @@
+# Removing um and uh.
+source:
+  duration_s: 60
+  lines:
+    - [5, "So um this is it."]
+    - [20, "Uh I think so."]
+steps:
+  - say: "remove the ums"
+    expect:
+      status: "applied"
+      summary_contains: "Removed 2 filler"
+      duration_s: 59.2

@@ -1,0 +1,15 @@
+# Imperfect data: low-confidence words are flagged, not bleeped blindly.
+source:
+  duration_s: 30
+  lines:
+    - [5, "Well damn~0.3 that hurt."]
+    - [15, "Oh crap."]
+steps:
+  - say: "bleep the swearing"
+    expect:
+      status: "applied"
+      warning_contains: "low confidence"
+  - say: "bleep the word damn"
+    expect:
+      status: "needs_clarification"
+      question_contains: "low confidence"

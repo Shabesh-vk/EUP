@@ -1,0 +1,28 @@
+# Hard case: undo the second-to-last cut but keep the music.
+source:
+  duration_s: 240
+  lines:
+    - [5, "Hi everyone."]
+    - [42, "Welcome to the channel."]
+    - [65, "Our pricing is simple."]
+    - [100, "Let me show you the dashboard."]
+    - [135, "The pricing changed last year."]
+    - [195, "Pricing for teams is different."]
+    - [230, "Thanks for watching."]
+steps:
+  - say: "add background music 'bed.mp3'"
+    expect:
+      status: "applied"
+  - say: "cut 0:10 to 0:20"
+    expect:
+      status: "applied"
+      duration_s: 230.0
+  - say: "cut 0:30 to 0:40"
+    expect:
+      status: "applied"
+      duration_s: 220.0
+  - say: "Undo the second-to-last cut but keep the music"
+    expect:
+      status: "applied"
+      duration_s: 230.0
+      warning_contains: "music"

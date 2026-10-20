@@ -1,0 +1,25 @@
+# Hard case: "Remove 0:30-0:40" sent twice asks instead of cutting other content.
+source:
+  duration_s: 240
+  lines:
+    - [5, "Hi everyone."]
+    - [42, "Welcome to the channel."]
+    - [65, "Our pricing is simple."]
+    - [100, "Let me show you the dashboard."]
+    - [135, "The pricing changed last year."]
+    - [195, "Pricing for teams is different."]
+    - [230, "Thanks for watching."]
+steps:
+  - say: "Remove 0:30-0:40"
+    expect:
+      status: "applied"
+      duration_s: 230.0
+  - say: "Remove 0:30-0:40"
+    answer: "no"
+    expect:
+      asked: true
+      options: 2
+      status: "applied"
+      duration_s: 230.0
+      recorded: false
+      same_timeline_as_step: 1

@@ -1,0 +1,21 @@
+# Hard case: a caption at 5:00 on a 4:00 video.
+source:
+  duration_s: 240
+  lines:
+    - [5, "Hi everyone."]
+    - [42, "Welcome to the channel."]
+    - [65, "Our pricing is simple."]
+    - [100, "Let me show you the dashboard."]
+    - [135, "The pricing changed last year."]
+    - [195, "Pricing for teams is different."]
+    - [230, "Thanks for watching."]
+steps:
+  - say: "add a caption 'Intro' at 0:05"
+    expect:
+      status: "applied"
+  - say: "add a caption 'Late' at 5:00"
+    expect:
+      status: "rejected"
+      code: "OUT_OF_RANGE"
+      summary_contains: "past the end"
+      captions: 1

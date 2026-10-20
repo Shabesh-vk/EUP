@@ -1,0 +1,13 @@
+# Two speakers: the guest's lines about their old job; the host's lead-in question is asked about.
+source:
+  duration_s: 12
+transcript: "../media/two_speakers.transcript.json"
+steps:
+  - say: "Remove everything the guest says about their old job"
+    answer: "only the guest's lines"
+    expect:
+      asked: true
+      options: 2
+      question_contains: "question"
+      status: "applied"
+      duration_s: 9.3

@@ -1,0 +1,9 @@
+# Two speakers: a likely speaker-label swap is reported.
+source:
+  duration_s: 12
+transcript: "../media/two_speakers.transcript.json"
+steps:
+  - say: "Remove everything the host says"
+    expect:
+      status: "applied"
+      warning_contains: "swapped"

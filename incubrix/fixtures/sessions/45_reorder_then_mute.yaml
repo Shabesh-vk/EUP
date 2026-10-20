@@ -1,0 +1,15 @@
+# Hard case: a section reordered, then a word inside it muted.
+source:
+  duration_s: 120
+  lines:
+    - [10, "Intro words here."]
+    - [60, "The secret word is banana."]
+steps:
+  - say: "Move 0:50 to 1:10 to the start"
+    expect:
+      status: "applied"
+      duration_s: 120.0
+  - say: "mute the word banana"
+    expect:
+      status: "applied"
+      recorded: true

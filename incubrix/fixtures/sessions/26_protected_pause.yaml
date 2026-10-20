@@ -1,0 +1,16 @@
+# A deliberate pause survives later silence removal.
+source:
+  duration_s: 40
+  lines:
+    - [2, "Wait for it."]
+    - [8, "Now."]
+    - [20, "Done."]
+steps:
+  - say: "keep the pause after wait for it"
+    expect:
+      status: "applied"
+  - say: "remove silences longer than 1 second"
+    expect:
+      status: "applied"
+      duration_s: 7.4
+      warning_contains: "protected"

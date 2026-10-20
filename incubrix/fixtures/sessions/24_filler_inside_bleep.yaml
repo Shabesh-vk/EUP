@@ -1,0 +1,15 @@
+# Hard case: filler removal does not cut into a bleeped word.
+source:
+  duration_s: 60
+  lines:
+    - [5, "So um this is fine."]
+    - [20, "Oh um damn it."]
+steps:
+  - say: "bleep um damn"
+    expect:
+      status: "applied"
+  - say: "remove the ums"
+    expect:
+      status: "applied"
+      summary_contains: "Removed 1 filler"
+      warning_contains: "inside a bleep"

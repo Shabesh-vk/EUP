@@ -1,0 +1,20 @@
+# Hard case: "80 seconds" and "a minute twenty", read as current playback time.
+source:
+  duration_s: 240
+  lines:
+    - [5, "Hi everyone."]
+    - [42, "Welcome to the channel."]
+    - [65, "Our pricing is simple."]
+    - [100, "Let me show you the dashboard."]
+    - [135, "The pricing changed last year."]
+    - [195, "Pricing for teams is different."]
+    - [230, "Thanks for watching."]
+steps:
+  - say: "cut from 80 seconds to 90 seconds"
+    expect:
+      status: "applied"
+      duration_s: 230.0
+  - say: "cut a minute twenty to a minute thirty"
+    expect:
+      status: "applied"
+      duration_s: 220.0

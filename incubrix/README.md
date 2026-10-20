@@ -14,8 +14,8 @@ Concat (in `../src`) uses this engine, not the other way round.
 | 4 | Intake, transcript, diarization | done |
 | 5 | Instruction understanding (rules + LLM + mock) | done |
 | 6 | Rendering (ffmpeg), A/V checks, OTIO | done |
-| 7 | Session runner, 40+ scenarios | next |
-| 8 | HTTP service, Integration Standard | |
+| 7 | Session runner, 40+ scenarios | done |
+| 8 | HTTP service, Integration Standard | next |
 | 9 | Concat AI tab, in-process | started early: the tab runs the engine (REPORT.md) |
 | 10 | Outstanding level, metrics, evidence | |
 
@@ -94,6 +94,12 @@ crates/incubrix-nlu/src
   answer.rs     reading "the second one", "all", "no"
   session.rs    the resolver: intents to ops, questions, all-or-nothing
 
+crates/incubrix-cli/src
+  lib.rs        session files, the runner, results.json, expectation checks
+  main.rs       `incubrix session run | batch run | check`
+
+fixtures/sessions/  47 scripted scenarios with expected results
+
 schema/         generated JSON Schemas (timeline, project, op, outcome, intent)
 ```
 
@@ -102,6 +108,8 @@ schema/         generated JSON Schemas (timeline, project, op, outcome, intent)
 ```sh
 cargo test --workspace                          # all tests
 cargo clippy --workspace -- -D warnings         # lints
+cargo run -p incubrix-cli -- check fixtures/sessions             # 47 scenarios, 3 runs each
+cargo run -p incubrix-cli -- session run my.yaml --out results/  # one session: results.json, timeline, render
 cargo run -p incubrix-core --example schema     # regenerate schema/*.json
 cargo run -p incubrix-nlu --example schema      # regenerate schema/intent.schema.json
 UPDATE_GOLDEN=1 cargo test -p incubrix-media    # rewrite media golden files (review the diff)
