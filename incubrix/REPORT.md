@@ -303,3 +303,22 @@ engine; these notes are kept here until it is cleaned up.)
   is still a fork of jub0t/Concat under AGPL-3.0. The licence rule for this
   engine is unchanged in substance: it never depends on an `eup-*` crate.
 - Older notes above say "Concat"; they mean the same app.
+
+## Captions already on the timeline follow the edit
+
+- Asked for: after "cut the first 30 seconds" the captions the video already
+  had stayed where they were; "make the captions red" left them white; a
+  speed-up left them out of line with their picture.
+- Cause: the AI tab only knew the captions it made itself. Captions from the
+  Captions page, an SRT or a title were plain text clips the edit never saw.
+- Fix: when a chat starts, every text clip over the video becomes an engine
+  caption anchored on the span of the file under it (read through the
+  video's clips, so a trimmed or sped-up clip maps correctly). They are the
+  project's starting point (`Project::start_with`): replayed like any edit,
+  so cuts remove or move them and speed changes stretch them, and restyles
+  reach them, but undo stops at them and the list of changes leaves them
+  out. Laid back, each keeps its own font, size and place; only what the
+  engine changed (colour, size, weight, position) changes.
+- Tests: `starting_captions_follow_cuts_and_speed_and_survive_undo` (core),
+  `existing_captions_are_cut_coloured_and_sped_with_the_video` and
+  `timeline_time_reads_through_the_clip` (EUP's AI tab).

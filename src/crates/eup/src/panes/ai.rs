@@ -19,7 +19,8 @@
 
 use incubrix_core::time::{clock, source_len, to_secs};
 use incubrix_core::{
-    secs, Op, Outcome, Project, SourceInfo, Status, Timeline, Transcript, Us, Word,
+    secs, Anchor, CaptionStyle, Op, Outcome, Project, SourceInfo, SrcRange, Status, Timeline,
+    Transcript, Us, Word,
 };
 use incubrix_nlu::intent::{EditRef, Intent};
 use incubrix_nlu::{parser_from_env, Action, Reply, Session};
@@ -27,7 +28,7 @@ use slint::{ModelRc, SharedString, VecModel};
 
 use eup_project::Command;
 use eup_project::commands::{ClipMove, ClipPatch, TrimEdge};
-use eup_project::model::{ClipKind, TextStyle};
+use eup_project::model::{Clip, ClipKind, TextStyle};
 use eup_speech::transcribe::{Segment, TranscribeRequest};
 
 use crate::host::spawn_in_project;
@@ -88,6 +89,19 @@ pub struct AiPane {
     frozen: Option<AiPanelData>,
     /// A request to carry out once the speech has been analysed.
     after_words: Option<String>,
+    /// Captions the timeline already had when the chat began, by the
+    /// engine's caption id: how each looked, so it keeps its look on the
+    /// way back.
+    adopted: std::collections::HashMap<String, Adopted>,
+}
+
+/// A caption that was on the timeline before the chat: its own look, and
+/// that look as the engine was told it.
+#[derive(Clone, Debug)]
+struct Adopted {
+    style: TextStyle,
+    offset_y: f64,
+    engine: CaptionStyle,
 }
 
 impl Default for AiPane {
@@ -102,6 +116,7 @@ impl Default for AiPane {
             busy: None,
             frozen: None,
             after_words: None,
+            adopted: std::collections::HashMap::new(),
         }
     }
 }
@@ -217,7 +232,33 @@ impl AiPane {
         if self.base.as_ref().is_some_and(|b| b.media_id != base.media_id) {
             self.words = Words::None;
         }
-        let project = Project::new(source_info(&base), self.transcript());
+        let mut project = Project::new(source_info(&base), self.transcript());
+        // The captions already over the video become the engine's starting
+        // point, so a cut or a speed change carries them with their picture
+        // and "make the captions red" reaches them too.
+        let pieces: Vec<Clip> = managed.iter().filter_map(|id| studio.clip(id).cloned()).collect();
+        let found = existing_captions(studio, &pieces, base.window);
+        let mut managed = managed;
+        self.adopted.clear();
+        if !found.is_empty() {
+            let mut ops = Vec::new();
+            for (n, (clip_id, range, adopted)) in found.into_iter().enumerate() {
+                let id = format!("cap_{}", n + 1);
+                ops.push(Op::AddCaption {
+                    id: id.clone(),
+                    anchor: Anchor::Source { range },
+                    text: adopted.style.content.clone(),
+                    style: adopted.engine.clone(),
+                });
+                self.adopted.insert(id, adopted);
+                managed.push(clip_id);
+            }
+            if project.start_with("captions already on the timeline", ops).is_err() {
+                // Not ours to carry, then: leave them where they are.
+                self.adopted.clear();
+                managed.truncate(pieces.len());
+            }
+        }
         self.session = Some(Session::new(project, parser_from_env()));
         self.managed = managed;
         self.base = Some(base);
@@ -535,19 +576,7 @@ fn lay(pane: &mut AiPane, studio: &mut Studio, tl: &Timeline) {
     }
     for c in &tl.captions {
         for p in &c.playback {
-            let offset = match c.style.position.as_str() {
-                "top" => -0.35,
-                "center" => 0.0,
-                _ => 0.35,
-            };
-            let style = TextStyle {
-                content: c.text.clone(),
-                font_family: "Hanken Grotesk".to_owned(),
-                font_size: c.style.size as f64 / 1080.0,
-                font_weight: if c.style.bold { 800.0 } else { 600.0 },
-                color: c.style.color.clone(),
-                ..TextStyle::default()
-            };
+            let (style, offset) = caption_look(c, pane.adopted.get(&c.id));
             if let Some(id) = studio.apply_within(
                 &g,
                 Command::AddTextClip {
@@ -564,6 +593,117 @@ fn lay(pane: &mut AiPane, studio: &mut Studio, tl: &Timeline) {
         }
     }
     pane.managed = made;
+}
+
+/// Where a position name puts a caption, as a share of the frame from its
+/// middle.
+fn position_offset(position: &str) -> f64 {
+    match position {
+        "top" => -0.35,
+        "center" => 0.0,
+        _ => 0.35,
+    }
+}
+
+/// How a caption of the engine's timeline is drawn: an adopted one in its
+/// own look, with only what the engine changed changed; one the engine made
+/// in the engine's look.
+fn caption_look(c: &incubrix_core::timeline::Caption, adopted: Option<&Adopted>) -> (TextStyle, f64) {
+    let weight = |bold: bool| if bold { 800.0 } else { 600.0 };
+    let Some(a) = adopted else {
+        let style = TextStyle {
+            content: c.text.clone(),
+            font_family: "Hanken Grotesk".to_owned(),
+            font_size: c.style.size as f64 / 1080.0,
+            font_weight: weight(c.style.bold),
+            color: c.style.color.clone(),
+            ..TextStyle::default()
+        };
+        return (style, position_offset(&c.style.position));
+    };
+    let mut style = a.style.clone();
+    style.content = c.text.clone();
+    if c.style.color != a.engine.color {
+        style.color = c.style.color.clone();
+    }
+    if c.style.size != a.engine.size {
+        style.font_size = c.style.size as f64 / 1080.0;
+    }
+    if c.style.bold != a.engine.bold {
+        style.font_weight = weight(c.style.bold);
+    }
+    let offset = if c.style.position != a.engine.position {
+        position_offset(&c.style.position)
+    } else {
+        a.offset_y
+    };
+    (style, offset)
+}
+
+/// Timeline seconds to file seconds through the video's clips: inside a
+/// clip by its in-point and speed, outside every clip clamped to the
+/// nearest one's edge, and never past the file.
+fn to_source(pieces: &[Clip], window: f64, t: f64) -> f64 {
+    let edge = |c: &Clip| (c.start - t).abs().min((c.start + c.duration - t).abs());
+    let piece = pieces
+        .iter()
+        .find(|c| t >= c.start && t < c.start + c.duration)
+        .or_else(|| {
+            pieces
+                .iter()
+                .min_by(|a, b| edge(a).partial_cmp(&edge(b)).unwrap_or(std::cmp::Ordering::Equal))
+        });
+    let at = match piece {
+        Some(c) => c.source_start + (t.clamp(c.start, c.start + c.duration) - c.start) * c.speed,
+        None => t,
+    };
+    at.clamp(0.0, window)
+}
+
+/// The text clips over the video being edited, oldest first on the
+/// timeline, each with the span of the file under it and its look. The
+/// span is read through the video's clips, so a caption sits on the
+/// picture it was shown over even when the video was trimmed or sped up
+/// by hand.
+fn existing_captions(studio: &Studio, pieces: &[Clip], window: f64) -> Vec<(String, SrcRange, Adopted)> {
+    let Some(first) = pieces.iter().map(|c| c.start).reduce(f64::min) else {
+        return Vec::new();
+    };
+    let last = pieces.iter().map(|c| c.start + c.duration).fold(first, f64::max);
+    let mut found: Vec<(f64, String, SrcRange, Adopted)> = studio
+        .timeline()
+        .clips
+        .iter()
+        .filter(|c| c.kind == ClipKind::Text && c.start < last && c.start + c.duration > first)
+        .filter_map(|c| {
+            let style = c.text.clone().filter(|s| !s.content.trim().is_empty())?;
+            let range = SrcRange::new(
+                secs(to_source(pieces, window, c.start)),
+                secs(to_source(pieces, window, c.start + c.duration)),
+            )?;
+            Some((c.start, c.id.clone(), range, adopt(style, c.offset_y)))
+        })
+        .collect();
+    found.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
+    found.into_iter().map(|(_, id, range, a)| (id, range, a)).collect()
+}
+
+/// A text clip's look, and the same look in the engine's terms.
+fn adopt(style: TextStyle, offset_y: f64) -> Adopted {
+    let position = if offset_y < -0.15 {
+        "top"
+    } else if offset_y > 0.15 {
+        "bottom"
+    } else {
+        "center"
+    };
+    let engine = CaptionStyle {
+        color: style.color.clone(),
+        size: (style.font_size * 1080.0).round().max(1.0) as u32,
+        position: position.to_owned(),
+        bold: style.font_weight >= 700.0,
+    };
+    Adopted { style, offset_y, engine }
 }
 
 /// Transcribes the video with EUP's transcriber, for word-based edits.
@@ -670,7 +810,10 @@ fn adopt_transcript(pane: &mut AiPane) {
     let transcript = pane.transcript();
     let Some(old) = pane.session.take() else { return };
     let mut project = Project::new(source_info(&base), transcript);
-    for tx in old.project.active() {
+    for tx in old.project.starting() {
+        let _ = project.start_with(&tx.instruction, tx.ops.clone());
+    }
+    for tx in old.project.edits() {
         // Edits so far were made without words, so they replay unchanged.
         let _ = project.apply(&tx.instruction, tx.ops.clone());
     }
@@ -904,14 +1047,14 @@ impl AiPane {
         data.duration = clock(tl.duration).into();
         data.original = clock(s.project.source.duration).into();
         data.parser = s.parser_name().into();
-        data.edits = s.project.active().len() as i32;
-        data.can_undo = !s.project.active().is_empty();
+        data.edits = s.project.edits().len() as i32;
+        data.can_undo = !s.project.edits().is_empty();
         data.can_redo = !s.project.redoable().is_empty();
         data.asking = s.pending().is_some();
         let off = s.project.restored();
         let mut ledger: Vec<AiEditData> = s
             .project
-            .active()
+            .edits()
             .iter()
             .rev()
             .map(|tx| {
@@ -1170,6 +1313,94 @@ mod tests {
         assert!(laid.iter().any(|p| (p.speed - 2.0).abs() < 1e-9));
         assert_eq!(tl.captions.len(), 1);
         assert_eq!(tl.captions[0].style.color, "#FF0000");
+    }
+
+    fn video(start: f64, duration: f64, source_start: f64, speed: f64) -> Clip {
+        Clip {
+            id: "v".into(),
+            kind: ClipKind::Video,
+            start,
+            duration,
+            source_start,
+            speed,
+            ..Clip::default()
+        }
+    }
+
+    /// A caption over a trimmed, sped-up clip lands on the file's seconds
+    /// it was shown over; outside the clip it is held to the clip's edge.
+    #[test]
+    fn timeline_time_reads_through_the_clip() {
+        let pieces = [video(10.0, 20.0, 5.0, 2.0)];
+        assert_eq!(to_source(&pieces, 100.0, 10.0), 5.0);
+        assert_eq!(to_source(&pieces, 100.0, 15.0), 15.0);
+        assert_eq!(to_source(&pieces, 100.0, 0.0), 5.0);
+        assert_eq!(to_source(&pieces, 100.0, 40.0), 45.0);
+        assert_eq!(to_source(&pieces, 30.0, 25.0), 30.0, "never past the file");
+    }
+
+    /// The user's case: the video already has captions. "Cut the first 30
+    /// seconds" takes the captions in them away and moves the rest with
+    /// their picture, "make the captions red" reaches every one, a
+    /// speed-up shortens a caption with its picture, and each keeps its
+    /// own font and place on the way back.
+    #[test]
+    fn existing_captions_are_cut_coloured_and_sped_with_the_video() {
+        let mut project = Project::new(SourceInfo::with_duration(secs(120.0)), Transcript::default());
+        let look = TextStyle {
+            content: "x".into(),
+            font_family: "Serif Display".into(),
+            font_size: 54.0 / 1080.0,
+            font_weight: 400.0,
+            color: "#ffffff".into(),
+            ..TextStyle::default()
+        };
+        let mut adopted = std::collections::HashMap::new();
+        let mut ops = Vec::new();
+        for (n, (a, b, text)) in [(10.0, 12.0, "early"), (40.0, 43.0, "later"), (70.0, 74.0, "fast")].into_iter().enumerate() {
+            let id = format!("cap_{}", n + 1);
+            let a2 = adopt(TextStyle { content: text.into(), ..look.clone() }, 0.4);
+            ops.push(Op::AddCaption {
+                id: id.clone(),
+                anchor: Anchor::Source { range: SrcRange::new(secs(a), secs(b)).unwrap() },
+                text: text.into(),
+                style: a2.engine.clone(),
+            });
+            adopted.insert(id, a2);
+        }
+        project.start_with("captions already on the timeline", ops).unwrap();
+        let mut session = Session::new(project, Box::new(incubrix_nlu::RulesParser));
+
+        let cut = session.say("cut the first 30 seconds");
+        assert_eq!(cut.outcome.status, Status::Applied, "{}", cut.outcome.summary);
+        let red = session.say("make the captions red");
+        assert_eq!(red.outcome.status, Status::Applied, "{}", red.outcome.summary);
+        let fast = session.say("speed up 0:40 to 0:44 by 2x");
+        assert_eq!(fast.outcome.status, Status::Applied, "{}", fast.outcome.summary);
+
+        let tl = session.project.timeline().timeline;
+        let by = |id: &str| tl.captions.iter().find(|c| c.id == id).unwrap();
+        assert!(by("cap_1").playback.is_empty(), "its picture was cut");
+        let later = by("cap_2").playback[0];
+        assert_eq!((later.start, later.end), (secs(10.0), secs(13.0)), "30 s earlier, with its picture");
+        let sped = by("cap_3").playback[0];
+        assert_eq!((sped.start, sped.end), (secs(40.0), secs(42.0)), "half as long at 2x");
+        for c in &tl.captions {
+            assert_eq!(c.style.color, "#FF0000", "{} is red", c.id);
+            let (style, offset) = caption_look(c, adopted.get(&c.id));
+            assert_eq!(style.color, "#FF0000");
+            assert_eq!(style.font_family, "Serif Display", "its own font");
+            assert_eq!(style.font_weight, 400.0, "its own weight");
+            assert_eq!(offset, 0.4, "its own place");
+        }
+
+        // Undo takes back the three requests and stops there.
+        for _ in 0..3 {
+            assert_eq!(session.say("undo").outcome.status, Status::Applied);
+        }
+        assert_eq!(session.say("undo").outcome.status, Status::Rejected);
+        assert_eq!(session.project.timeline().timeline.captions.len(), 3);
+        assert!(session.project.edits().is_empty());
     }
 
     #[test]

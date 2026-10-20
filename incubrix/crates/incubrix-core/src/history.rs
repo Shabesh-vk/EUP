@@ -67,6 +67,10 @@ pub struct Project {
     txs: Vec<Tx>,
     cursor: usize,
     next_tx: u32,
+    /// How many of the first transactions are the starting point (see
+    /// [`Project::start_with`]): replayed like any edit, never undone.
+    #[serde(default)]
+    start: usize,
 }
 
 impl Project {
@@ -78,7 +82,33 @@ impl Project {
             txs: Vec::new(),
             cursor: 0,
             next_tx: 1,
+            start: 0,
         }
+    }
+
+    /// Makes `ops` the project's starting point: what the timeline already
+    /// had before anyone asked for anything (captions an editor laid down
+    /// by hand, say). Replayed like any edit, so cuts and speed changes
+    /// carry it along, but undo stops at it and [`Project::edits`] leaves it
+    /// out. Only on a project with no history yet.
+    pub fn start_with(&mut self, instruction: &str, ops: Vec<Op>) -> Result<ApplyReport, EditError> {
+        if !self.txs.is_empty() {
+            return Err(EditError::Invalid("the starting point comes before any edit".into()));
+        }
+        let report = self.apply(instruction, ops)?;
+        self.start = self.cursor;
+        Ok(report)
+    }
+
+    /// The starting point's transactions (see [`Project::start_with`]).
+    pub fn starting(&self) -> &[Tx] {
+        &self.txs[..self.start.min(self.cursor)]
+    }
+
+    /// The edits made on top of the starting point, oldest first: what undo
+    /// can take back and what a list of changes shows.
+    pub fn edits(&self) -> &[Tx] {
+        &self.txs[self.start.min(self.cursor)..self.cursor]
     }
 
     /// The transactions currently applied, oldest first.
@@ -219,7 +249,7 @@ impl Project {
 
     /// Steps back one instruction. Returns the transaction undone.
     pub fn undo(&mut self) -> Option<&Tx> {
-        if self.cursor == 0 {
+        if self.cursor <= self.start {
             return None;
         }
         self.cursor -= 1;

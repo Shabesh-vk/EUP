@@ -405,7 +405,7 @@ impl Session {
         let now = clock(tl.duration);
         let was = clock(self.project.source.duration);
         let file = self.file_name();
-        let active = self.project.active();
+        let active = self.project.edits();
         let length = if tl.duration == self.project.source.duration {
             format!("{now} long")
         } else {
@@ -1860,7 +1860,7 @@ impl Session {
     fn resolve_restore(&self, p: &Project, edit: &EditRef, keep: Option<&str>) -> Resolved {
         let off = p.restored();
         let pool: Vec<&incubrix_core::Tx> = p
-            .active()
+            .edits()
             .iter()
             .filter(|tx| {
                 !off.contains(&tx.id) && !tx.ops.iter().any(|o| matches!(o, Op::Restore { .. }))
