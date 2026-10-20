@@ -87,3 +87,23 @@ fn auto_caption_without_speech_says_why() {
     assert_eq!(r.status, Status::Rejected);
     assert_eq!(r.code.as_deref(), Some("NO_TRANSCRIPT"));
 }
+
+#[test]
+fn changing_many_captions_is_summed_up_in_one_line() {
+    let lines: Vec<(f64, &str)> = (0..12)
+        .map(|i| (2.0 + i as f64 * 4.0, "This is one line of talk."))
+        .collect();
+    let mut s = session(60.0, &lines);
+    s.say("auto-caption the whole video");
+    let n = s.project.timeline().timeline.captions.len();
+    assert!(n >= 10, "{n}");
+    let r = s.say("make the captions bigger").outcome;
+    assert_eq!(r.status, Status::Applied);
+    assert!(
+        r.summary
+            .starts_with(&format!("All {n} captions now bigger")),
+        "{}",
+        r.summary
+    );
+    assert!(r.summary.len() < 120, "short: {}", r.summary);
+}

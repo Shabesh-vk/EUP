@@ -727,7 +727,54 @@ fn strings(v: &[String]) -> ModelRc<SharedString> {
     model(v.iter().map(|s| SharedString::from(s.as_str())).collect())
 }
 
+/// Lines shown at once in a reply; the rest wait behind "Show more".
+const SHOWN_CHANGES: usize = 3;
+const SHOWN_NOTES: usize = 2;
+/// A reply's text past this is cut at a sentence.
+const TEXT_CHARS: usize = 320;
+
+/// Repeated lines once, with a count: 73 x "Changed how the caption looks".
+fn fold(lines: Vec<String>) -> Vec<String> {
+    let mut out: Vec<(String, usize)> = Vec::new();
+    for l in lines {
+        match out.iter_mut().find(|(x, _)| *x == l) {
+            Some(e) => e.1 += 1,
+            None => out.push((l, 1)),
+        }
+    }
+    out.into_iter()
+        .map(|(l, n)| if n > 1 { format!("{l} (x{n})") } else { l })
+        .collect()
+}
+
+/// The text, at most [`TEXT_CHARS`], ending at a sentence; the rest is
+/// returned for "Show more".
+fn shorten(text: String) -> (String, Option<String>) {
+    if text.chars().count() <= TEXT_CHARS {
+        return (text, None);
+    }
+    let cut: String = text.chars().take(TEXT_CHARS).collect();
+    let end = cut.rfind(". ").map(|i| i + 1).unwrap_or(cut.len());
+    let (head, tail) = text.split_at(end);
+    (format!("{}...", head.trim_end()), Some(tail.trim().to_owned()))
+}
+
 fn reply(kind: i32, title: &str, text: String, changes: Vec<String>, notes: Vec<String>, options: Vec<String>) -> AiMessageData {
+    // Every reply is a summary: a short text, the first few changes and
+    // notes; everything else is one click away.
+    let (text, rest) = shorten(text);
+    let mut changes = fold(changes);
+    let mut notes = fold(notes);
+    let mut more: Vec<String> = Vec::new();
+    if let Some(rest) = rest {
+        more.push(rest);
+    }
+    if changes.len() > SHOWN_CHANGES {
+        more.extend(changes.split_off(SHOWN_CHANGES).into_iter().map(|c| format!("- {c}")));
+    }
+    if notes.len() > SHOWN_NOTES {
+        more.extend(notes.split_off(SHOWN_NOTES).into_iter().map(|n| format!("Note: {n}")));
+    }
     AiMessageData {
         mine: false,
         kind,
@@ -736,6 +783,7 @@ fn reply(kind: i32, title: &str, text: String, changes: Vec<String>, notes: Vec<
         changes: strings(&changes),
         notes: strings(&notes),
         options: strings(&options),
+        more: strings(&more),
     }
 }
 
@@ -1070,6 +1118,7 @@ fn tidy(s: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use slint::Model;
 
     #[test]
     fn summaries_lose_the_engine_detail() {
@@ -1086,6 +1135,19 @@ mod tests {
             "Cut 0:02 'Job interview.' The video is now 4:05.3 (2.7 s shorter)."
         );
         assert_eq!(friendly("Undid edit #2. Video 3:30 -> 4:00."), "Undid edit #2. The video is now 4:00.");
+    }
+
+    #[test]
+    fn replies_fold_and_cap_their_lines() {
+        let changes: Vec<String> = (0..73).map(|_| "Changed how the caption looks".to_owned()).collect();
+        let m = reply(0, "Done", "Done!".into(), changes, vec![], vec![]);
+        assert_eq!(m.changes.row_count(), 1);
+        assert_eq!(m.changes.row_data(0).unwrap().as_str(), "Changed how the caption looks (x73)");
+        let many: Vec<String> = (0..10).map(|i| format!("Removed part {i}")).collect();
+        let m = reply(0, "Done", "x".repeat(500), many, vec![], vec![]);
+        assert_eq!(m.changes.row_count(), 3);
+        assert!(m.more.row_count() >= 7);
+        assert!(m.text.len() <= 330);
     }
 
     #[test]

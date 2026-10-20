@@ -357,7 +357,7 @@ fn that_caption_with_several_captions_asks() {
     s.say("Add a caption 'Two' when I say thanks for watching");
     // "that caption" is the last one talked about.
     let r = s.say("make that caption blue").outcome;
-    assert!(r.summary.contains("cap_2"), "{}", r.summary);
+    assert!(r.summary.contains("'Two'"), "{}", r.summary);
     let r = s.say("make the captions bigger").outcome;
     assert_eq!(r.status, Status::Applied);
     let tl = s.project.timeline().timeline;

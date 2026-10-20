@@ -1668,8 +1668,8 @@ impl Session {
         let label = |id: &str| -> String {
             let c = tl.caption(id).expect("caption exists");
             match c.playback.first() {
-                Some(pb) => format!("{id} '{}' at {}", short(&c.text), clock(pb.start)),
-                None => format!("{id} '{}' (hidden)", short(&c.text)),
+                Some(pb) => format!("'{}' at {}", short(&c.text), clock(pb.start)),
+                None => format!("'{}' (hidden)", short(&c.text)),
             }
         };
         let build = |ids: &[String], note: Option<String>| -> Done {
@@ -1678,10 +1678,16 @@ impl Session {
                     .iter()
                     .map(|id| make(id, &tl.caption(id).expect("caption exists").style))
                     .collect(),
-                said: format!(
-                    "Caption {} {what}",
-                    ids.iter().map(|i| label(i)).collect::<Vec<_>>().join(", ")
-                ),
+                // A few captions are named; many are counted.
+                said: match ids.len() {
+                    1 => format!("Caption {} {what}", label(&ids[0])),
+                    2 | 3 => format!(
+                        "Captions {} {what}",
+                        ids.iter().map(|i| label(i)).collect::<Vec<_>>().join(", ")
+                    ),
+                    n if n == caps.len() => format!("All {n} captions {what}"),
+                    n => format!("{n} captions {what}"),
+                },
                 notes: note.into_iter().collect(),
                 typed: false,
             }
