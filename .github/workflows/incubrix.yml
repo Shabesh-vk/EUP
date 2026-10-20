@@ -1,0 +1,51 @@
+name: incubrix
+
+# The IncuBrix editing engine (incubrix/): lint, every test, the 47 scripted
+# scenarios (3 runs each), and the whole docker compose stack end to end.
+
+on:
+  push:
+    paths: ["incubrix/**", ".github/workflows/incubrix.yml"]
+  pull_request:
+    paths: ["incubrix/**", ".github/workflows/incubrix.yml"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: incubrix
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: incubrix
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: pip install opentimelineio==0.18.1
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - run: cargo test --workspace
+      - run: cargo run -p incubrix-cli -- check fixtures/sessions
+      - run: cargo test --release -p incubrix-cli --test scale
+      - run: cargo run --release -p incubrix-cli -- metrics --out metrics
+      - uses: actions/upload-artifact@v4
+        with:
+          name: metrics
+          path: incubrix/metrics/METRICS.md
+
+  compose:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: incubrix
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose up -d --build api
+      - run: docker compose run --rm test
+      - if: always()
+        run: docker compose logs api | tail -100
+      - if: always()
+        run: docker compose down -v

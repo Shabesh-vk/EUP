@@ -9,30 +9,30 @@ rust-version = "1.93"
 license = "AGPL-3.0-or-later"
 
 [workspace.dependencies]
-concat-core = { path = "crates/concat-core" }
-concat-media = { path = "crates/concat-media" }
-concat-project = { path = "crates/concat-project" }
-concat-render = { path = "crates/concat-render" }
-concat-export = { path = "crates/concat-export" }
-concat-host = { path = "crates/concat-host" }
-concat-api = { path = "crates/concat-api" }
-concat-server = { path = "crates/concat-server" }
-concat-mcp = { path = "crates/concat-mcp" }
-concat-speech = { path = "crates/concat-speech" }
-concat-effects = { path = "crates/concat-effects" }
-concat-text = { path = "crates/concat-text" }
-concat-vision = { path = "crates/concat-vision" }
-concat = { path = "crates/concat" }
+eup-core = { path = "crates/eup-core" }
+eup-media = { path = "crates/eup-media" }
+eup-project = { path = "crates/eup-project" }
+eup-render = { path = "crates/eup-render" }
+eup-export = { path = "crates/eup-export" }
+eup-host = { path = "crates/eup-host" }
+eup-api = { path = "crates/eup-api" }
+eup-server = { path = "crates/eup-server" }
+eup-mcp = { path = "crates/eup-mcp" }
+eup-speech = { path = "crates/eup-speech" }
+eup-effects = { path = "crates/eup-effects" }
+eup-text = { path = "crates/eup-text" }
+eup-vision = { path = "crates/eup-vision" }
+eup = { path = "crates/eup" }
 
 serde_json = "1"
 thiserror = "2"
 clap = { version = "4", features = ["derive", "env"] }
 # JSON Schemas for the API's request types, behind the `schema` features of
-# concat-project and concat-api: what concat-mcp hands an agent as each
+# eup-project and eup-api: what eup-mcp hands an agent as each
 # tool's input schema, generated from the types so it cannot drift.
 schemars = "1"
 
-# The GPU compositor, behind concat-render's `gpu` feature. A heavy tree, which
+# The GPU compositor, behind eup-render's `gpu` feature. A heavy tree, which
 # is exactly why it is optional: engine-only work never pays for it. Pinned to
 # the major Slint 1.17 can share a device with, so the window's renderer and
 # the engine's compositor draw on one device and a preview frame never leaves
@@ -46,7 +46,7 @@ pollster = "0.4"
 #
 # ort's default features less the API version, which is not one for every
 # target: the ONNX Runtime an Intel Mac gets is older than the others, and
-# a feature cannot be taken away per target, only added. concat-vision's
+# a feature cannot be taken away per target, only added. eup-vision's
 # manifest adds it, and says why.
 ort = { version = "=2.0.0-rc.13", default-features = false, features = ["std", "ndarray", "tracing", "download-binaries", "tls-native", "copy-dylibs"] }
 
@@ -63,7 +63,7 @@ lto = "thin"
 codegen-units = 1
 
 # For trying a change in the window: `cargo dev` (an alias for
-# `cargo run --bin concat --profile quick`, see .cargo/config.toml).
+# `cargo run --bin eup --profile quick`, see .cargo/config.toml).
 # Optimised enough that video plays as it would in release, without the
 # thin LTO and single codegen unit that make a release rebuild a
 # minutes-long relink. Incremental, so a change in one crate is seconds.
@@ -86,11 +86,11 @@ incremental = true
 # lanes, run the panes, format a waveform - is light enough that nothing
 # on screen tells the difference; if something ever does, the shipping
 # build is `--profile app`.
-[profile.quick.package.concat]
+[profile.quick.package.eup]
 opt-level = 0
 codegen-units = 256
 
-# The shipping build of the editor window: `cargo build --profile app -p concat`.
+# The shipping build of the editor window: `cargo build --profile app -p eup`.
 #
 # Every knob here is set for the fastest possible binary, and each one costs
 # build time. It is a separate profile rather than settings on `release`

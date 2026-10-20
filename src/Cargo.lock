@@ -1129,250 +1129,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "concat"
-version = "0.2.7"
-dependencies = [
- "block2 0.6.2",
- "concat-api",
- "concat-core",
- "concat-effects",
- "concat-export",
- "concat-host",
- "concat-mcp",
- "concat-media",
- "concat-project",
- "concat-server",
- "concat-speech",
- "concat-text",
- "concat-vision",
- "dirs",
- "image",
- "incubrix-core",
- "incubrix-nlu",
- "libc",
- "log",
- "objc2 0.6.4",
- "objc2-foundation 0.3.2",
- "opener",
- "pollster",
- "rfd",
- "serde",
- "serde_json",
- "slint",
- "slint-build",
- "toml",
- "wayland-backend",
- "wayland-client",
- "wgpu",
- "winresource",
-]
-
-[[package]]
-name = "concat-android"
-version = "0.2.7"
-dependencies = [
- "android-build",
- "android_logger",
- "concat",
- "jni 0.22.4",
- "libc",
- "log",
- "slint",
-]
-
-[[package]]
-name = "concat-api"
-version = "0.2.7"
-dependencies = [
- "base64 0.22.1",
- "concat-core",
- "concat-effects",
- "concat-export",
- "concat-host",
- "concat-project",
- "png 0.17.16",
- "schemars 1.2.3",
- "serde",
- "serde_json",
- "tempfile",
-]
-
-[[package]]
-name = "concat-cli"
-version = "0.2.7"
-dependencies = [
- "clap",
- "concat-api",
- "concat-core",
- "concat-effects",
- "concat-host",
- "concat-media",
- "concat-render",
- "concat-server",
- "serde_json",
-]
-
-[[package]]
-name = "concat-core"
-version = "0.2.7"
-
-[[package]]
-name = "concat-effects"
-version = "0.2.7"
-dependencies = [
- "concat-core",
- "concat-project",
- "naga",
- "serde",
- "thiserror 2.0.20",
- "toml",
-]
-
-[[package]]
-name = "concat-export"
-version = "0.2.7"
-dependencies = [
- "concat-core",
- "concat-effects",
- "concat-media",
- "concat-project",
- "concat-render",
- "concat-vision",
- "log",
- "serde",
-]
-
-[[package]]
-name = "concat-host"
-version = "0.2.7"
-dependencies = [
- "concat-core",
- "concat-effects",
- "concat-export",
- "concat-media",
- "concat-project",
- "concat-render",
- "concat-text",
- "concat-vision",
- "cpal",
- "libc",
- "log",
- "memmap2",
- "png 0.17.16",
- "serde",
- "serde_json",
- "sha2",
- "tempfile",
- "ureq 2.12.1",
- "windows-sys 0.61.2",
-]
-
-[[package]]
-name = "concat-mcp"
-version = "0.2.7"
-dependencies = [
- "concat-api",
- "concat-server",
- "serde_json",
- "tempfile",
-]
-
-[[package]]
-name = "concat-media"
-version = "0.2.7"
-dependencies = [
- "concat-core",
- "ffmpeg-the-third",
- "libc",
- "log",
- "thiserror 2.0.20",
-]
-
-[[package]]
-name = "concat-project"
-version = "0.2.7"
-dependencies = [
- "concat-core",
- "schemars 1.2.3",
- "serde",
- "serde_json",
- "thiserror 2.0.20",
-]
-
-[[package]]
-name = "concat-render"
-version = "0.2.7"
-dependencies = [
- "concat-core",
- "concat-effects",
- "half",
- "log",
- "pollster",
- "wgpu",
-]
-
-[[package]]
-name = "concat-server"
-version = "0.2.7"
-dependencies = [
- "concat-api",
- "getrandom 0.3.4",
- "prost",
- "protox",
- "serde",
- "serde_json",
- "tempfile",
- "tokio",
- "tokio-stream",
- "tonic",
- "tonic-prost",
- "tonic-prost-build",
-]
-
-[[package]]
-name = "concat-speech"
-version = "0.2.7"
-dependencies = [
- "bzip2 0.6.1",
- "concat-host",
- "concat-media",
- "concat-vision",
- "log",
- "ort",
- "serde",
- "serde_json",
- "sherpa-onnx",
- "tar",
- "tokenizers",
- "ureq 2.12.1",
- "whisper-rs",
-]
-
-[[package]]
-name = "concat-text"
-version = "0.2.7"
-dependencies = [
- "fontdb 0.23.0",
- "memmap2",
- "rustybuzz",
- "tiny-skia 0.12.0",
- "ttf-parser",
- "unicode-bidi",
- "unicode-linebreak",
- "unicode-script",
-]
-
-[[package]]
-name = "concat-vision"
-version = "0.2.7"
-dependencies = [
- "concat-core",
- "concat-project",
- "ort",
- "png 0.17.16",
-]
-
-[[package]]
 name = "concurrent-queue"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2011,6 +1767,251 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f1a05365e3b1c6d1650318537c7460c6923f1abdd272ad6842baa2b509957a06"
 dependencies = [
  "num-traits",
+]
+
+[[package]]
+name = "eup"
+version = "0.2.7"
+dependencies = [
+ "block2 0.6.2",
+ "dirs",
+ "eup-api",
+ "eup-core",
+ "eup-effects",
+ "eup-export",
+ "eup-host",
+ "eup-mcp",
+ "eup-media",
+ "eup-project",
+ "eup-server",
+ "eup-speech",
+ "eup-text",
+ "eup-vision",
+ "image",
+ "incubrix-cli",
+ "incubrix-core",
+ "incubrix-nlu",
+ "libc",
+ "log",
+ "objc2 0.6.4",
+ "objc2-foundation 0.3.2",
+ "opener",
+ "pollster",
+ "rfd",
+ "serde",
+ "serde_json",
+ "slint",
+ "slint-build",
+ "toml",
+ "wayland-backend",
+ "wayland-client",
+ "wgpu",
+ "winresource",
+]
+
+[[package]]
+name = "eup-android"
+version = "0.2.7"
+dependencies = [
+ "android-build",
+ "android_logger",
+ "eup",
+ "jni 0.22.4",
+ "libc",
+ "log",
+ "slint",
+]
+
+[[package]]
+name = "eup-api"
+version = "0.2.7"
+dependencies = [
+ "base64 0.22.1",
+ "eup-core",
+ "eup-effects",
+ "eup-export",
+ "eup-host",
+ "eup-project",
+ "png 0.17.16",
+ "schemars 1.2.3",
+ "serde",
+ "serde_json",
+ "tempfile",
+]
+
+[[package]]
+name = "eup-cli"
+version = "0.2.7"
+dependencies = [
+ "clap",
+ "eup-api",
+ "eup-core",
+ "eup-effects",
+ "eup-host",
+ "eup-media",
+ "eup-render",
+ "eup-server",
+ "serde_json",
+]
+
+[[package]]
+name = "eup-core"
+version = "0.2.7"
+
+[[package]]
+name = "eup-effects"
+version = "0.2.7"
+dependencies = [
+ "eup-core",
+ "eup-project",
+ "naga",
+ "serde",
+ "thiserror 2.0.20",
+ "toml",
+]
+
+[[package]]
+name = "eup-export"
+version = "0.2.7"
+dependencies = [
+ "eup-core",
+ "eup-effects",
+ "eup-media",
+ "eup-project",
+ "eup-render",
+ "eup-vision",
+ "log",
+ "serde",
+]
+
+[[package]]
+name = "eup-host"
+version = "0.2.7"
+dependencies = [
+ "cpal",
+ "eup-core",
+ "eup-effects",
+ "eup-export",
+ "eup-media",
+ "eup-project",
+ "eup-render",
+ "eup-text",
+ "eup-vision",
+ "libc",
+ "log",
+ "memmap2",
+ "png 0.17.16",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tempfile",
+ "ureq 2.12.1",
+ "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "eup-mcp"
+version = "0.2.7"
+dependencies = [
+ "eup-api",
+ "eup-server",
+ "serde_json",
+ "tempfile",
+]
+
+[[package]]
+name = "eup-media"
+version = "0.2.7"
+dependencies = [
+ "eup-core",
+ "ffmpeg-the-third",
+ "libc",
+ "log",
+ "thiserror 2.0.20",
+]
+
+[[package]]
+name = "eup-project"
+version = "0.2.7"
+dependencies = [
+ "eup-core",
+ "schemars 1.2.3",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.20",
+]
+
+[[package]]
+name = "eup-render"
+version = "0.2.7"
+dependencies = [
+ "eup-core",
+ "eup-effects",
+ "half",
+ "log",
+ "pollster",
+ "wgpu",
+]
+
+[[package]]
+name = "eup-server"
+version = "0.2.7"
+dependencies = [
+ "eup-api",
+ "getrandom 0.3.4",
+ "prost",
+ "protox",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "tokio",
+ "tokio-stream",
+ "tonic",
+ "tonic-prost",
+ "tonic-prost-build",
+]
+
+[[package]]
+name = "eup-speech"
+version = "0.2.7"
+dependencies = [
+ "bzip2 0.6.1",
+ "eup-host",
+ "eup-media",
+ "eup-vision",
+ "log",
+ "ort",
+ "serde",
+ "serde_json",
+ "sherpa-onnx",
+ "tar",
+ "tokenizers",
+ "ureq 2.12.1",
+ "whisper-rs",
+]
+
+[[package]]
+name = "eup-text"
+version = "0.2.7"
+dependencies = [
+ "fontdb 0.23.0",
+ "memmap2",
+ "rustybuzz",
+ "tiny-skia 0.12.0",
+ "ttf-parser",
+ "unicode-bidi",
+ "unicode-linebreak",
+ "unicode-script",
+]
+
+[[package]]
+name = "eup-vision"
+version = "0.2.7"
+dependencies = [
+ "eup-core",
+ "eup-project",
+ "ort",
+ "png 0.17.16",
 ]
 
 [[package]]
@@ -3419,10 +3420,35 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6e44b0a4eaa4c82f441d50a963f2d5f05a787240aeee097597033e72accfd22f"
 
 [[package]]
+name = "incubrix-cli"
+version = "0.1.0"
+dependencies = [
+ "incubrix-core",
+ "incubrix-media",
+ "incubrix-nlu",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "sha2",
+ "ureq 2.12.1",
+]
+
+[[package]]
 name = "incubrix-core"
 version = "0.1.0"
 dependencies = [
  "schemars 0.8.22",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror 2.0.20",
+]
+
+[[package]]
+name = "incubrix-media"
+version = "0.1.0"
+dependencies = [
+ "incubrix-core",
  "serde",
  "serde_json",
  "sha2",
@@ -6030,6 +6056,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_yaml"
+version = "0.9.34+deprecated"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6a8b1a1a2ebf674015cc02edccce75287f1a0130d394307b36743c2f5d504b47"
+dependencies = [
+ "indexmap",
+ "itoa",
+ "ryu",
+ "serde",
+ "unsafe-libyaml",
+]
+
+[[package]]
 name = "sha1"
 version = "0.10.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7149,6 +7188,12 @@ name = "unicode_categories"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39ec24b3121d976906ece63c9daad25b85969647682eee313cb5779fdd69e14e"
+
+[[package]]
+name = "unsafe-libyaml"
+version = "0.2.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "673aac59facbab8a9007c7f6108d11f63b603f7cabff99fabf650fea5c32b861"
 
 [[package]]
 name = "untrusted"

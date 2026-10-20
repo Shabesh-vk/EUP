@@ -1,0 +1,34 @@
+[package]
+name = "eup-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Command line driver for the EUP engine."
+
+# `eup` is the editor window's binary; the driver gets the suffix.
+[[bin]]
+name = "eup-cli"
+path = "src/main.rs"
+
+[dependencies]
+eup-core.workspace = true
+eup-media.workspace = true
+eup-render.workspace = true
+# The `api` command: the EUP API over stdin and stdout. The `serve`
+# command: the same on a socket.
+eup-api.workspace = true
+eup-server.workspace = true
+serde_json.workspace = true
+# `preview` draws one effect's card, as the window does; `check` loads
+# packages and runs their probes.
+eup-effects.workspace = true
+eup-host.workspace = true
+clap.workspace = true
+
+[features]
+# `serve --grpc`. Off by default; see eup-server.
+grpc = ["eup-server/grpc"]
+
+[lints]
+workspace = true

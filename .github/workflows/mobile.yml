@@ -195,7 +195,7 @@ jobs:
         run: |
           set -o pipefail
           eval "$(scripts/mobile-env.sh ${{ matrix.target }})"
-          cargo apk build --release -p concat-android --target ${{ matrix.target }} 2>&1 | tee build.log
+          cargo apk build --release -p eup-android --target ${{ matrix.target }} 2>&1 | tee build.log
 
       # A release's APK is signed over again with the repository's key, so
       # it installs over the build before it. Only a release asks (`sign`);
@@ -397,7 +397,7 @@ jobs:
         run: |
           set -o pipefail
           eval "$(scripts/mobile-env.sh aarch64-apple-ios)"
-          cargo build --release -p concat --target aarch64-apple-ios 2>&1 | tee build.log
+          cargo build --release -p eup --target aarch64-apple-ios 2>&1 | tee build.log
 
       - name: Build log to the summary (failure only)
         if: failure()
@@ -526,7 +526,7 @@ jobs:
           export SHERPA_ONNX_LIB_DIR="$PWD/vendor/sherpa-onnx/ios/lib-sim"
           export IPHONEOS_DEPLOYMENT_TARGET=15.0
           export CMAKE_OSX_SYSROOT=iphonesimulator
-          cargo build --release -p concat --target aarch64-apple-ios-sim 2>&1 | tee build.log
+          cargo build --release -p eup --target aarch64-apple-ios-sim 2>&1 | tee build.log
 
       - name: Build log to the summary (failure only)
         if: failure()

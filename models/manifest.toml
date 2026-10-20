@@ -34,7 +34,7 @@
 release = "models-v1"
 
 # ── Cutout ───────────────────────────────────────────────────────────────
-# src/crates/concat-vision/src/models.rs
+# src/crates/eup-vision/src/models.rs
 
 [[model]]
 id = "cutout-person"
@@ -85,7 +85,7 @@ licence = "BSD-3-Clause"
 upstream = "https://huggingface.co/CoderViking/realesr-general-x4v3-onnx/resolve/c6a971706797c7502945a2b4c4274fce4900d4ab/realesr-general-x4v3.onnx"
 
 # ── Text to speech ───────────────────────────────────────────────────────
-# src/crates/concat-speech/src/tts.rs. Kokoro v1.0 multi-language, the
+# src/crates/eup-speech/src/tts.rs. Kokoro v1.0 multi-language, the
 # official sherpa-onnx conversions; the two differ only in quantisation.
 
 [[model]]
@@ -119,7 +119,7 @@ licence = "CC-BY-4.0"
 upstream = "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/sherpa-onnx-pocket-tts-int8-2026-01-26.tar.bz2"
 
 # ── Chatterbox ───────────────────────────────────────────────────────────
-# src/crates/concat-speech/src/chatterbox.rs. Resemble AI's Chatterbox
+# src/crates/eup-speech/src/chatterbox.rs. Resemble AI's Chatterbox
 # Turbo, the quantised ONNX export: nine files that make one bundle, each
 # a row since the mirror is flat. The `file` names carry the bundle's
 # name; the engine puts each back under the name its graph expects.
@@ -206,7 +206,7 @@ licence = "MIT"
 upstream = "https://huggingface.co/ResembleAI/chatterbox-turbo-ONNX/resolve/d21799bd0354adb85e348b8a0442a8405110a2cf/onnx/language_model_quantized.onnx_data"
 
 # ── Transcription ────────────────────────────────────────────────────────
-# src/crates/concat-speech/src/transcribe.rs. whisper.cpp's GGML
+# src/crates/eup-speech/src/transcribe.rs. whisper.cpp's GGML
 # conversions of OpenAI's whisper.
 
 [[model]]

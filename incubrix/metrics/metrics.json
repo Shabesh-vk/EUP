@@ -1,0 +1,302 @@
+{
+  "latency": [
+    {
+      "minutes": 5,
+      "words": 563,
+      "instructions": 23,
+      "median_ms": 1.7146,
+      "slowest_ms": 12.8542,
+      "slowest": "Add a caption 'Welcome!' when I say welcome to the channel",
+      "each": [
+        [
+          "Add a caption 'Welcome!' when I say welcome to the channel",
+          12.8542
+        ],
+        [
+          "Add a caption 'Welcome!' when I say welcome to the channel -> the first one",
+          0.19039999999999999
+        ],
+        [
+          "Cut the first 30 seconds",
+          3.1909
+        ],
+        [
+          "Remove the part about pricing",
+          3.7424
+        ],
+        [
+          "Remove the part about pricing -> the first one",
+          0.17320000000000002
+        ],
+        [
+          "Speed up from 1:00 to 1:30 by 2x",
+          1.5698999999999999
+        ],
+        [
+          "Actually, put the intro back",
+          0.5002
+        ],
+        [
+          "Undo",
+          0.0808
+        ],
+        [
+          "redo",
+          0.068
+        ],
+        [
+          "Make that caption red",
+          3.2219
+        ],
+        [
+          "remove the ums",
+          0.35710000000000003
+        ],
+        [
+          "remove silences longer than 1 second",
+          0.9504999999999999
+        ],
+        [
+          "cut 2:00 to 2:10",
+          2.7718000000000003
+        ],
+        [
+          "slow down 3:00 to 3:10 by 2x",
+          3.0604999999999998
+        ],
+        [
+          "add a caption 'Late' at 4:00",
+          1.7146
+        ],
+        [
+          "bleep the word dollars",
+          1.7157
+        ],
+        [
+          "move 0:40 to 0:50 to the end",
+          1.1946
+        ],
+        [
+          "keep only 1:00 to 4:30",
+          5.7827
+        ],
+        [
+          "put back what I removed",
+          1.5326
+        ],
+        [
+          "put back what I removed -> all of it",
+          2.7618
+        ],
+        [
+          "auto-caption the whole video",
+          5.4566
+        ],
+        [
+          "how long is my video now?",
+          2.2444
+        ],
+        [
+          "undo",
+          1.3698
+        ]
+      ]
+    },
+    {
+      "minutes": 60,
+      "words": 6936,
+      "instructions": 23,
+      "median_ms": 106.9767,
+      "slowest_ms": 433.7659,
+      "slowest": "auto-caption the whole video",
+      "each": [
+        [
+          "Add a caption 'Welcome!' when I say welcome to the channel",
+          16.3991
+        ],
+        [
+          "Add a caption 'Welcome!' when I say welcome to the channel -> the first one",
+          2.6467
+        ],
+        [
+          "Cut the first 30 seconds",
+          2.5542
+        ],
+        [
+          "Remove the part about pricing",
+          14.5538
+        ],
+        [
+          "Remove the part about pricing -> the first one",
+          1.7637
+        ],
+        [
+          "Speed up from 1:00 to 1:30 by 2x",
+          1.815
+        ],
+        [
+          "Actually, put the intro back",
+          2.4154
+        ],
+        [
+          "Undo",
+          0.17129999999999998
+        ],
+        [
+          "redo",
+          0.1785
+        ],
+        [
+          "Make that caption red",
+          1.7386000000000001
+        ],
+        [
+          "remove the ums",
+          5.005599999999999
+        ],
+        [
+          "remove silences longer than 1 second",
+          106.9767
+        ],
+        [
+          "cut 2:00 to 2:10",
+          283.5637
+        ],
+        [
+          "slow down 3:00 to 3:10 by 2x",
+          417.17470000000003
+        ],
+        [
+          "add a caption 'Late' at 4:00",
+          280.392
+        ],
+        [
+          "bleep the word dollars",
+          138.5121
+        ],
+        [
+          "move 0:40 to 0:50 to the end",
+          119.3263
+        ],
+        [
+          "keep only 1:00 to 4:30",
+          269.1985
+        ],
+        [
+          "put back what I removed",
+          108.499
+        ],
+        [
+          "put back what I removed -> all of it",
+          194.97629999999998
+        ],
+        [
+          "auto-caption the whole video",
+          433.7659
+        ],
+        [
+          "how long is my video now?",
+          182.0087
+        ],
+        [
+          "undo",
+          130.0974
+        ]
+      ]
+    }
+  ],
+  "determinism_sessions": 47,
+  "determinism_percent": 100.0,
+  "ambiguous": 14,
+  "asked": 6,
+  "stated_assumption": 1,
+  "named_single": 5,
+  "refused": 2,
+  "guessed": 0,
+  "ambiguous_each": [
+    [
+      "Remove the part about pricing",
+      "asked"
+    ],
+    [
+      "Make that caption red",
+      "one candidate, named in the reply"
+    ],
+    [
+      "Speed up 10x",
+      "refused with a reason"
+    ],
+    [
+      "make it bigger, red and at the top",
+      "one candidate, named in the reply"
+    ],
+    [
+      "change the caption to 'Hello!'",
+      "one candidate, named in the reply"
+    ],
+    [
+      "remove the caption",
+      "one candidate, named in the reply"
+    ],
+    [
+      "make it bigger",
+      "refused with a reason"
+    ],
+    [
+      "put back what I removed",
+      "stated an assumption"
+    ],
+    [
+      "bleep the swearing",
+      "one candidate, named in the reply"
+    ],
+    [
+      "put back what I removed",
+      "asked"
+    ],
+    [
+      "Remove the part about pricing",
+      "asked"
+    ],
+    [
+      "Remove the part about pricing",
+      "asked"
+    ],
+    [
+      "remove the boring bit",
+      "asked"
+    ],
+    [
+      "make it shorter",
+      "asked"
+    ]
+  ],
+  "cuts_checked": 20,
+  "clipped_words": 0,
+  "renders": [
+    {
+      "session": "worked example",
+      "length_diff_frames": 0.2877094134923727,
+      "av_offset_frames": 0.0
+    },
+    {
+      "session": "slow motion and captions",
+      "length_diff_frames": 0.4924925824916834,
+      "av_offset_frames": 0.0
+    },
+    {
+      "session": "many cuts",
+      "length_diff_frames": 0.33766895435610034,
+      "av_offset_frames": 0.0
+    },
+    {
+      "session": "bleep and speed",
+      "length_diff_frames": 0.4065993346719813,
+      "av_offset_frames": 0.0
+    }
+  ],
+  "worst_length_diff_frames": 0.4924925824916834,
+  "worst_av_offset_frames": 0.0,
+  "stt_cost_per_minute_usd": 0.0,
+  "llm_cost_per_minute_usd": 0.0
+}

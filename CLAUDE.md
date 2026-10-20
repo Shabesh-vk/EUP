@@ -2,7 +2,8 @@
 
 This repo holds two things:
 
-- `src/` - **Concat**, a Rust + Slint desktop video editor (AGPL-3.0, upstream jub0t/Concat).
+- `src/` - **EUP**, a Rust + Slint desktop video editor (AGPL-3.0); a renamed fork of
+  Concat (upstream jub0t/Concat).
 - `incubrix/` - **our IncuBrix editing engine** (MIT OR Apache-2.0), the submission for
   IncuBrix Assessment 2 (prompt-based video editing). Plan: `docs/RUST_ENGINE_PLAN.md`.
 
@@ -11,7 +12,7 @@ are the earlier Python engine. Treat them as a reference for behaviour only.
 
 ## Rules for the engine (`incubrix/`)
 
-1. Never add a dependency on any `concat-*` crate (licence). Concat may depend on `incubrix-*`.
+1. Never add a dependency on any `eup-*` crate (licence). EUP may depend on `incubrix-*`.
 2. The source file is never modified. Timelines are derived by replaying the history.
 3. Overlays store content anchors (word ids); structural edits store source spans.
    Never store a playback time in an `Op`.
@@ -27,5 +28,5 @@ are the earlier Python engine. Treat them as a reference for behaviour only.
 - Write tests first for the phase's "Done when". Run `cd incubrix && cargo test --workspace`
   and `cargo clippy --workspace -- -D warnings` until green.
 - Update the status table in `incubrix/README.md` and add a note to `REPORT.md`.
-- Do not touch `src/` (Concat) unless the phase says so. Concat builds with
+- Do not touch `src/` (EUP) unless the phase says so. EUP builds with
   `.\run_ui.ps1 -Rebuild` on Windows and takes minutes.

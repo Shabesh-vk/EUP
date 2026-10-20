@@ -64,7 +64,7 @@ no Python) through its AI tab, and the same engine is also served over HTTP for 
   **reference behaviour**. Port the rules; turn its outputs into golden fixtures.
 - Concat already ships `whisper-rs` and `sherpa-onnx` builds on this machine
   (`sherpa-libs`, `ffmpeg-dev`, `onnxruntime-*`). Reuse the *libraries* directly
-  (MIT/Apache) — not through `concat-speech`.
+  (MIT/Apache) — not through `eup-speech`.
 
 ---
 
@@ -212,7 +212,7 @@ in DaVinci Resolve.
 
 ### Phase 9 — Concat integration (1 day) · the editor demo
 
-- `src/crates/concat/Cargo.toml`: path deps on `incubrix-core`, `incubrix-nlu`.
+- `src/crates/eup/Cargo.toml`: path deps on `incubrix-core`, `incubrix-nlu`.
 - Replace `ai_apply_prompt`, `ai_cut_range`, `ai_speed_range`, `ai_restore_intro` in
   `studio.rs` with an `AiSession` holding the engine `History` for the open project.
 - Transcription runs on a worker; progress shown in the tab.

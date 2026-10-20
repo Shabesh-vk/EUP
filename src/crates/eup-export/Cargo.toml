@@ -1,0 +1,27 @@
+[package]
+name = "eup-export"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Rendering a timeline to a file, and one true frame of it to a monitor. The engine's ownership of what the pixels mean."
+
+[features]
+# The GPU compositor is the only one now, so it is always built; the
+# feature is kept so the crates that name it need not change.
+gpu = []
+
+[dependencies]
+eup-core.workspace = true
+eup-media.workspace = true
+eup-render.workspace = true
+eup-project = { path = "../eup-project" }
+eup-effects.workspace = true
+# Masks for cutouts: read from the project's cache and applied to a decoded
+# frame before it is placed. Reading only; the host finds them.
+eup-vision.workspace = true
+serde = { version = "1", features = ["derive"] }
+log = "0.4"
+
+[lints]
+workspace = true

@@ -353,3 +353,54 @@ fn silence_removal_keeps_protected_pauses() {
     let gaps = silences(&p.transcript, &tl, secs(30.0), secs(2.0), 100_000);
     assert_eq!(gaps, vec![SrcRange::new(secs(10.1), secs(12.9)).unwrap()]);
 }
+
+fn source_caption(id: &str, a: f64, b: f64, text: &str) -> Op {
+    Op::AddCaption {
+        id: id.into(),
+        anchor: Anchor::Source { range: SrcRange::new(secs(a), secs(b)).unwrap() },
+        text: text.into(),
+        style: CaptionStyle::default(),
+    }
+}
+
+/// Captions the timeline already had are the starting point: a cut takes
+/// the ones in it away and moves the rest with their picture, a speed-up
+/// shortens them with it, and undo never takes them away.
+#[test]
+fn starting_captions_follow_cuts_and_speed_and_survive_undo() {
+    let mut p = project(&[]);
+    p.start_with(
+        "captions on the timeline",
+        vec![
+            source_caption("cap_1", 10.0, 12.0, "early"),
+            source_caption("cap_2", 40.0, 42.0, "later"),
+            source_caption("cap_3", 60.0, 64.0, "fast"),
+        ],
+    )
+    .unwrap();
+    assert!(p.edits().is_empty(), "the starting point is not an edit");
+    assert_eq!(p.starting().len(), 1);
+    assert!(p.undo().is_none(), "nothing to undo yet");
+    assert_eq!(p.timeline().timeline.captions.len(), 3);
+
+    p.apply("cut the first 30 seconds", vec![cut_src(0.0, 30.0)]).unwrap();
+    let tl = p.timeline().timeline;
+    let by = |id: &str| tl.captions.iter().find(|c| c.id == id).unwrap().playback.clone();
+    assert!(by("cap_1").is_empty(), "its picture was cut");
+    assert_eq!(by("cap_2")[0].start, secs(10.0), "moved 30 s earlier with its picture");
+
+    p.apply(
+        "speed up 1:00 to 1:04",
+        vec![Op::Speed { range: SrcRange::new(secs(60.0), secs(64.0)).unwrap(), speed: 2000 }],
+    )
+    .unwrap();
+    let tl = p.timeline().timeline;
+    let fast = &tl.captions.iter().find(|c| c.id == "cap_3").unwrap().playback[0];
+    assert_eq!((fast.start, fast.end), (secs(30.0), secs(32.0)), "twice as fast, half as long");
+
+    assert!(p.undo().is_some());
+    assert!(p.undo().is_some());
+    assert!(p.undo().is_none(), "undo stops at the starting point");
+    assert_eq!(p.timeline().timeline.captions.len(), 3);
+    assert!(p.start_with("again", vec![source_caption("cap_9", 1.0, 2.0, "x")]).is_err());
+}

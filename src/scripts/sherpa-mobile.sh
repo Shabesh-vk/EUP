@@ -13,7 +13,7 @@
 # native library directory takes, with the NDK's libc++_shared.so beside
 # them because onnxruntime loads it. Point SHERPA_ONNX_LIB_DIR at the ABI
 # directory to build, and cargo-apk packages the whole tree through
-# concat-android's manifest.
+# eup-android's manifest.
 #
 # iOS: vendor/sherpa-onnx/ios/sherpa-onnx.xcframework, the framework the
 # app bundle embeds; SHERPA_ONNX_LIB_DIR is its device slice.

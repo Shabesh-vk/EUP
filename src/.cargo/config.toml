@@ -1,5 +1,5 @@
 # Where the FFmpeg development build lives is machine configuration, not
-# repository configuration: concat-media links FFmpeg through
+# repository configuration: eup-media links FFmpeg through
 # ffmpeg-the-third, which finds it by pkg-config or by FFMPEG_DIR pointing
 # at an unpacked shared build. Set those in your own environment, never
 # here - a machine path committed to this file breaks every other checkout.
@@ -15,7 +15,7 @@
 # `cargo dev`: the window, built to try a change in. See `[profile.quick]`
 # in Cargo.toml for what it is and why it is quick.
 [alias]
-dev = "run --bin concat --profile quick"
+dev = "run --bin eup --profile quick"
 
 [env]
 CMAKE = "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe"
