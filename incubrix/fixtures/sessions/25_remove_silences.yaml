@@ -1,0 +1,12 @@
+# Removing silences longer than a second, keeping air around speech.
+source:
+  duration_s: 40
+  lines:
+    - [2, "Wait for it."]
+    - [8, "Now."]
+    - [20, "Done."]
+steps:
+  - say: "remove silences longer than 1 second"
+    expect:
+      status: "applied"
+      duration_s: 2.9

@@ -1,0 +1,17 @@
+# Hard case: "everything after I say thanks", thanks said four times.
+source:
+  duration_s: 100
+  lines:
+    - [10, "Thanks for coming."]
+    - [30, "Thanks Sam."]
+    - [50, "And thanks again."]
+    - [80, "Thanks everyone."]
+steps:
+  - say: "Remove everything after I say thanks"
+    answer: "the third one"
+    expect:
+      asked: true
+      options: 4
+      question_contains: "4 times"
+      status: "applied"
+      duration_s: 50.8

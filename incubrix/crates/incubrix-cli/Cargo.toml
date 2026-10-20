@@ -1,0 +1,20 @@
+[package]
+name = "incubrix-cli"
+description = "IncuBrix session runner: plays scripted editing sessions and writes every response."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "incubrix"
+path = "src/main.rs"
+
+[dependencies]
+incubrix-core = { path = "../incubrix-core" }
+incubrix-media = { path = "../incubrix-media" }
+incubrix-nlu = { path = "../incubrix-nlu" }
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml = "0.9"
+# Sessions whose video is a URL: downloaded once into the output folder.
+ureq = "2"

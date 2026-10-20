@@ -131,3 +131,67 @@ engine; these notes are kept here until it is cleaned up.)
   shorter). I've moved the preview to 0:02 so you can see it. What's next?"),
   doubled punctuation after quotes fixed, user bubbles sized to their words,
   replies with an AI avatar.
+
+## Phase 6 - Rendering and export
+
+- `incubrix-media::render`: one ffmpeg run built from the timeline only -
+  `trim`/`atrim` per segment, `setpts` and chained `atempo` for speed,
+  `concat`, mutes as `volume=0` over their playback spans, bleeps as a
+  1 kHz `aevalsrc` tone, music looped and ducked with `sidechaincompress`
+  keyed on the speech, captions burned in from a generated ASS file.
+  Output is H.264/AAC at the source's frame rate, constant (a variable-rate
+  source is resampled, with a warning).
+- Sync by construction: every cut point is snapped to the source's frame
+  grid and picture and sound are cut at the same points, so they cannot
+  drift apart across many cuts; both streams are then padded or trimmed to
+  exactly the timeline's length.
+- `render::verify` measures every render with ffprobe and fails loudly
+  (`RENDER_MISMATCH`) if the length is more than one frame off the timeline,
+  or sound and picture start or end more than one frame apart. The source
+  is hashed before and after (`SOURCE_CHANGED` if it differs).
+- Typed cut points that land inside a word snap to the nearer edge of that
+  word within 150 ms (`resolve::snap_to_silence`); farther than that they
+  stay, with a warning that the word may be clipped.
+- `incubrix-core::otio`: OpenTimelineIO export (Timeline.1, Clip.2 per
+  segment with LinearTimeWarp for speed, markers for captions, mutes and
+  bleeps). Verified by reading it back with the official
+  `opentimelineio` 0.18.1 library (length, clip and marker counts).
+- Done when: `tests/render_worked_example.rs` types the brief's 8 steps on
+  a real 4-minute video and renders step 8: timeline 193.000 s, render
+  192.993 s (0.22 frames), A/V start offset 0 frames, source unchanged, one
+  caption burned in. A frame at 0:12.5 of the render shows source 0:42
+  (where "welcome to the channel" is said) with the red caption; at 0:15
+  it is gone. Other render tests: every edit kind together, 4x and 0.25x
+  speeds with 20 off-grid cuts (0.11 frames), and a deliberately wrong
+  length that must fail.
+- Not done: the file has not been opened in DaVinci Resolve (not installed
+  here); music ducking depth is approximate (a compressor, not a fixed
+  gain); bleeps and mutes in the Concat preview are still mutes only.
+
+## Phase 7 - Session runner and the test suite
+
+- New crate `incubrix-cli`, binary `incubrix`:
+  `session run <file> --out DIR` plays a session in the brief's format
+  (`video`, `steps` with `say` and `answer`) and writes `results.json`
+  (per step: status, operations, summary, question, options,
+  timeline_hash, duration_s, plus warnings and code), `timeline.json`,
+  `history.json`, `timeline.otio`, and the render for a "render" step.
+  `batch run <folder>` does the same for every session in a folder (the
+  `--api` mode belongs to Phase 8). `check <folder>` plays every session
+  three times, compares the hashes and checks the `expect:` blocks.
+- Session-file extensions (optional): `transcript:` (recorded words),
+  `speakers:` (turns), `source:` (a length and spoken lines, so engine-only
+  scenarios need no video), `expect:` per step.
+- 47 scenarios in `fixtures/sessions/`: every operation in the brief, every
+  hard-case row, ambiguity and references, conflicts, two speakers, low
+  confidence, conversation. Expected values were worked out by hand before
+  the first run (e.g. 2.9 s after silence removal, 7.4 s with a protected
+  pause, 9.3 s for the guest's lines); all 47 pass, 3 runs each with the
+  same hashes. A planted wrong expectation is reported (test).
+- Done when: the worked example as a session file naming a real 4-minute
+  video reproduces exactly (240, 210, 208, 193, 223, 193, 193, 193 s; the
+  pricing question with 4 options) and step 8 renders at 0.22 frames off
+  the timeline with A/V offset 0. CI runs `incubrix check fixtures/sessions`.
+- Not done: videos given as URLs are downloaded but not cached by hash;
+  speech recognition in the runner needs `transcript:` (whisper adapter
+  not wired to the CLI yet).

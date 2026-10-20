@@ -24,6 +24,8 @@ export struct AiMessageData {
     notes: [string],
     /// Answers to click; only on the question waiting now.
     options: [string],
+    /// The rest of a long reply, shown on request.
+    more: [string],
 }
 
 /// One change in the engine's history.
@@ -229,6 +231,8 @@ component UserBubble inherits HorizontalLayout {
 /// The editor's reply: its avatar and a bubble with what it did.
 component ReplyBubble inherits HorizontalLayout {
     in property <AiMessageData> message;
+    /// The full reply is showing.
+    property <bool> open: false;
     callback answer(int);
     spacing: 6px;
     padding-right: 24px;
@@ -295,6 +299,24 @@ component ReplyBubble inherits HorizontalLayout {
                 color: #f59e0b;
                 font-size: Theme.fs-sm;
                 wrap: word-wrap;
+            }
+            if root.open: VerticalLayout {
+                spacing: 3px;
+                for line in root.message.more: Text {
+                    text: line;
+                    color: Theme.fg-muted;
+                    font-size: Theme.fs-sm;
+                    wrap: word-wrap;
+                }
+            }
+            if root.message.more.length > 0: Text {
+                text: root.open ? "Show less" : "Show " + root.message.more.length + " more";
+                color: Theme.accent;
+                font-size: Theme.fs-xs;
+                TouchArea {
+                    mouse-cursor: MouseCursor.pointer;
+                    clicked => { root.open = !root.open; }
+                }
             }
             for option[i] in root.message.options: AiChoice {
                 label: option;
@@ -530,7 +552,7 @@ export component AIConversationDashboard inherits Rectangle {
                 }
 
                 // Speech and the technical side, after the pages.
-                if root.data.ready && root.category != 0: Card {
+                if root.data.ready: Card {
                     min-height: speech.preferred-height;
                     speech := VerticalLayout {
                         padding: 8px;

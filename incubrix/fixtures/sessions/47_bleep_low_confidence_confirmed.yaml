@@ -1,0 +1,12 @@
+# A low-confidence word is bleeped once the user confirms.
+source:
+  duration_s: 30
+  lines:
+    - [5, "Well damn~0.3 that hurt."]
+steps:
+  - say: "bleep the word damn"
+    answer: "yes"
+    expect:
+      asked: true
+      status: "applied"
+      recorded: true

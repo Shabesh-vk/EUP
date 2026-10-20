@@ -1,0 +1,10 @@
+# Bleeping a word.
+source:
+  duration_s: 60
+  lines:
+    - [10, "The secret word is banana."]
+steps:
+  - say: "bleep the word banana"
+    expect:
+      status: "applied"
+      recorded: true

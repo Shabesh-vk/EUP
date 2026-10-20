@@ -1,0 +1,13 @@
+# Ambiguity: "the boring bit" asks with options, never guesses.
+source:
+  duration_s: 60
+  lines:
+    - [5, "So um this is it."]
+    - [40, "Done."]
+steps:
+  - say: "remove the boring bit"
+    answer: "remove 1 filler words"
+    expect:
+      asked: true
+      status: "applied"
+      summary_contains: "filler"

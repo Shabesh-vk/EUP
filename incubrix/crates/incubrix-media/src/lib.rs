@@ -7,6 +7,7 @@
 //! - [`diarize`]: the [`Diarizer`] trait, speaker assignment and its
 //!   warnings (sherpa-onnx behind the `sherpa` feature).
 //! - [`cache`]: transcripts cached by source hash.
+//! - [`render`]: the timeline to a video with ffmpeg, then checked.
 //! - [`intake()`]: all of the above in one call.
 //!
 //! Nothing here edits; the result is handed to `incubrix-core` untouched.
@@ -20,6 +21,7 @@ pub mod diarize;
 pub mod hash;
 pub mod intake;
 pub mod probe;
+pub mod render;
 pub mod transcribe;
 
 #[cfg(feature = "sherpa")]
@@ -51,6 +53,9 @@ pub enum MediaError {
     /// A recogniser, diarizer or fixture produced something unusable.
     #[error("{0}")]
     BadData(String),
+    /// A render that does not match its timeline.
+    #[error("the render does not match the timeline: {0}")]
+    RenderMismatch(String),
     /// The original changed since intake.
     #[error("the source file changed: expected {expected}, found {found}")]
     SourceChanged {
@@ -71,6 +76,7 @@ impl MediaError {
             MediaError::Io(_) => "IO_ERROR",
             MediaError::BadData(_) => "BAD_MEDIA_DATA",
             MediaError::SourceChanged { .. } => "SOURCE_CHANGED",
+            MediaError::RenderMismatch(_) => "RENDER_MISMATCH",
         }
     }
 }

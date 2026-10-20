@@ -1,0 +1,21 @@
+# Hard case: a caption, then its sentence cut (hidden), then the cut restored.
+source:
+  duration_s: 60
+  lines:
+    - [10, "Hello there."]
+    - [20, "This is the key sentence."]
+    - [40, "Bye now."]
+steps:
+  - say: "Add a caption 'Key' when I say this is the key sentence"
+    expect:
+      status: "applied"
+  - say: "Remove the part about the key sentence"
+    expect:
+      status: "applied"
+      warning_contains: "hidden"
+  - say: "put back what I removed"
+    expect:
+      status: "applied"
+      warning_contains: "Assumed"
+      captions: 1
+      captions_shown: 1

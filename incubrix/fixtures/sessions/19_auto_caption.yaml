@@ -1,0 +1,14 @@
+# Auto-captions for the whole video, one undo step.
+source:
+  duration_s: 60
+  lines:
+    - [2, "Hi everyone, welcome back to the show."]
+    - [20, "Today we look at pricing."]
+    - [40, "Thanks for watching."]
+steps:
+  - say: "auto-caption the whole video"
+    expect:
+      status: "applied"
+      recorded: true
+      captions: 3
+      captions_shown: 3

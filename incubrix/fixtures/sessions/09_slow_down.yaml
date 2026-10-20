@@ -1,0 +1,16 @@
+# Slow down a range: "by 2x" means half speed.
+source:
+  duration_s: 240
+  lines:
+    - [5, "Hi everyone."]
+    - [42, "Welcome to the channel."]
+    - [65, "Our pricing is simple."]
+    - [100, "Let me show you the dashboard."]
+    - [135, "The pricing changed last year."]
+    - [195, "Pricing for teams is different."]
+    - [230, "Thanks for watching."]
+steps:
+  - say: "slow down 0:10 to 0:20 by 2x"
+    expect:
+      status: "applied"
+      duration_s: 250.0

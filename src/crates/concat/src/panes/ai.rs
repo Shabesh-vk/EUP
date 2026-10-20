@@ -69,6 +69,8 @@ struct Turn {
     reader: String,
     /// Where the playhead was moved to show the change.
     shown_at: Option<Us>,
+    /// The request needs the words said; the editor is listening first.
+    listening: bool,
 }
 
 /// The AI tab's state.
@@ -84,6 +86,8 @@ pub struct AiPane {
     busy: Option<String>,
     /// What the tab showed when the session left for the worker.
     frozen: Option<AiPanelData>,
+    /// A request to carry out once the speech has been analysed.
+    after_words: Option<String>,
 }
 
 impl Default for AiPane {
@@ -97,6 +101,7 @@ impl Default for AiPane {
             gestures: 0,
             busy: None,
             frozen: None,
+            after_words: None,
         }
     }
 }
@@ -190,6 +195,7 @@ impl AiPane {
             prompt: String::new(),
             reader: String::new(),
             shown_at: None,
+            listening: false,
             outcome: Outcome::rejected_with(project, "NOTE", text),
         });
     }
@@ -240,6 +246,9 @@ pub fn say(studio: &mut Studio, text: &str) {
         }
         pane.frozen = Some(pane.data(studio));
         let mut session = pane.session.take().expect("ensured");
+        if session.model_label().is_none() && incubrix_nlu::llm::LlmConfig::detected().is_some() {
+            session.set_parser(parser_from_env());
+        }
         pane.busy = Some(text.clone());
         spawn_in_project(
             move || {
@@ -350,7 +359,35 @@ fn finish(pane: &mut AiPane, studio: &mut Studio, prompt: String, reply: Reply, 
     if action == Some(Action::Render) {
         studio.notify("The timeline shows the edit: use Export to save the video.", false);
     }
-    pane.turns.push(Turn { prompt, outcome, reader, shown_at });
+    // Captions on words, fillers, topics: they need to know what is said.
+    // With no transcript yet, listen first and then carry on by itself.
+    let needs_words = outcome.status == Status::Rejected
+        && matches!(outcome.code.as_deref(), Some("NO_TRANSCRIPT" | "NOT_FOUND"))
+        && pane.transcript().words.is_empty()
+        && pane.base.as_ref().is_some_and(|b| b.has_audio)
+        && !matches!(pane.words, Words::Ready { .. });
+    if needs_words {
+        pane.after_words = Some(prompt.clone());
+        if !matches!(pane.words, Words::Running) {
+            start_transcribe(pane, studio);
+        }
+    }
+    let listening = needs_words && matches!(pane.words, Words::Running);
+    pane.turns.push(Turn { prompt, outcome, reader, shown_at, listening });
+}
+
+/// A note from the editor in the conversation.
+fn note(pane: &mut AiPane, text: String) {
+    if let Some(s) = &pane.session {
+        let outcome = Outcome::rejected_with(&s.project, "NOTE", text);
+        pane.turns.push(Turn {
+            prompt: String::new(),
+            outcome,
+            reader: String::new(),
+            shown_at: None,
+            listening: false,
+        });
+    }
 }
 
 /// Where in the edited video a change can be seen.
@@ -531,7 +568,11 @@ fn lay(pane: &mut AiPane, studio: &mut Studio, tl: &Timeline) {
 
 /// Transcribes the video with Concat's transcriber, for word-based edits.
 pub fn transcribe(studio: &mut Studio) {
-    let base = match studio.ai.base.clone() {
+    with_pane(studio, start_transcribe);
+}
+
+fn start_transcribe(pane: &mut AiPane, studio: &mut Studio) {
+    let base = match pane.base.clone() {
         Some(b) => b,
         None => match find_base(studio) {
             Ok((b, _)) => b,
@@ -542,7 +583,11 @@ pub fn transcribe(studio: &mut Studio) {
         },
     };
     let Some(model) = installed(&studio.settings.transcribers).first().map(|m| m.id.clone()) else {
-        studio.ai.words = Words::Failed("To analyse speech, first download a transcriber in Settings > Transcriber.".into());
+        let why = "To listen to the video I need a speech model: download one in Settings > Transcriber, then ask me again.".to_owned();
+        pane.words = Words::Failed(why.clone());
+        if pane.after_words.take().is_some() {
+            note(pane, why);
+        }
         return;
     };
     let request = TranscribeRequest {
@@ -552,25 +597,43 @@ pub fn transcribe(studio: &mut Studio) {
         window: base.window,
         model_id: model.clone(),
     };
-    studio.ai.words = Words::Running;
+    pane.words = Words::Running;
     let dirs = studio.host.dirs.clone();
     let transcriber = std::sync::Arc::clone(&studio.host.transcriber);
     spawn_in_project(
         move || transcriber.transcribe(&dirs, &request, |_| {}),
         move |studio, _, _, result: Result<Vec<Segment>, String>| {
-            let words = match result {
-                Err(e) => Words::Failed(format!("Couldn't analyse the speech: {e}")),
-                Ok(segments) => {
-                    let transcript = words_from_segments(&segments);
-                    let n = transcript.words.len();
-                    Words::Ready {
-                        transcript,
-                        note: format!("{n} words from the {model} transcriber. It times phrases, not words, so word times are spread evenly inside each phrase and word edits can be a few tenths of a second off."),
+            let mut retry = None;
+            with_pane(studio, |pane, _| {
+                match result {
+                    Err(e) => {
+                        pane.words = Words::Failed(format!("Couldn't analyse the speech: {e}"));
+                        if pane.after_words.take().is_some() {
+                            note(pane, format!("Sorry, I couldn't listen to the video: {e}"));
+                        }
+                    }
+                    Ok(segments) => {
+                        let transcript = words_from_segments(&segments);
+                        let n = transcript.words.len();
+                        pane.words = Words::Ready {
+                            transcript,
+                            note: format!("{n} words from the {model} transcriber. It times phrases, not words, so word times are spread evenly inside each phrase and word edits can be a few tenths of a second off."),
+                        };
+                        adopt_transcript(pane);
+                        if let Some(text) = pane.after_words.take() {
+                            if n > 0 {
+                                note(pane, format!("I've listened to the video ({n} words). Now carrying on with \"{text}\"."));
+                                retry = Some(text);
+                            } else {
+                                note(pane, "I listened to the whole video but couldn't make out any speech, so I can't do that by what's said. Captions at a time still work - for example \"add a caption 'Hello' at 0:05\".".into());
+                            }
+                        }
                     }
                 }
-            };
-            studio.ai.words = words;
-            with_pane(studio, |pane, _| adopt_transcript(pane));
+            });
+            if let Some(text) = retry {
+                say(studio, &text);
+            }
         },
     );
 }
@@ -614,6 +677,44 @@ fn adopt_transcript(pane: &mut AiPane) {
     pane.session = Some(Session::new(project, parser_from_env()));
 }
 
+/// Starts an installed Ollama in the background, once, when no AI model is
+/// set up: then requests in plain English work without a key or a manual
+/// step. It is found again within seconds by `LlmConfig::detected`.
+fn wake_local_model() {
+    use std::sync::atomic::{AtomicBool, Ordering};
+    static TRIED: AtomicBool = AtomicBool::new(false);
+    if TRIED.swap(true, Ordering::Relaxed) {
+        return;
+    }
+    let wanted = std::env::var("NLU_PROVIDER").map(|v| v.to_lowercase()).unwrap_or_default();
+    if matches!(wanted.as_str(), "rules" | "mock" | "anthropic" | "claude" | "openai")
+        || std::env::var_os("ANTHROPIC_API_KEY").is_some()
+        || std::env::var_os("OPENAI_API_KEY").is_some()
+    {
+        return;
+    }
+    std::thread::spawn(|| {
+        if incubrix_nlu::llm::LlmConfig::detect().is_some() {
+            return;
+        }
+        let mut cmd = std::process::Command::new("ollama");
+        cmd.arg("serve")
+            .stdin(std::process::Stdio::null())
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null());
+        #[cfg(windows)]
+        {
+            use std::os::windows::process::CommandExt;
+            // No console window.
+            cmd.creation_flags(0x0800_0000);
+        }
+        match cmd.spawn() {
+            Ok(_) => log::info!("ai: started a local Ollama server"),
+            Err(e) => log::info!("ai: no local model to start ({e})"),
+        }
+    });
+}
+
 fn short_hash(h: &str) -> String {
     h.chars().take(12).collect()
 }
@@ -626,7 +727,54 @@ fn strings(v: &[String]) -> ModelRc<SharedString> {
     model(v.iter().map(|s| SharedString::from(s.as_str())).collect())
 }
 
+/// Lines shown at once in a reply; the rest wait behind "Show more".
+const SHOWN_CHANGES: usize = 3;
+const SHOWN_NOTES: usize = 2;
+/// A reply's text past this is cut at a sentence.
+const TEXT_CHARS: usize = 320;
+
+/// Repeated lines once, with a count: 73 x "Changed how the caption looks".
+fn fold(lines: Vec<String>) -> Vec<String> {
+    let mut out: Vec<(String, usize)> = Vec::new();
+    for l in lines {
+        match out.iter_mut().find(|(x, _)| *x == l) {
+            Some(e) => e.1 += 1,
+            None => out.push((l, 1)),
+        }
+    }
+    out.into_iter()
+        .map(|(l, n)| if n > 1 { format!("{l} (x{n})") } else { l })
+        .collect()
+}
+
+/// The text, at most [`TEXT_CHARS`], ending at a sentence; the rest is
+/// returned for "Show more".
+fn shorten(text: String) -> (String, Option<String>) {
+    if text.chars().count() <= TEXT_CHARS {
+        return (text, None);
+    }
+    let cut: String = text.chars().take(TEXT_CHARS).collect();
+    let end = cut.rfind(". ").map(|i| i + 1).unwrap_or(cut.len());
+    let (head, tail) = text.split_at(end);
+    (format!("{}...", head.trim_end()), Some(tail.trim().to_owned()))
+}
+
 fn reply(kind: i32, title: &str, text: String, changes: Vec<String>, notes: Vec<String>, options: Vec<String>) -> AiMessageData {
+    // Every reply is a summary: a short text, the first few changes and
+    // notes; everything else is one click away.
+    let (text, rest) = shorten(text);
+    let mut changes = fold(changes);
+    let mut notes = fold(notes);
+    let mut more: Vec<String> = Vec::new();
+    if let Some(rest) = rest {
+        more.push(rest);
+    }
+    if changes.len() > SHOWN_CHANGES {
+        more.extend(changes.split_off(SHOWN_CHANGES).into_iter().map(|c| format!("- {c}")));
+    }
+    if notes.len() > SHOWN_NOTES {
+        more.extend(notes.split_off(SHOWN_NOTES).into_iter().map(|n| format!("Note: {n}")));
+    }
     AiMessageData {
         mine: false,
         kind,
@@ -635,6 +783,7 @@ fn reply(kind: i32, title: &str, text: String, changes: Vec<String>, notes: Vec<
         changes: strings(&changes),
         notes: strings(&notes),
         options: strings(&options),
+        more: strings(&more),
     }
 }
 
@@ -696,6 +845,7 @@ impl AiPane {
 
     /// The tab as Slint shows it.
     pub fn data(&self, studio: &Studio) -> AiPanelData {
+        wake_local_model();
         if let Some(frozen) = &self.frozen {
             let mut d = frozen.clone();
             d.busy = true;
@@ -805,8 +955,18 @@ const NEXT: &[&str] = &["Anything else?", "What's next?", "Want me to change any
 /// The editor's reply to one request, as a chat message.
 fn turn_message(t: &Turn, options: Vec<String>, index: usize) -> AiMessageData {
     let o = &t.outcome;
+    if t.listening {
+        return reply(
+            4,
+            "Listening",
+            "To do that I need to know what's said in the video, so I'm listening to it now - for a long video this takes a minute or two. I'll carry on with your request by myself as soon as I'm done.".into(),
+            vec![],
+            vec![],
+            vec![],
+        );
+    }
     match o.code.as_deref() {
-        Some("NOTE") => return reply(3, "Note", o.summary.clone(), vec![], vec![], vec![]),
+        Some("NOTE") => return reply(3, "", o.summary.clone(), vec![], vec![], vec![]),
         // Conversation: the words are the reply, no badge needed.
         Some("TALK") => return reply(5, "", o.summary.clone(), vec![], vec![], vec![]),
         _ => {}
@@ -958,6 +1118,7 @@ fn tidy(s: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use slint::Model;
 
     #[test]
     fn summaries_lose_the_engine_detail() {
@@ -974,6 +1135,19 @@ mod tests {
             "Cut 0:02 'Job interview.' The video is now 4:05.3 (2.7 s shorter)."
         );
         assert_eq!(friendly("Undid edit #2. Video 3:30 -> 4:00."), "Undid edit #2. The video is now 4:00.");
+    }
+
+    #[test]
+    fn replies_fold_and_cap_their_lines() {
+        let changes: Vec<String> = (0..73).map(|_| "Changed how the caption looks".to_owned()).collect();
+        let m = reply(0, "Done", "Done!".into(), changes, vec![], vec![]);
+        assert_eq!(m.changes.row_count(), 1);
+        assert_eq!(m.changes.row_data(0).unwrap().as_str(), "Changed how the caption looks (x73)");
+        let many: Vec<String> = (0..10).map(|i| format!("Removed part {i}")).collect();
+        let m = reply(0, "Done", "x".repeat(500), many, vec![], vec![]);
+        assert_eq!(m.changes.row_count(), 3);
+        assert!(m.more.row_count() >= 7);
+        assert!(m.text.len() <= 330);
     }
 
     #[test]

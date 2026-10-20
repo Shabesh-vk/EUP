@@ -1,0 +1,22 @@
+# A three-part instruction is one transaction.
+source:
+  duration_s: 240
+  lines:
+    - [5, "Hi everyone."]
+    - [42, "Welcome to the channel."]
+    - [65, "Our pricing is simple."]
+    - [100, "Let me show you the dashboard."]
+    - [135, "The pricing changed last year."]
+    - [195, "Pricing for teams is different."]
+    - [230, "Thanks for watching."]
+steps:
+  - say: "Cut the first 10 seconds, speed up 0:20 to 0:30 by 2x and add a caption 'Hello' at 0:32"
+    expect:
+      status: "applied"
+      duration_s: 225.0
+      recorded: true
+  - say: "undo"
+    expect:
+      status: "applied"
+      duration_s: 240.0
+      captions: 0

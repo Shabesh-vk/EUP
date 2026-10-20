@@ -13,7 +13,7 @@
 //! - one instruction (with its answer) is one transaction, one undo.
 
 use incubrix_core::detect::{caption_chunks, fillers, silences, LOW_CONFIDENCE};
-use incubrix_core::resolve::{playback_span, TIME_POLICY_NOTE};
+use incubrix_core::resolve::{playback_span, snap_to_silence, TIME_POLICY_NOTE};
 use incubrix_core::search::{find_phrase, Hit};
 use incubrix_core::time::{clock, to_secs_ms, PbRange};
 use incubrix_core::{
@@ -353,6 +353,12 @@ impl Session {
             action,
             reader: self.reader.clone(),
         }
+    }
+
+    /// Swaps the parser, keeping the edit and the conversation - for a
+    /// model that became available after the session began.
+    pub fn set_parser(&mut self, parser: Box<dyn Parser>) {
+        self.parser = parser;
     }
 
     /// The AI model reading instructions, if one is set up, for people.
@@ -752,15 +758,28 @@ impl Session {
                     }
                 }
                 self.with_targets(p, &tl, target, Purpose::Cut, |cands| {
-                    let ranges: Vec<SrcRange> =
-                        cands.iter().flat_map(|c| c.spans.clone()).collect();
+                    let mut notes = Vec::new();
+                    let ranges: Vec<SrcRange> = cands
+                        .iter()
+                        .flat_map(|c| c.spans.clone())
+                        .map(|r| {
+                            // Typed times may land mid-word; words found by
+                            // search are already whole.
+                            if !is_typed(target) {
+                                return r;
+                            }
+                            let (r, n) = snap_to_silence(&p.transcript, r);
+                            notes.extend(n);
+                            r
+                        })
+                        .collect();
                     Ok(Done {
                         ops: vec![Op::Cut {
                             ranges,
                             reason: CutReason::User,
                         }],
                         said: format!("Cut {}", labels(cands)),
-                        notes: vec![],
+                        notes,
                         typed: is_typed(target),
                     })
                 })
@@ -1649,8 +1668,8 @@ impl Session {
         let label = |id: &str| -> String {
             let c = tl.caption(id).expect("caption exists");
             match c.playback.first() {
-                Some(pb) => format!("{id} '{}' at {}", short(&c.text), clock(pb.start)),
-                None => format!("{id} '{}' (hidden)", short(&c.text)),
+                Some(pb) => format!("'{}' at {}", short(&c.text), clock(pb.start)),
+                None => format!("'{}' (hidden)", short(&c.text)),
             }
         };
         let build = |ids: &[String], note: Option<String>| -> Done {
@@ -1659,10 +1678,16 @@ impl Session {
                     .iter()
                     .map(|id| make(id, &tl.caption(id).expect("caption exists").style))
                     .collect(),
-                said: format!(
-                    "Caption {} {what}",
-                    ids.iter().map(|i| label(i)).collect::<Vec<_>>().join(", ")
-                ),
+                // A few captions are named; many are counted.
+                said: match ids.len() {
+                    1 => format!("Caption {} {what}", label(&ids[0])),
+                    2 | 3 => format!(
+                        "Captions {} {what}",
+                        ids.iter().map(|i| label(i)).collect::<Vec<_>>().join(", ")
+                    ),
+                    n if n == caps.len() => format!("All {n} captions {what}"),
+                    n => format!("{n} captions {what}"),
+                },
                 notes: note.into_iter().collect(),
                 typed: false,
             }

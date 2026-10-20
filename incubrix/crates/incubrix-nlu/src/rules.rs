@@ -302,7 +302,7 @@ fn parse_one(s: &str, q: &[String]) -> Intent {
     }
 
     // Whole-video helpers.
-    if rx!(r"^(?:auto[- ]?caption|auto[- ]?subtitle)|^(?:add|generate|create) (?:auto[- ]?)?(?:captions|subtitles)(?: to| for| on)?(?: (?:the|this) (?:whole |entire )?(?:video|thing)| everything| it all| it)?$|^caption (?:the|this) (?:whole |entire )?video$|^caption everything$").is_match(s) {
+    if rx!(r"^(?:auto[- ]?caption|auto[- ]?subtitle)|^(?:add|generate|create|put|turn on|switch on|show|enable|make|give me|i need|i want) (?:some |the )?(?:auto[- ]?)?(?:captions|subtitles|closed captions|subs)(?: to| for| on| in)?(?: (?:the|this|my) (?:whole |entire )?(?:video|thing|clip)| everything| it all| it)?$|^caption (?:the|this) (?:whole |entire )?video$|^caption everything$").is_match(s) {
         return Intent::AutoCaption;
     }
     let removal =
@@ -960,6 +960,9 @@ mod tests {
             }
         );
         assert_eq!(p("remove the ums"), Intent::RemoveFillers);
+        assert_eq!(p("add captions"), Intent::AutoCaption);
+        assert_eq!(p("put subtitles on it"), Intent::AutoCaption);
+        assert_eq!(p("add subtitles to the video"), Intent::AutoCaption);
         assert_eq!(
             p("remove silences longer than 2 seconds"),
             Intent::RemoveSilences { min_ms: 2000 }
