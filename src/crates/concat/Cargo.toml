@@ -171,6 +171,10 @@ toml = "1.1"
 # JPEG encoding for the media artwork cache.
 image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
 
+[dev-dependencies]
+# Phase 9 proof: the AI tab lays out what the session runner computes.
+incubrix-cli = { path = "../../../incubrix/crates/incubrix-cli" }
+
 [build-dependencies]
 slint-build = "1.18"
 # The .exe's icon, for Explorer and the Start menu, as a Windows resource.

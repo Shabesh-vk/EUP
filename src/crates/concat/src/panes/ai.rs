@@ -1120,11 +1120,63 @@ mod tests {
     use super::*;
     use slint::Model;
 
+    /// Phase 9 "Done when": the worked example's 8 prompts, typed into the
+    /// tab's session, give the session runner's timeline, and the clips laid
+    /// for it cover exactly that timeline.
+    #[test]
+    fn worked_example_matches_the_session_runner() {
+        let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../../incubrix/fixtures/sessions/01_worked_example.yaml");
+        let file = incubrix_cli::load(&fixture).unwrap();
+        let (runner, _) = incubrix_cli::run(
+            &fixture,
+            Box::new(incubrix_nlu::RulesParser),
+            &incubrix_cli::RunOptions::default(),
+        )
+        .unwrap();
+
+        let src = file.source.clone().unwrap();
+        let project = Project::new(
+            SourceInfo::with_duration(secs(src.duration_s)),
+            incubrix_cli::synthetic_transcript(&src.lines),
+        );
+        let mut session = Session::new(project, Box::new(incubrix_nlu::RulesParser));
+        for (i, step) in file.steps.iter().enumerate() {
+            let mut reply = session.say(&step.say);
+            if let Some(a) = &step.answer {
+                reply = session.answer(a);
+            }
+            assert_eq!(
+                session.project.hash(),
+                runner.steps[i].timeline_hash,
+                "step {}: {} -> {:?}",
+                i + 1,
+                step.say,
+                reply.outcome.status
+            );
+        }
+        assert_eq!(session.project.hash(), runner.final_timeline_hash);
+
+        // The clips: back to back from 0, ending at the timeline's length.
+        let tl = session.project.timeline().timeline;
+        let laid = pieces(&tl);
+        let mut at = 0.0;
+        for p in &laid {
+            assert!((p.playback - at).abs() < 1e-6, "gap at {at}");
+            at += p.length / p.speed;
+        }
+        assert!((at - to_secs(tl.duration)).abs() < 1e-3, "{at}");
+        assert!((at - 193.0).abs() < 1e-3);
+        assert!(laid.iter().any(|p| (p.speed - 2.0).abs() < 1e-9));
+        assert_eq!(tl.captions.len(), 1);
+        assert_eq!(tl.captions[0].style.color, "#FF0000");
+    }
+
     #[test]
     fn summaries_lose_the_engine_detail() {
         assert_eq!(
             friendly("Added caption 'Hi' on 'hello there' (w00002-w00003, original 0:42). Video 1:00 -> 1:00. Times are read as the current edited playback time."),
-            "Added caption 'Hi' on 'hello there'. Video 1:00 \u{2192} 1:00."
+            "Added caption 'Hi' on 'hello there'. The video is now 1:00."
         );
     }
 
