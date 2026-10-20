@@ -1,5 +1,5 @@
 //! Writes the JSON Schema of an intent - the only thing a parser, including
-//! an LLM, may produce: `cargo run -p incubrix-nlu --example schema`.
+//! an LLM, may produce: `cargo run -p incubrix-nlu --example intent_schema`.
 
 fn main() {
     let path =

@@ -195,3 +195,103 @@ engine; these notes are kept here until it is cleaned up.)
 - Not done: videos given as URLs are downloaded but not cached by hash;
   speech recognition in the runner needs `transcript:` (whisper adapter
   not wired to the CLI yet).
+
+## Phase 8 - HTTP service and the Integration Standard
+
+- New crate `incubrix-api` (axum, tokio), binary `incubrix-api`. Everything
+  is under `/api/v1`: projects (upload as multipart `video`, or
+  `video_url`), instructions, answers, undo/redo, timeline, history, OTIO,
+  renders, scripted sessions, jobs, files. `openapi.yaml` (OpenAPI 3.1) is
+  generated from the handlers (utoipa), and a test fails if the file and
+  the running service ever differ.
+- The 10 points, each with a test in `tests/checklist.rs`:
+  1. `docker compose up` starts api + S3 store + bucket init;
+     `docker compose run --rm test` runs every test, the 47 scenarios and
+     the live end-to-end test against the running stack.
+  2. OpenAPI document served at `/api/v1/openapi.json`.
+  3. Intake, renders and sessions are jobs: 202 + `job_id`, status, progress
+     0-100, result links, optional callback signed with HMAC-SHA256
+     (`X-IncuBrix-Signature: sha256=...`, 3 retries).
+  4. `Idempotency-Key` on every POST: same key and body replays the stored
+     answer (`idempotent-replayed: true`); same key, different body is 409
+     `IDEMPOTENCY_KEY_REUSED`; server errors are not stored.
+  5. One error shape `{error: {code, message, retryable, details}}`, 17 codes.
+  6. All settings from the environment (`.env.example`); no paths or keys
+     in code.
+  7. Files out to S3-compatible storage as presigned links (local folder +
+     `/api/v1/files` in development).
+  8. JSON logs with timestamp, level, `job_id` and `correlation_id`;
+     `/health`, `/ready` (database, store, ffmpeg, speech recognition).
+  9. A manifest on every result: engine version, models, settings, seed,
+     timings, cost, warnings, licences.
+  10. `incubrix batch run <folder> --api URL` plays sessions through the
+      API, with an Idempotency-Key from what it sends, and downloads results.
+- Docker: one Dockerfile (builder, `test` stage, slim runtime with ffmpeg
+  and whisper `ggml-tiny.en`), so uploads with no transcript are listened
+  to inside the container.
+- Store: MinIO's public images were withdrawn from Docker Hub and quay.io
+  in 2025, so compose runs SeaweedFS 4.48 (Apache-2.0) as the S3 store.
+  The service speaks plain S3; MinIO or AWS work by changing `S3_*`.
+- Found by the live run: a session naming files next to itself
+  (`transcript: ../media/...`) cannot be read by a remote server. The CLI
+  now sends those files' contents with the request, the API takes
+  `transcript` and `speakers` inline (recogniser or engine format), and a
+  session naming a file the server does not have is a 422 naming the
+  field, not a failed job later.
+- Also found by rerunning the live test an hour later: a job replayed by
+  its Idempotency-Key handed out its old presigned links, which had expired
+  (403). Jobs now keep their storage keys, and `GET /jobs/{id}` signs fresh
+  links on every read.
+- Done when: `docker compose up -d api` reports ready (all four checks),
+  and `docker compose run --rm test` passes: workspace tests, 47 scenarios
+  x3, and the live test (upload without a transcript recognised by
+  whisper, signed callback received, idempotent retry, render downloaded
+  from a presigned link and probed at 8.0 s, batch runner through the API).
+- Not done: a public demo deployment (needs a cloud account); the batch
+  runner does not upload local videos (it sends URLs or described sources).
+
+## Phase 9 - Concat integration
+
+- Most of it was done early (see "Concat AI tab" above): Concat depends on
+  `incubrix-core` and `incubrix-nlu` by path; the AI tab holds one engine
+  `Session` for the open video; the old `ai_*` string-matching code is gone.
+  Each answer lays the engine timeline down as one gesture (one Ctrl+Z):
+  a clip per segment (trim, speed, mute for silenced words) and a text clip
+  per visible caption at its projected time. Clarification options are
+  buttons that send the answer; status, summary and warnings come from the
+  engine. Speech recognition runs on a worker with progress in the tab.
+- Done when: `worked_example_matches_the_session_runner`
+  (`src/crates/concat/src/panes/ai.rs`) types the 8 worked-example prompts
+  into the tab's session and gets the session runner's `timeline_hash` after
+  every step. The clips it lays are back to back and add up to the
+  timeline's 193 s, with the 2x section and the red caption.
+  (`incubrix-cli` is a dev-dependency of Concat for this test only.)
+- Not done: the optional switch to talk to the HTTP service
+  (`INCUBRIX_API_URL`). Bleeps play as mutes in Concat's preview; the
+  rendered file has the tone.
+
+## Phase 10 - Outstanding level, metrics, evidence
+
+- `incubrix metrics` measures the Metrics tab: latency on generated 5- and
+  60-minute interviews (6,936 words), render accuracy over 4 renders of a
+  real video, determinism over the 47 scenarios x3, clarification quality,
+  word clipping over 20 cuts, cost. Output: `metrics/METRICS.md`, `.json`.
+- Found by measuring: "auto-caption the whole video" on 60 minutes took
+  124 s. Each op in a transaction replayed the whole history before the next
+  op was checked. Replay is now lazy (`History::apply`): overlays are checked
+  against the cuts only, which overlays never change, so a run of them
+  replays once. 124 s -> 0.4 s; every test and hash unchanged.
+- Also found: the clarification count read the status after the answer, so
+  questions looked like guesses. It now reads the recorded question/answer,
+  and reports "one candidate, named in the reply" (e.g. "make that caption
+  red" with one caption) as its own category.
+- Results: 60 min median 107 ms, slowest 434 ms (limit 3 s, enforced by
+  `tests/scale.rs` in CI); renders within 0.49 frames, A/V offset 0;
+  determinism 100%; 0 guesses; 0 of 20 cuts clip a word (automatic check);
+  cost $0/min with local whisper and the rules parser.
+- For a public URL: `API_TOKEN` (Bearer) and `RATE_LIMIT_PER_MINUTE`
+  (429 `RATE_LIMITED` + `Retry-After`), tested in `tests/guard.rs`.
+- Evidence: `SOURCES.md`, `AI_USE.md`, `SUBMISSION.md` (every form row with
+  a link to its proof; unproven rows marked Partial).
+- Not done (needs the candidate): the public deployment, the demo video,
+  the listening check of 20 cuts, reviewer access to the repository.

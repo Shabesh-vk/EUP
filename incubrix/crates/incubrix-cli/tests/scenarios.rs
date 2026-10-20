@@ -139,13 +139,20 @@ fn worked_example_on_a_real_video_writes_results_and_renders() {
     let opts = RunOptions {
         out: Some(out.clone()),
         render: true,
+        ..Default::default()
     };
     let (results, _) = run(&dir.join("session.yaml"), Box::new(RulesParser), &opts).unwrap();
 
+    // Within one frame: encoders pad audio (AAC priming adds ~7 ms on some
+    // ffmpeg builds), so the source itself can be a few ms over 240 s.
     let durations: Vec<f64> = results.steps.iter().map(|s| s.duration_s).collect();
-    assert_eq!(
-        durations,
-        [240.0, 210.0, 208.0, 193.0, 223.0, 193.0, 193.0, 193.0]
+    let want = [240.0, 210.0, 208.0, 193.0, 223.0, 193.0, 193.0, 193.0];
+    assert!(
+        durations
+            .iter()
+            .zip(want)
+            .all(|(d, w)| (d - w).abs() < 1001.0 / 30000.0),
+        "{durations:?}"
     );
     assert!(results.steps[2]
         .question

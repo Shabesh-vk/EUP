@@ -1,0 +1,44 @@
+[package]
+name = "incubrix-api"
+description = "IncuBrix editing engine as an HTTP service: /api/v1, background jobs, idempotency, S3-compatible storage, JSON logs."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "incubrix-api"
+path = "src/main.rs"
+
+[features]
+# Speech recognition in the service (whisper.cpp). The Docker image turns
+# it on; tests and CI run without it, with recorded transcripts.
+whisper = ["incubrix-media/whisper"]
+
+[dependencies]
+incubrix-core = { path = "../incubrix-core" }
+incubrix-media = { path = "../incubrix-media" }
+incubrix-nlu = { path = "../incubrix-nlu" }
+incubrix-cli = { path = "../incubrix-cli" }
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+thiserror.workspace = true
+axum = { version = "0.8", features = ["multipart"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "fs", "signal", "time"] }
+tower = "0.5"
+utoipa = { version = "5", features = ["axum_extras", "yaml"] }
+serde_yaml = "0.9"
+uuid = { version = "1", features = ["v4"] }
+rusqlite = { version = "0.37", features = ["bundled"] }
+object_store = { version = "0.12", features = ["aws"] }
+bytes = "1"
+url = "2"
+hmac = "0.12"
+hex = "0.4"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["json", "env-filter"] }
+ureq = "2"
+
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"] }
+http-body-util = "0.1"

@@ -77,7 +77,13 @@ fn step_8_render_matches_the_timeline() {
     let report = render(&s.project, &out, &RenderOptions::default()).unwrap();
     eprintln!("{:?}", report.check);
     assert!(report.check.ok, "{:?}", report.check);
-    assert_eq!(report.check.expected_us, 193_000_000);
+    // 193 s, within a frame: some ffmpeg builds pad the AAC track by ~7 ms,
+    // which makes the generated source itself a little over 240 s.
+    assert!(
+        (report.check.expected_us - 193_000_000).abs() < report.check.frame_us,
+        "{}",
+        report.check.expected_us
+    );
     assert!(report.check.length_diff_frames <= 1.0);
     assert!(report.check.av_offset_frames <= 1.0);
     assert!(report.source_unchanged);

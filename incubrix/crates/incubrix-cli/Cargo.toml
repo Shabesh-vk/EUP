@@ -16,5 +16,6 @@ incubrix-nlu = { path = "../incubrix-nlu" }
 serde.workspace = true
 serde_json.workspace = true
 serde_yaml = "0.9"
+sha2.workspace = true
 # Sessions whose video is a URL: downloaded once into the output folder.
 ureq = "2"
