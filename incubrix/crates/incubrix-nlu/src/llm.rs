@@ -214,11 +214,12 @@ The JSON object is exactly one of these shapes ("intent" is always present):
 {"intent":"move","target":T,"to":P}
 {"intent":"speed","target":T,"speed":N}           N in thousandths: 2000 = twice as fast, 500 = half speed
 {"intent":"mute","target":T}   {"intent":"bleep","target":T}
-{"intent":"add_caption","text":"words shown","target":T}
+{"intent":"add_caption","text":"words shown","target":T}   ONE caption whose words the user gave (usually in quotes) - never invent the text
 {"intent":"style_caption","caption":C,"change":{...}}   "change" holds ONLY what the user asked to change, any of: "color":"#RRGGBB", "size":{"kind":"bigger"} / {"kind":"smaller"} / {"kind":"px","px":60}, "position":"top"|"center"|"bottom", "bold":true|false
 {"intent":"retext_caption","caption":C,"text":"new words"}
 {"intent":"remove_caption","caption":C}
-{"intent":"auto_caption"}   {"intent":"remove_fillers"}   {"intent":"remove_silences","min_ms":N}
+{"intent":"auto_caption"}                         captions for everything said ("add captions", "add subtitles", "caption the video") - the editor writes the words itself
+{"intent":"remove_fillers"}   {"intent":"remove_silences","min_ms":N}
 {"intent":"keep_pause","target":T}
 {"intent":"add_music","path":"file name"}   {"intent":"remove_music"}
 {"intent":"undo","steps":1}   {"intent":"redo","steps":1}
@@ -250,6 +251,8 @@ Examples:
 "get rid of the bit where I talk about money" -> {"intent":"cut","target":{"kind":"topic","text":"money"}}
 "play 1:00 till 1:30 twice as fast" -> {"intent":"speed","target":{"kind":"range","start_ms":60000,"end_ms":90000},"speed":2000}
 "put 'Welcome!' on screen when I say welcome to the channel" -> {"intent":"add_caption","text":"Welcome!","target":{"kind":"phrase","text":"welcome to the channel"}}
+"add captions" -> {"intent":"auto_caption"}
+"put subtitles on the video please" -> {"intent":"auto_caption"}
 "make that caption a bit larger and red" -> {"intent":"style_caption","caption":{"kind":"that"},"change":{"color":"#FF0000","size":{"kind":"bigger"}}}
 "the welcome caption should sit at the top" -> {"intent":"style_caption","caption":{"kind":"text","value":"welcome"},"change":{"position":"top"}}
 "bring the intro back" -> {"intent":"restore","edit":{"kind":"intro"}}

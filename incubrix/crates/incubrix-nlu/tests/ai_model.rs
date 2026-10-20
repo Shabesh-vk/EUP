@@ -267,3 +267,30 @@ fn answers_are_cached_so_a_rerun_needs_no_network() {
     let again = b.say(text).outcome;
     assert_eq!(again.timeline_hash, first.timeline_hash);
 }
+
+#[test]
+fn an_invented_caption_is_not_trusted() {
+    // The model reads "add captions" as one caption saying "add captions".
+    let (url, _) = fake_claude(vec![claude_says(
+        r#"{"intent":"add_caption","text":"add captions","target":{"kind":"everything"}}"#,
+    )]);
+    let p = AutoParser::new(Some(model(&url, cache_dir("ai-invented"))));
+    let i = incubrix_nlu::Parser::parse(&p, "add captions", &incubrix_nlu::Context::default());
+    assert_eq!(i, incubrix_nlu::Intent::AutoCaption, "the rules read it");
+    // A caption whose words the user gave is trusted.
+    let ok = incubrix_nlu::intent::Intent::AddCaption {
+        text: "Welcome!".into(),
+        target: incubrix_nlu::intent::Target::Phrase {
+            text: "welcome to the channel".into(),
+            occurrence: None,
+        },
+    };
+    assert!(!incubrix_nlu::auto::invented_caption(
+        &ok,
+        "put 'Welcome!' on screen when I say welcome to the channel"
+    ));
+    assert!(
+        incubrix_nlu::auto::invented_caption(&ok, "add subtitles to the video"),
+        "copied from an example"
+    );
+}
